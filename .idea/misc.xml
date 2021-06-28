@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectPlainTextFileTypeManager">
+    <file url="file://$PROJECT_DIR$/analysis/Binance_20k_start/live_trading.md" />
+    <file url="file://$PROJECT_DIR$/analysis/BuyUpSellDown_0.025_Stop_vs_Limit.md" />
+    <file url="file://$PROJECT_DIR$/analysis/matrix/README.md" />
+    <file url="file://$PROJECT_DIR$/analysis/Robinhood_5k_start/live_trading.md" />
+    <file url="file://$PROJECT_DIR$/doc/algotihmic_trading/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/cdo_mbs_cds/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/crypto/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/day_trading/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/fed/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/global/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/insurance/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/markets/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/options/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/pandas/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/read/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/security_analysis/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/technical_analysis/README.md" />
+    <file url="file://$PROJECT_DIR$/doc/value_based_investing/README.md" />
+    <file url="file://$PROJECT_DIR$/README.md" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9" project-jdk-type="Python SDK" />
+  <component name="PyCharmProfessionalAdvertiser">
+    <option name="shown" value="true" />
+  </component>
+</project>

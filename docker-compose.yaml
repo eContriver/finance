@@ -1,0 +1,55 @@
+#
+# Start IDE with:
+#   docker-compose up
+# Build images with:
+#   docker-compose build
+# Run shell commands with (presuming ide container started):
+#   docker-compose exec ide bash
+# Run shell commands with (presuming containers failed to start):
+#   docker run --rm -it py_deps:latest bash
+# Stop and teardown all associated containers etc.
+#   docker-compose down
+# Run with
+#   docker-compose run idea
+# Create volumes 
+#  NAS
+#   docker volume create --driver local --opt type=cifs --opt device=//192.168.2.235/private/projects/financial_static_site --opt o=username=user,password=pw financial_static_site
+#  Local Disk
+#   docker volume create --name financial_static_site --opt type=none --opt device=$PWD --opt o=bind
+#  Persistent settings storage
+#   docker volume create root_home
+# Test volumes
+#   docker volume rm financial_static_site && docker volume create --driver local --opt type=cifs --opt device=//192.168.2.235/private/projects/financial_static_site --opt o=username=user,password=pw financial_static_site
+#   docker run --rm -it -v financial_static_site:/financial_static_site/ py_deps bash -c "ls -la /financial_static_site && touch /financial_static_site/test-`date +%s` && ls -la /financial_static_site"
+
+version: "3.8"
+
+services:
+  py_deps:
+    image: py_deps:latest
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+  dev:
+    container_name: fss_dev
+    image: py_deps:latest
+    stdin_open: true 
+    tty: true 
+    depends_on: 
+      - py_deps
+    volumes:
+      - type: volume
+        source: finance
+        target: /app
+      - root_home:/root
+    ports:
+      - 4000:4000
+    working_dir:
+      /app
+    command:
+      bash
+volumes:
+  finance:
+    external: true
+  root_home:
+    external: true
