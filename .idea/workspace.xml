@@ -5,22 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/finance_test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/common/launchers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/common/logger.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/testLauncher.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/adapter_tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/gui_tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/portfolio_tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/src_tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/strategy_tests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/finance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/buyUpSellDownTrailing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/buyUpSellDownTrailing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/lastBounce.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/lastBounce.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/singleSymbolStrategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/singleSymbolStrategy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/testExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/testExecutor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/add_adapter.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +66,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/finance_test.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/test/adapter_tests.py" />
     <property name="settings.editor.selected.configurable" value="copyright.profiles" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -110,9 +101,6 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="/usr/local/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -278,7 +266,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/finance_test.py</url>
-          <line>33</line>
+          <line>32</line>
           <option name="timeStamp" value="124" />
         </line-breakpoint>
       </breakpoints>
