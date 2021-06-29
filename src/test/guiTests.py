@@ -24,13 +24,13 @@ from test.testExecutor import is_test, TestLauncher
 from test.testUtils import setup_collection, MockDataAdapter
 
 
-@is_test(should_run=TestLauncher.instance().run_gui_tests)
+@is_test(should_run=TestLauncher.get_instance().run_gui_tests)
 def create_visualization_just_collection():
     collection: AdapterCollection = setup_collection(['SINE15'],
                                                      [ValueType.OPEN, ValueType.CLOSE, ValueType.HIGH, ValueType.LOW,
                                                       ValueType.RSI])
     visualizer: Visualizer = Visualizer('All Plots', collection)
-    visualizer.plot_all(block=TestLauncher.instance().ui_tests_block)
+    visualizer.plot_all(block=TestLauncher.get_instance().ui_tests_block)
     # TODO: Add image checks
     # https://matplotlib.org/3.1.0/api/testing_api.html#module-matplotlib.testing.exceptions
     # visualizer.savefig(testOutputDir + '/' + __name__ + '.png')
@@ -39,18 +39,18 @@ def create_visualization_just_collection():
     return True
 
 
-@is_test(should_run=TestLauncher.instance().run_gui_tests)
+@is_test(should_run=TestLauncher.get_instance().run_gui_tests)
 def create_visualization_with_portfolio():
     collection: AdapterCollection = setup_collection(['UP15', 'UP20'])
     portfolio: Portfolio = Portfolio("Test", {'USD': 0.0, 'UP15': 1.0, 'UP20': 1.0})
     portfolio.set_remaining_times(collection)
     portfolio.run_to(collection, collection.get_end_time('UP15', ValueType.CLOSE))
     visualizer: Visualizer = Visualizer('All Plots', collection, [portfolio])
-    visualizer.plot_all(block=TestLauncher.instance().ui_tests_block)
+    visualizer.plot_all(block=TestLauncher.get_instance().ui_tests_block)
     return True
 
 
-@is_test(should_run=TestLauncher.instance().run_gui_tests)
+@is_test(should_run=TestLauncher.get_instance().run_gui_tests)
 def verify_bounded_rsi_strategy():
     symbol = 'SINE50'
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0})
@@ -58,5 +58,5 @@ def verify_bounded_rsi_strategy():
     strategy: Strategy = BoundedRsi(symbol, portfolio, 14, 70, 30)
     strategy.run()
     visualizer: Visualizer = Visualizer('All Plots', strategy.collection, [portfolio])
-    visualizer.plot_all(block=TestLauncher.instance().ui_tests_block)
+    visualizer.plot_all(block=TestLauncher.get_instance().ui_tests_block)
     return True

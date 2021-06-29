@@ -22,7 +22,7 @@ from main.common.fileSystem import FileSystem
 from main.executors.job import Job
 from main.executors.parallelExecutor import ParallelExecutor
 class TestLauncher:
-    _instance = None
+    instance = None
     only_test_specified: bool = False
     tests_to_run: List[Any] = []
     run_only_tests: List[Any] = []
@@ -36,15 +36,15 @@ class TestLauncher:
         raise RuntimeError('Use instance() instead')
 
     @classmethod
-    def instance(cls):
-        if cls._instance is None:
-            cls._instance = cls.__new__(cls)
+    def get_instance(cls):
+        if cls.instance is None:
+            cls.instance = cls.__new__(cls)
             script_dir = os.path.dirname(os.path.realpath(__file__))
             test_date_dir = FileSystem.get_and_clean_cache_dir(os.path.join(script_dir, '..', '..', '.cache', 'tests'))
-            cls._instance.test_runner = TestExecutor(test_date_dir)
+            cls.instance.test_runner = TestExecutor(test_date_dir)
             # self.runTests = []
             # self.runOnlyTests = []
-        return cls._instance
+        return cls.instance
 
     def add_test_override(self, function):
         self.run_only_tests.append(function)
@@ -63,14 +63,14 @@ class TestLauncher:
 
 
 def only_test(function):
-    TestLauncher.instance().add_test_override(function)
+    TestLauncher.get_instance().add_test_override(function)
     return function
 
 
 def is_test(_func=None, *, should_run: bool = True):
     def decorator_is_test(function):
         if should_run:
-            TestLauncher.instance().add_test(function)
+            TestLauncher.get_instance().add_test(function)
         return function
 
     if _func is None:

@@ -20,7 +20,6 @@ import logging
 import os
 from datetime import datetime
 
-from main.common.launchers import check_environment, configure_logging, print_copyright_notice
 from main.common.profiler import Profiler
 from test.testExecutor import TestLauncher
 
@@ -43,7 +42,7 @@ if __name__ == "__main__":
 
     success = True
     test_start = datetime.now()
-    TestLauncher.instance().run()
+    TestLauncher.get_instance().run()
     test_end = datetime.now()
     logging.info(">> Testing took: {}s".format(test_end - test_start))
 

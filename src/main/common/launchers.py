@@ -26,12 +26,13 @@ from main.common.profiler import Profiler
 class Launcher:
     def __init__(self, runner):
         self.runner = runner
-        Launcher.configure_logging()
+
+    def run(self, args) -> bool:
+        if args.profile:
+            Profiler.get_instance().enable()
+        Launcher.configure_logging(args.debug)
         Launcher.print_copyright_notice()
         Launcher.check_environment()
-
-    def run(self) -> bool:
-        # Profiler.get_instance().enable()
         success = True
         run_start = datetime.now()
         runner = self.runner()
@@ -43,11 +44,10 @@ class Launcher:
         return success
 
     @staticmethod
-    def configure_logging():
+    def configure_logging(console_debug: bool):
         logging.getLogger().setLevel(logging.DEBUG)
         out_handler = logging.StreamHandler(sys.stdout)
-        out_handler.setLevel(logging.INFO)
-        # out_handler.setLevel(logging.DEBUG)
+        out_handler.setLevel(logging.DEBUG if console_debug else logging.INFO)
         out_handler.setFormatter(logging.Formatter("%(levelname)-5s: %(message)s"))
         logging.getLogger().addHandler(out_handler)
         script_dir = os.path.dirname(os.path.realpath(__file__))

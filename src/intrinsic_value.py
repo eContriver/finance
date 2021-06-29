@@ -15,10 +15,20 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+import argparse
 
 from main.common.launchers import Launcher
 from main.runners.intrinsicValueRunner import IntrinsicValueRunner
 
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug", help="Print debug messages to console", action="store_true")
+    parser.add_argument("--profile", help="Profile the run", action="store_true")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+    args = parse_args()
     launcher = Launcher(IntrinsicValueRunner)
-    exit(0 if launcher.run() else 1)
+    exit(0 if launcher.run(args) else 1)
