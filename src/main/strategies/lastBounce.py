@@ -34,7 +34,7 @@ class LastBounce(SingleSymbolStrategy):
         super().__init__("Last bounce ratio {} threshold {}".format(ratio, threshold), symbol, portfolio)
         self.ratio = ratio
         self.threshold = threshold
-        self.build_price_collection(cache_key_date=None, start_time=portfolio.start_time, end_time=portfolio.end_time)
+        self.build_price_collection()
 
     def next_step(self, current_time: datetime,
                   order_filter: List[OrderSide] = (OrderSide.SELL, OrderSide.BUY)) -> None:

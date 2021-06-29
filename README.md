@@ -16,16 +16,7 @@ It also provides adapters to external services.
 # Open Source
 
 If you want to donate, then you can do that here:
-* 0x38544985784e6786e79657639FCCD743138F2D73 (ETH)
-
-We would like to provide plugins to:
-* Pay Taxes on the Spot for every crypto transaction = $100/year ?BTC/year ?ETH/year $10/month
-    - Give us your wallet addresses and we'll calculate what you own on taxes
-    - Partner with: https://giveth.io/project/support-protests-in-colombia-soscolombia
-        o To auto write-off donations
-    - Suggest donations of things that would off-set taxes
-* Save current Crypto prices and record from that point forward
-* ...
+* 0x9046e392d4F12ec5950F058960aF48B3929eCad6 (ETH)
 
 # Getting Started
 
@@ -301,6 +292,16 @@ Crypto leverage
   * Income
   * Is there enough of them to absorb a flood of supply?
 
+## Tax Services
+
+* Pay Taxes on the Spot for every crypto transaction = $100/year ?BTC/year ?ETH/year $10/month
+    - Give us your wallet addresses and we'll calculate what you owe on taxes
+    - Partner with: https://giveth.io/project/support-protests-in-colombia-soscolombia
+        o To auto write-off donations
+    - Suggest donations of things that would off-set taxes
+* Save current Crypto prices and record from that point forward
+* ...
+
 * How does the price of a house in Bitcoin change over time?
 * How does the price of a house in Gold change over time?
 * How does the price of a house in Ethereum change over time?
@@ -328,7 +329,7 @@ Add knowledge from investors
 * Doug Casey
 * Tom Lee
 * Balaji Srinivasan
-* Dave Portnoy - Perhaps don’t follow, but watch to see what he does as it is generally short term, a git of a gambler
+* Dave Portnoy - Perhaps don’t follow, but watch to see what he does as it is generally short term, a bit of a gambler
 ### Gold
 * David Garofalo - the who is who of gold
 * Ami Adnani - Gold and gldlf

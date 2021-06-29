@@ -16,65 +16,82 @@
 
 import logging
 import os
-from typing import Optional, List
+from typing import List, Any
 
 from main.common.fileSystem import FileSystem
-from main.executors.parallelExecutor import ParallelExecutor
 from main.executors.job import Job
-from main.executors.sequentialExecutor import SequentialExecutor
-
-
-# class TestExecutor(SequentialExecutor):
-class TestExecutor(ParallelExecutor):
-    only_test_specified: bool
-    tests_to_run: List[str] = []
-    run_only_tests: List[str] = []
+from main.executors.parallelExecutor import ParallelExecutor
+class TestLauncher:
+    _instance = None
+    only_test_specified: bool = False
+    tests_to_run: List[Any] = []
+    run_only_tests: List[Any] = []
     # run_gui_tests = True
     run_gui_tests = False
     ui_tests_block = False
     # ui_tests_block = True
+    test_runner = None
 
-    def __init__(self, log_dir):
-        super().__init__(log_dir)
-        self.only_test_specified = False
-        # self.runTests = []
-        # self.runOnlyTests = []
+    def __init__(self):
+        raise RuntimeError('Use instance() instead')
 
-    @staticmethod
-    def only_test(function):
-        TestExecutor.run_only_tests.append(function.__name__)
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls.__new__(cls)
+            script_dir = os.path.dirname(os.path.realpath(__file__))
+            test_date_dir = FileSystem.get_and_clean_cache_dir(os.path.join(script_dir, '..', '..', '.cache', 'tests'))
+            cls._instance.test_runner = TestExecutor(test_date_dir)
+            # self.runTests = []
+            # self.runOnlyTests = []
+        return cls._instance
+
+    def add_test_override(self, function):
+        self.run_only_tests.append(function)
+
+    def add_test(self, function):
+        self.tests_to_run.append(function)
+
+    def run(self) -> bool:
+        only_test_count = len(self.run_only_tests)
+        assert only_test_count <= 1, "Run only tests only accepts 1 or no tests, but found: {}".format(self.run_only_tests)
+        test_jobs = self.run_only_tests[0] if only_test_count == 1 else self.tests_to_run
+        for run_test in test_jobs:
+            self.test_runner.add_job(Job(run_test, ()))
+        success = self.test_runner.start()
+        return success
+
+
+def only_test(function):
+    TestLauncher.instance().add_test_override(function)
+    return function
+
+
+def is_test(_func=None, *, should_run: bool = True):
+    def decorator_is_test(function):
+        if should_run:
+            TestLauncher.instance().add_test(function)
         return function
 
-    @staticmethod
-    def is_test(_func=None, *, should_run: bool = True):
-        def decorator_is_test(function):
-            if should_run:
-                TestExecutor.tests_to_run.append(function.__name__)
-            return function
+    if _func is None:
+        return decorator_is_test
+    else:
+        return decorator_is_test(_func)
 
-        if _func is None:
-            return decorator_is_test
-        else:
-            return decorator_is_test(_func)
 
-    def add_test(self, function, args):
-        if not self.only_test_specified:
-            self.add_job(Job(function, args))
-
-    def test_only(self, function, args):
-        assert not self.only_test_specified, "Test only has already been called: {}".format(self.jobs)
-        if not self.only_test_specified:
-            self.jobs.clear()
-            self.only_test_specified = True
-        self.add_job(Job(function, args))
+# class TestExecutor(SequentialExecutor):
+class TestExecutor(ParallelExecutor):
+    def __init__(self, log_dir):
+        super().__init__(log_dir)
 
     def get_log_file(self):
         log_file = os.path.join(self.log_dir, 'test.log')
         return log_file
 
-    def start(self):
+    def start(self) -> bool:
         success = super().start()
-        logging.info(' -- Testing Complete - results follow... {}'.format(FileSystem.file_link_format(self.get_log_file())))
+        logging.info(
+            ' -- Testing Complete - results follow... {}'.format(FileSystem.file_link_format(self.get_log_file())))
         (passed, failed) = self.get_results()
         passed_count = len(passed)
         failed_count = len(failed)
@@ -91,6 +108,7 @@ class TestExecutor(ParallelExecutor):
         else:
             logging.error('Tests - {}/{} FAILED'.format(failed_count, total))
         return success
+
 
 ## The following are tests which can be used to test the ParallelTestRunner
 

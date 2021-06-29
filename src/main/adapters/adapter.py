@@ -216,9 +216,8 @@ class Adapter:
         self.calculate_asset_type()  # we chose to delay the asset calculation, until we are already talking to the
         # server, can this just be set on the adapter, directly?
         converter = self.get_converter(value_type)
-        # Consider passing the converter so the function gets it:
-        # Without this 3rd party adapters will write one function per type,
-        # which might not be so bad...
+        # Consider passing the converter so the function gets it. Without this 3rd party adapters will write one
+        # function per type, which might be a good thing, so perhaps we leave it? e.g.
         # converter.get_response_callback(converter)
         converter.get_response_callback()
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
@@ -542,6 +541,7 @@ class Adapter:
 
     def get_common_start_time(self) -> Optional[datetime]:
         valid_start_times = []
+        self.data = self.data.sort_index(ascending=True)
         for column in self.data:
             valid_start_times.append(self.data[column].first_valid_index())
         return None if len(valid_start_times) == 0 else max(valid_start_times)
@@ -646,6 +646,10 @@ class Adapter:
             else:
                 column = pandas.Series(values, index=indexes)
                 merge_df = column.to_frame(value_type)
+                merge_df = merge_df.sort_index(ascending=True)
                 reindexed_df = merge_df.reindex(self.data.index, method="nearest")
-                self.data[value_type] = reindexed_df
+                oldest_time_before_reindexing = merge_df.index[0]
+                newest_time_before_reindexing = merge_df.index[-1]
+                reindexed_df = reindexed_df[reindexed_df.index <= newest_time_before_reindexing]
+                self.data[value_type] = reindexed_df[reindexed_df.index >= oldest_time_before_reindexing]
             self.data = self.data.sort_index(ascending=True)

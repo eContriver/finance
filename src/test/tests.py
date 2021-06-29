@@ -19,17 +19,18 @@
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import List
 
 import pandas
 
-from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
-from main.common.fileSystem import FileSystem
 from main.adapters.adapter import AssetType, TimeInterval, Adapter
+from main.adapters.adapterCollection import AdapterCollection
+from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
 from main.adapters.valueType import ValueType
+from main.common.fileSystem import FileSystem
+from main.common.logger import get_current_copyright_year
 from main.portfolio.order import OrderSide, LimitOrder
 from main.portfolio.portfolio import Portfolio
-from main.adapters.adapterCollection import AdapterCollection
 from main.strategies.boundedRsi import BoundedRsi
 from main.strategies.buyAndHold import BuyAndHold
 from main.strategies.buyDownSellUp import BuyDownSellUp
@@ -38,22 +39,18 @@ from main.strategies.buyUpSellDownTrailing import BuyUpSellDownTrailing
 from main.strategies.lastBounce import LastBounce
 from main.strategies.strategy import Strategy
 from main.visual.visualizer import Visualizer
-from test.testExecutor import TestExecutor
+from test.testExecutor import is_test, TestLauncher
 from test.testUtils import setup_collection, MockDataAdapter
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-test_date_dir = FileSystem.get_and_clean_cache_dir(os.path.join(script_dir, '..', '..', '.cache', 'tests'))
-test_runner = TestExecutor(test_date_dir)
 
-
-# @TestExecutor.only_test
-@TestExecutor.is_test(should_run=test_runner.run_gui_tests)
+# @only_test
+@is_test(should_run=TestLauncher.instance().run_gui_tests)
 def create_visualization_just_collection():
     collection: AdapterCollection = setup_collection(['SINE15'],
                                                      [ValueType.OPEN, ValueType.CLOSE, ValueType.HIGH, ValueType.LOW,
                                                       ValueType.RSI])
     visualizer: Visualizer = Visualizer('All Plots', collection)
-    visualizer.plot_all(block=test_runner.ui_tests_block)
+    visualizer.plot_all(block=TestLauncher.instance().ui_tests_block)
     # TODO: Add image checks
     # https://matplotlib.org/3.1.0/api/testing_api.html#module-matplotlib.testing.exceptions
     # visualizer.savefig(testOutputDir + '/' + __name__ + '.png')
@@ -62,20 +59,20 @@ def create_visualization_just_collection():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test(should_run=test_runner.run_gui_tests)
+# @only_test
+@is_test(should_run=TestLauncher.instance().run_gui_tests)
 def create_visualization_with_portfolio():
     collection: AdapterCollection = setup_collection(['UP15', 'UP20'])
     portfolio: Portfolio = Portfolio("Test", {'USD': 0.0, 'UP15': 1.0, 'UP20': 1.0})
     portfolio.set_remaining_times(collection)
     portfolio.run_to(collection, collection.get_end_time('UP15', ValueType.CLOSE))
     visualizer: Visualizer = Visualizer('All Plots', collection, [portfolio])
-    visualizer.plot_all(block=test_runner.ui_tests_block)
+    visualizer.plot_all(block=TestLauncher.instance().ui_tests_block)
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test(should_run=test_runner.run_gui_tests)
+# @only_test
+@is_test(should_run=TestLauncher.instance().run_gui_tests)
 def verify_bounded_rsi_strategy():
     symbol = 'SINE50'
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0})
@@ -83,12 +80,12 @@ def verify_bounded_rsi_strategy():
     strategy: Strategy = BoundedRsi(symbol, portfolio, 14, 70, 30)
     strategy.run()
     visualizer: Visualizer = Visualizer('All Plots', strategy.collection, [portfolio])
-    visualizer.plot_all(block=test_runner.ui_tests_block)
+    visualizer.plot_all(block=TestLauncher.instance().ui_tests_block)
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_common_end():
     adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
     adapter.data = pandas.DataFrame()
@@ -102,8 +99,8 @@ def verify_common_end():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_find_closest_instance_after():
     adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
     adapter.data = pandas.DataFrame()
@@ -111,11 +108,13 @@ def verify_find_closest_instance_after():
     adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
-    assert adapter.find_closest_instance_after(common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+    assert adapter.find_closest_instance_after(
+        common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
     return True
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+
+# @only_test
+@is_test
 def verify_find_closest_instance_before():
     adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
     adapter.data = pandas.DataFrame()
@@ -123,11 +122,13 @@ def verify_find_closest_instance_before():
     adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
-    assert adapter.find_closest_instance_before(common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+    assert adapter.find_closest_instance_before(
+        common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
     return True
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+
+# @only_test
+@is_test
 def verify_find_closest_instance_after_mismatch():
     adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
     adapter.data = pandas.DataFrame()
@@ -136,11 +137,15 @@ def verify_find_closest_instance_after_mismatch():
     adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
-    assert adapter.find_closest_instance_after(mismatch_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+    assert adapter.find_closest_instance_after(mismatch_time) == common_time, f"Did not get the correct common end " \
+                                                                              f"time, expected {common_time}, " \
+                                                                              f"received " \
+                                                                              f"{adapter.get_common_end_time()} "
     return True
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+
+# @only_test
+@is_test
 def verify_find_closest_instance_before_mismatch():
     adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
     adapter.data = pandas.DataFrame()
@@ -149,11 +154,13 @@ def verify_find_closest_instance_before_mismatch():
     adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
-    assert adapter.find_closest_instance_before(mismatch_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+    assert adapter.find_closest_instance_before(
+        mismatch_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
     return True
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+
+# @only_test
+@is_test
 def verify_common_start():
     adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
     adapter.data = pandas.DataFrame()
@@ -167,8 +174,8 @@ def verify_common_start():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_last_bounce_strategy():
     symbol = 'STEP50'
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0})
@@ -189,8 +196,8 @@ def verify_last_bounce_strategy():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_buy_up_sell_down_trailing_strategy():
     symbol = 'SINE50'
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0})
@@ -209,8 +216,8 @@ def verify_buy_up_sell_down_trailing_strategy():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_buy_down_sell_up_trailing_strategy():
     symbol = 'SINE50'
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0})
@@ -229,8 +236,8 @@ def verify_buy_down_sell_up_trailing_strategy():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_buy_down_sell_up_next_day_strategy():
     symbol = 'UP15'
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0})
@@ -260,8 +267,8 @@ def verify_buy_down_sell_up_next_day_strategy():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_buy_down_sell_up_strategy():
     symbol = 'UP15'
     portfolio: Portfolio = Portfolio("Test", {'USD': 0.0, symbol: 100.0})
@@ -282,8 +289,8 @@ def verify_buy_down_sell_up_strategy():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_buy_and_hold_strategy():
     symbol = 'UP15'
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0})
@@ -302,8 +309,8 @@ def verify_buy_and_hold_strategy():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_portfolio_limit_buy():
     symbol = 'DOWN15'
     collection: AdapterCollection = setup_collection([symbol])
@@ -333,8 +340,8 @@ def verify_portfolio_limit_buy():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_portfolio_limit_sell():
     symbol = 'UP15'
     collection: AdapterCollection = setup_collection([symbol])
@@ -364,8 +371,8 @@ def verify_portfolio_limit_sell():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_get_remaining_times():
     collection: AdapterCollection = setup_collection(['UP15'])
     start_time = collection.get_common_start_time()
@@ -382,8 +389,8 @@ def verify_get_remaining_times():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_portfolio_run_to():
     collection: AdapterCollection = setup_collection(['UP15', 'UP20'])
     portfolio: Portfolio = Portfolio("Test", {'USD': 0.0, 'UP15': 1.0, 'UP20': 1.0})
@@ -398,8 +405,8 @@ def verify_portfolio_run_to():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def verify_data_reading():
     collection: AdapterCollection = setup_collection(['UP15', 'UP20'])
     symbol: str = 'UP15'
@@ -411,8 +418,8 @@ def verify_data_reading():
     return True
 
 
-# @TestExecutor.only_test
-# @TestExecutor.is_test
+# @only_test
+# @is_test
 def adding_new_data_adapters():
     """
     This test should not be enabled normally, but can be used to test a data adapter as it is added.
@@ -464,8 +471,8 @@ def adding_new_data_adapters():
     return True
 
 
-# @TestExecutor.only_test
-@TestExecutor.is_test
+# @only_test
+@is_test
 def create_portfolio():
     # adapter: DataAdapter = MockDataAdapter()
     now = datetime.now()
@@ -475,9 +482,12 @@ def create_portfolio():
     return True
 
 
-def test_launcher():
-    for run_test in TestExecutor.tests_to_run:
-        if not TestExecutor.run_only_tests or (run_test in TestExecutor.run_only_tests):
-            test_runner.add_test(globals()[run_test], ())
-    passed = test_runner.start()
-    return passed
+# @only_test
+@is_test
+def check_copyright_year():
+    now = datetime.now()
+    copyright_year = get_current_copyright_year()
+    assert now.year == copyright_year, f"Current year is '{now.year}' and copyright year is '{copyright_year}'. When " \
+                                       f"tests run, it is assumed that code will be changing and as such copyright " \
+                                       f"notices should also be updated, but they currently are out-of-date."
+    return True

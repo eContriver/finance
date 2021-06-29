@@ -38,7 +38,7 @@ from main.runners.runner import Runner
 from main.visual.visualizer import Visualizer
 
 
-class FundamentalRunner(Runner):
+class IntrinsicValueRunner(Runner):
     # DAYS_FROM_START = 'Days'
     HIGH_PE = 'High P/E'
     LOW_PE = 'Low P/E'
@@ -48,7 +48,7 @@ class FundamentalRunner(Runner):
         super().__init__()
 
     def start(self):
-        logging.info("#### Starting fundamental runner...")
+        logging.info("#### Starting intrinsic value runner...")
         success = True
 
         symbols = [
@@ -79,9 +79,10 @@ class FundamentalRunner(Runner):
             # 'LILA'  # shareholder equity dropped 20% in last 3 years (2017-12-31)
             # 'PDS'  # showed negative, for earnings, we're disabling calculated_eps but first switch to iex
             # 'ROIC'  # Max: 32.6671 % Average: 15.8487 % Median: 10.9722 % Min: 4.4097% on 2028-12-19 (2020 report is missing...?)
-            'MO'
-            # 'CVS'
-            # 'TCOM'
+            # 'MO'    # Max: -3.4515%  Average: -27.2888%  Median: -6.3298%  Min: 0.0% on 2025-12-23
+            # MO IEX doesn't have the latest report from 12/2020, so our report started at 12/2019
+            # 'CVS'   # Max: 34.6431%  Average: 1.0215%  Median: 20.6921%  Min: 0.0% on 2030-12-19
+            'TCOM'
             # 'QRVO'
             # 'FB'
             # 'GME'
@@ -105,7 +106,7 @@ class FundamentalRunner(Runner):
             # 'WFC'  # more risk than reward
             # 'DNOW' # losing money and not progresing
             # 'LUMN'  # negative net income which just turned around
-            # 'UBA'  # not great but price just dropped a lot
+            # 'UBA'  # not great but price just dropped 2007-12-31  1.444139e+11       7.287707e+10         473332656.0     473332656.0              7.153683e+10         0.19 -1430703200.0             0.0  14.464989  13.967226  14.0842   73.511714   76.131519
         ]
 
         # Multiple collections == Multiple plots : Each collection is in it's own dict entry under the query type
@@ -127,7 +128,7 @@ class FundamentalRunner(Runner):
         for symbol in symbols:
             collection.add(self.create_price_adapter(symbol))
             collection.add(self.create_fundamentals_adapter(symbol))
-        collection.set_all_cache_key_dates(datetime(year=2021, month=6, day=25))
+        # collection.set_all_cache_key_dates(datetime(year=2021, month=6, day=25))
         collection.retrieve_all_data()
         return {'Fundamentals': collection}
 
@@ -160,14 +161,14 @@ class FundamentalRunner(Runner):
 
     def new_adapter(self, symbol):
         # adapter_class = Sec
-        adapter_class = IexCloud
-        # adapter_class = AlphaVantage
+        # adapter_class = IexCloud
+        adapter_class = AlphaVantage
         adapter = adapter_class(symbol, asset_type=None)
         adapter.base_symbol = 'USD'
-        end_date = datetime.now()  #year=2021, month=6, day=3)
+        end_date = datetime.now()
         adapter.add_argument(Argument(ArgumentType.START_TIME, end_date - 10 * TimeInterval.YEAR.timedelta))
         adapter.add_argument(Argument(ArgumentType.END_TIME, end_date))
-        # adapter.cache_key_date = end_date
+        adapter.cache_key_date = end_date
         # adapter.cache_key_date = None
         asset_type_overrides = {
             'ETH': AssetType.DIGITAL_CURRENCY,
@@ -225,7 +226,7 @@ class FundamentalRunner(Runner):
                 ValueType.TOTAL_ASSETS,
                 ValueType.TOTAL_LIABILITIES,
                 ValueType.OUTSTANDING_SHARES,
-                ValueType.DILUTED_SHARES,
+                # ValueType.DILUTED_SHARES,
                 ValueType.TOTAL_SHAREHOLDER_EQUITY,
             ]
             earnings_value_types = [ValueType.REPORTED_EPS]
@@ -305,8 +306,8 @@ class FundamentalRunner(Runner):
             # merge series data into the data - match earnings dates using +/- 2 weeks
             df[ValueType.LOW] = ""
             df[ValueType.HIGH] = ""
-            df[FundamentalRunner.LOW_PE] = ""
-            df[FundamentalRunner.HIGH_PE] = ""
+            df[IntrinsicValueRunner.LOW_PE] = ""
+            df[IntrinsicValueRunner.HIGH_PE] = ""
             for date in df.index:
                 closest_idx = p_df.index.get_loc(date, method='nearest')
                 # TODO: This only gets the closest (monthly) series entry and uses it's high and low, we could
@@ -315,9 +316,9 @@ class FundamentalRunner(Runner):
                 df.loc[date, ValueType.LOW] = p_df.iloc[closest_idx, :][ValueType.LOW]
                 df.loc[date, ValueType.HIGH] = p_df.iloc[closest_idx, :][ValueType.HIGH]
                 df.loc[date, ValueType.CLOSE] = p_df.iloc[closest_idx, :][ValueType.CLOSE]
-            df.loc[:, FundamentalRunner.LOW_PE] = df.loc[:, ValueType.LOW] / df.loc[:, ValueType.REPORTED_EPS]
-            df.loc[:, FundamentalRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / df.loc[:, ValueType.REPORTED_EPS]
-            pe_ratios = df.loc[:, FundamentalRunner.LOW_PE] + df.loc[:, FundamentalRunner.HIGH_PE]
+            df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / df.loc[:, ValueType.REPORTED_EPS]
+            df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / df.loc[:, ValueType.REPORTED_EPS]
+            pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE] + df.loc[:, IntrinsicValueRunner.HIGH_PE]
 
             #################################################################################
             # Report now...
@@ -332,7 +333,7 @@ class FundamentalRunner(Runner):
             future_time = last_time + future_timedelta
             for value_type in value_types:
                 # predictions
-                prediction = FundamentalRunner.predict_future_value_linear(symbol, future_time, collection, value_type)
+                prediction = IntrinsicValueRunner.predict_future_value_linear(symbol, future_time, collection, value_type)
                 predictions[value_type] = prediction
                 # values = symbol_handle.get_all_items(value_type)
                 # end_time = max(values.keys())

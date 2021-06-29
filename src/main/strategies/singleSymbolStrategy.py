@@ -38,8 +38,7 @@ class SingleSymbolStrategy(Strategy):
         string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
         return string
 
-    def build_price_collection(self, cache_key_date: Optional[datetime] = None, start_time: Optional[datetime] = None,
-                               end_time: Optional[datetime] = None):
+    def build_price_collection(self, cache_key_date: Optional[datetime] = None):
         asset_type = self.collection.asset_type_overrides[self.symbol] if self.symbol in \
                                                                           self.collection.asset_type_overrides else None
         value_types = [ValueType.OPEN, ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
@@ -49,8 +48,8 @@ class SingleSymbolStrategy(Strategy):
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(adapter_class, value_type, asset_type, cache_key_date)
             adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, end_time))
+            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
             adapter.add_value_type(value_type)
 
     def get_adapter(self, adapter_class, value_type: ValueType, asset_type: AssetType,
@@ -78,8 +77,7 @@ class SingleSymbolStrategy(Strategy):
                                                                                             matching_adapters))
         return adapter
 
-    def build_macd_collection(self, slow, fast, signal, cache_key_date: Optional[datetime] = None,
-                              start_time: Optional[datetime] = None, end_time: Optional[datetime] = None):
+    def build_macd_collection(self, slow, fast, signal, cache_key_date: Optional[datetime] = None):
         asset_type = self.collection.asset_type_overrides[self.symbol] if self.symbol in \
                                                                           self.collection.asset_type_overrides else None
         value_types = [ValueType.MACD, ValueType.MACD_HIST, ValueType.MACD_SIGNAL]
@@ -89,16 +87,15 @@ class SingleSymbolStrategy(Strategy):
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(adapter_class, value_type, asset_type, cache_key_date)
             adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, end_time))
+            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
             adapter.arguments.append(Argument(ArgumentType.MACD_SLOW, slow))
             adapter.arguments.append(Argument(ArgumentType.MACD_FAST, fast))
             adapter.arguments.append(Argument(ArgumentType.MACD_SIGNAL, signal))
             adapter.add_value_type(value_type)
             # self.collection.adapters.append(adapter)
 
-    def build_rsi_collection(self, period, cache_key_date: Optional[datetime] = None,
-                             start_time: Optional[datetime] = None, end_time: Optional[datetime] = None):
+    def build_rsi_collection(self, period, cache_key_date: Optional[datetime] = None):
         asset_type = self.collection.asset_type_overrides[self.symbol] if self.symbol in \
                                                                           self.collection.asset_type_overrides else None
         value_types = [ValueType.RSI]
@@ -111,14 +108,13 @@ class SingleSymbolStrategy(Strategy):
             # if cache_key_date is not None:
             #     adapter.cache_key_date = cache_key_date
             adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, end_time))
+            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
             adapter.arguments.append(Argument(ArgumentType.RSI_PERIOD, period))
             adapter.add_value_type(value_type)
             # self.collection.adapters.append(adapter)
 
-    def build_book_collection(self, period, cache_key_date: Optional[datetime] = None,
-                              start_time: Optional[datetime] = None, end_time: Optional[datetime] = None):
+    def build_book_collection(self, period, cache_key_date: Optional[datetime] = None):
         asset_type = self.collection.asset_type_overrides[self.symbol] if self.symbol in \
                                                                           self.collection.asset_type_overrides else None
         value_types = [ValueType.BOOK]
@@ -130,8 +126,8 @@ class SingleSymbolStrategy(Strategy):
             if cache_key_date is not None:
                 adapter.cache_key_date = cache_key_date
             adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, end_time))
+            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
             adapter.arguments.append(Argument(ArgumentType.BOOK, period))
             adapter.add_value_type(value_type)
             # self.collection.adapters.append(adapter)

@@ -406,11 +406,11 @@ class IexCloud(Adapter):
             period = '10-K'
         else:
             raise RuntimeError('Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
-        start_time: datetime = self.get_argument_value(ArgumentType.START_TIME)
-        start_time = start_time if start_time is not None else datetime.now()
         end_time: datetime = self.get_argument_value(ArgumentType.END_TIME)
+        end_time = end_time if end_time is not None else datetime.now()
         default: timedelta = timedelta(weeks=52)
-        end_time = end_time if end_time is not None else start_time + default
+        start_time: datetime = self.get_argument_value(ArgumentType.START_TIME)
+        start_time = start_time if start_time is not None else end_time - default
         date_format = '%Y-%m-%d'
         query = {'token': self.api_key, 'from': start_time.strftime(date_format)}
         # query = {'token': self.api_key, 'from': start_time.strftime(date_format), 'to': end_time.strftime(date_format)}
@@ -579,7 +579,7 @@ class IexCloud(Adapter):
                         closest = reset_time
             if len(wait_list) >= 5:
                 sleep = closest - now
-                buffer = 10
+                buffer = 10 / 1000.0
                 sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
                 logging.info('-- Waiting for: {} = closest:{} - now:{}'.format(sleep_in_s, closest, now))
                 # logging.info('MAP: {}'.format(json.dumps(self.historicRequests, indent=2, default=str)))

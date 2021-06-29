@@ -31,7 +31,7 @@ class BuyUpSellDownTrailing(SingleSymbolStrategy):
         super().__init__("Buy up {} Sell down {} Trailing".format(buy_up, sell_down), symbol, portfolio)
         self.buy_up = buy_up
         self.sell_down = sell_down
-        self.build_price_collection(cache_key_date=None, start_time=portfolio.start_time, end_time=portfolio.end_time)
+        self.build_price_collection()
 
     def next_step(self, current_time: datetime,
                   order_filter: List[OrderSide] = (OrderSide.SELL, OrderSide.BUY)) -> None:
