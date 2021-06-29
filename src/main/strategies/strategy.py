@@ -18,12 +18,12 @@
 import inspect
 import logging
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional
 
 from main.adapters.adapter import Adapter
 from main.adapters.adapterCollection import AdapterCollection
 from main.adapters.orders.order import Order
-from main.common.profiler import Profiler
+from main.common.timeZones import TimeZones
 from main.portfolio.portfolio import Portfolio
 
 
@@ -52,6 +52,7 @@ class Strategy:
         return string
 
     def run(self):
+        self.collection.set_all_cache_key_dates(self.portfolio.end_time if self.portfolio.end_time is not None else datetime.now(TimeZones.get_tz()))
         self.collection.retrieve_all_data()
         self.portfolio.set_remaining_times(self.collection)
         logging.info("-- Starting strategy: {}".format(self))

@@ -24,6 +24,9 @@ class Runner:
         # self.adapter = adapter
         pass
 
+    def start(self) -> bool:
+        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+
     # @staticmethod
     # def calculate_start_and_end_times(strategies: list[Strategy]):
     #     start_time: Optional[datetime] = None

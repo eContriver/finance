@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+import inspect
 import logging
 import os
 from typing import List, Any
@@ -21,7 +21,10 @@ from typing import List, Any
 from main.common.fileSystem import FileSystem
 from main.executors.job import Job
 from main.executors.parallelExecutor import ParallelExecutor
-class TestLauncher:
+from main.runners.runner import Runner
+
+
+class TestRunner(Runner):
     instance = None
     only_test_specified: bool = False
     tests_to_run: List[Any] = []
@@ -33,6 +36,7 @@ class TestLauncher:
     test_runner = None
 
     def __init__(self):
+        super().__init__()
         raise RuntimeError('Use instance() instead')
 
     @classmethod
@@ -52,9 +56,10 @@ class TestLauncher:
     def add_test(self, function):
         self.tests_to_run.append(function)
 
-    def run(self) -> bool:
+    def start(self) -> bool:
         only_test_count = len(self.run_only_tests)
-        assert only_test_count <= 1, "Run only tests only accepts 1 or no tests, but found: {}".format(self.run_only_tests)
+        assert only_test_count <= 1, "Run only tests only accepts 1 or no tests, but found: {}".format(
+            self.run_only_tests)
         test_jobs = self.run_only_tests[0] if only_test_count == 1 else self.tests_to_run
         for run_test in test_jobs:
             self.test_runner.add_job(Job(run_test, ()))
@@ -63,14 +68,14 @@ class TestLauncher:
 
 
 def only_test(function):
-    TestLauncher.get_instance().add_test_override(function)
+    TestRunner.get_instance().add_test_override(function)
     return function
 
 
 def is_test(_func=None, *, should_run: bool = True):
     def decorator_is_test(function):
         if should_run:
-            TestLauncher.get_instance().add_test(function)
+            TestRunner.get_instance().add_test(function)
         return function
 
     if _func is None:
@@ -108,7 +113,6 @@ class TestExecutor(ParallelExecutor):
         else:
             logging.error('Tests - {}/{} FAILED'.format(failed_count, total))
         return success
-
 
 ## The following are tests which can be used to test the ParallelTestRunner
 

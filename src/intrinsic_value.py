@@ -23,12 +23,12 @@ from main.runners.intrinsicValueRunner import IntrinsicValueRunner
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--debug", help="Print debug messages to console", action="store_true")
-    parser.add_argument("--profile", help="Profile the run", action="store_true")
+    Launcher.add_default_arguments(parser)
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    launcher = Launcher(IntrinsicValueRunner)
+    runner = IntrinsicValueRunner()
+    launcher = Launcher(runner)
     exit(0 if launcher.run(args) else 1)

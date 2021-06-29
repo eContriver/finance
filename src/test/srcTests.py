@@ -16,15 +16,16 @@
 
 from datetime import datetime
 
-from main.common.launchers import get_current_copyright_year
+from main.common.launchers import Launcher
 from test.testExecutor import is_test
+
 
 
 @is_test
 # @only_test
 def check_copyright_year():
     now = datetime.now()
-    copyright_year = get_current_copyright_year()
+    copyright_year = Launcher.get_current_copyright_year()
     assert now.year == copyright_year, f"Current year is '{now.year}' and copyright year is '{copyright_year}'. When " \
                                        f"tests run, it is assumed that code will be changing and as such copyright " \
                                        f"notices should also be updated, but they currently are out-of-date."

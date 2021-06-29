@@ -17,6 +17,7 @@
 import logging
 import os
 import sys
+from argparse import ArgumentParser
 from datetime import datetime
 
 from main.common.fileSystem import FileSystem
@@ -35,8 +36,7 @@ class Launcher:
         Launcher.check_environment()
         success = True
         run_start = datetime.now()
-        runner = self.runner()
-        success = success and runner.start()
+        success = success and self.runner.start()
         run_end = datetime.now()
         logging.info(">> Running took: {}s".format(run_end - run_start))
         if Profiler.instance is not None:  # if get_instance hasn't been called yet, then don't do the reporting
@@ -44,11 +44,16 @@ class Launcher:
         return success
 
     @staticmethod
+    def add_default_arguments(parser: ArgumentParser) -> None:
+        parser.add_argument("--debug", help="Print debug messages to console", action="store_true")
+        parser.add_argument("--profile", help="Profile the run", action="store_true")
+
+    @staticmethod
     def configure_logging(console_debug: bool):
         logging.getLogger().setLevel(logging.DEBUG)
         out_handler = logging.StreamHandler(sys.stdout)
         out_handler.setLevel(logging.DEBUG if console_debug else logging.INFO)
-        out_handler.setFormatter(logging.Formatter("%(levelname)-5s: %(message)s"))
+        out_handler.setFormatter(logging.Formatter("%(message)s"))
         logging.getLogger().addHandler(out_handler)
         script_dir = os.path.dirname(os.path.realpath(__file__))
         cache_dir = FileSystem.get_and_clean_cache_dir(os.path.join(script_dir, '..', '.cache', 'runs'))
@@ -70,6 +75,10 @@ class Launcher:
 
     @staticmethod
     def get_current_copyright_year():
+        """
+        The year is not calculated as the copyright should only state the dates for which it was released.
+        :return: The current year
+        """
         return 2021
 
     @staticmethod
