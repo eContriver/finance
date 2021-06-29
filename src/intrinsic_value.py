@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 #  Copyright 2021 eContriver LLC
 #  This file is part of Finance from eContriver.
 #
@@ -14,18 +16,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from main.common.launchers import Launcher
+from main.runners.intrinsicValueRunner import IntrinsicValueRunner
 
-from main.common.logger import get_current_copyright_year
-from test.testExecutor import is_test
-
-
-@is_test
-# @only_test
-def check_copyright_year():
-    now = datetime.now()
-    copyright_year = get_current_copyright_year()
-    assert now.year == copyright_year, f"Current year is '{now.year}' and copyright year is '{copyright_year}'. When " \
-                                       f"tests run, it is assumed that code will be changing and as such copyright " \
-                                       f"notices should also be updated, but they currently are out-of-date."
-    return True
+if __name__ == "__main__":
+    launcher = Launcher(IntrinsicValueRunner)
+    exit(0 if launcher.run() else 1)

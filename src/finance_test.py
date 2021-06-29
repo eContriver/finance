@@ -20,8 +20,7 @@ import logging
 import os
 from datetime import datetime
 
-from main.common.launchers import check_environment
-from main.common.logger import configure_logging, print_copyright_notice
+from main.common.launchers import check_environment, configure_logging, print_copyright_notice
 from main.common.profiler import Profiler
 from test.testExecutor import TestLauncher
 

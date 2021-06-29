@@ -5,13 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/test/adapter_tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/gui_tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/portfolio_tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/src_tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/strategy_tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/intrinsic_value.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/add_adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/finance.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/finance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/finance_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/finance_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/launchers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/launchers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/logger.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/adapter_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/adapterTests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/add_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/addAdapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/gui_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/guiTests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/portfolio_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/portfolioTests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/src_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/srcTests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/strategy_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/strategyTests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,7 +71,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/test/adapter_tests.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/common/launchers.py" />
     <property name="settings.editor.selected.configurable" value="copyright.profiles" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -96,7 +101,7 @@
       <recent name="$PROJECT_DIR$/analysis/TSLA" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.finance_test">
+  <component name="RunManager" selected="Python.finance">
     <configuration name="finance" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -266,7 +271,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/finance_test.py</url>
-          <line>32</line>
+          <line>31</line>
           <option name="timeStamp" value="124" />
         </line-breakpoint>
       </breakpoints>
