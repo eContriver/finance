@@ -38,6 +38,10 @@ from main.adapters.valueType import ValueType
 from main.common.fileSystem import FileSystem
 
 
+class MissingCacheKeyException(RuntimeError):
+    pass
+
+
 class DuplicateRawIndexesException(RuntimeError):
     pass
 
@@ -179,7 +183,7 @@ class Adapter:
     converters: List[Converter]
     value_types: List[ValueType]
     query_args: Dict[str, str]  # for things like macd_fast, macd_slow, macd_signal, etc.
-    cache_dir: Optional[str]
+    cache_root_dir: Optional[str]
 
     def add_extra_data(self, value_type, visualizer):
         pass
@@ -202,7 +206,10 @@ class Adapter:
         self.value_types = []
         self.query_args = {}
 
-        self.cache_dir = None
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache', self.__class__.__name__)
+        self.cache_root_dir = os.path.realpath(cache_dir)
+        # self.cache_root_dir = None
 
     def add_value_type(self, value_type: ValueType):
         if value_type not in self.value_types:
@@ -212,7 +219,17 @@ class Adapter:
         for value_type in self.value_types:
             self.add_column(value_type)
 
+    def get_default_cache_key_date(self) -> datetime:
+        return datetime(year=2021, month=6, day=29)
+        # return datetime.now()
+
     def add_column(self, value_type: ValueType) -> None:
+        if self.cache_key_date is None:
+            self.cache_key_date = self.get_default_cache_key_date()
+            # raise MissingCacheKeyException("The cache key should be set on each Adapter or on the Collection so that "
+            #                                "the default makes since for the adapter type, but should also allow the "
+            #                                "user to pin a cache key date so that they can work without downloading "
+            #                                "more data if they are working on a large dataset.")
         self.calculate_asset_type()  # we chose to delay the asset calculation, until we are already talking to the
         # server, can this just be set on the adapter, directly?
         converter = self.get_converter(value_type)
@@ -250,8 +267,8 @@ class Adapter:
 
     def get_api_response(self, api, args, cache: bool = True, data_type: DataType = DataType.JSON):
         data_id = self.get_key_for_api_request(api, args)
-        timestamp = not cache
-        data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, timestamp, data_type)
+        add_timestamp = not cache
+        data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
         acquired_lock = False
         try:
             acquired_lock = self.lock(data_file, lock_dir)
@@ -279,8 +296,8 @@ class Adapter:
 
     def get_url_response(self, url, query, cache: bool = True, data_type: DataType = DataType.JSON, delay: bool = True):
         data_id = self.get_key_for_url_request(query, url)
-        timestamp_it = not cache
-        data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, timestamp_it, data_type)
+        add_timestamp = not cache
+        data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
         acquired_lock = False
         try:
             acquired_lock = self.lock(data_file, lock_dir)
@@ -372,11 +389,10 @@ class Adapter:
             fd.write(response.text)
 
     def get_lock_dir_and_data_file(self, data_id, timestamp: bool, data_type: DataType):
-        self.cache_dir = os.path.realpath(self.cache_dir)
+        self.cache_root_dir = os.path.realpath(self.cache_root_dir)
         self.clean_cache_dirs()
-        date_dir = os.path.join(self.cache_dir, self.cache_key_date.strftime('%Y%m%d'))
         # only letting one query run at a time makes the file timestamps work, and doesn't hammer the servers
-        lock_dir = os.path.join(date_dir, '.lock.single_query')
+        lock_dir = self.get_single_query_lock_dir()
         # can be used to lock per request, but then race conditions exist with file timestamps
         #       see AlphaVantageAdapter.delay_requests
         # lock_dir = os.path.join(date_dir, '.lock_{}'.format(id))
@@ -390,14 +406,23 @@ class Adapter:
             ext = 'csv'
         else:
             raise RuntimeError("Unknown data type: {}".format(data_type))
-        data_file = os.path.join(date_dir, 'data.{}.{}'.format(file_id, ext))
+        cache_dir = self.get_cache_dir()
+        data_file = os.path.join(cache_dir, 'data.{}.{}'.format(file_id, ext))
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
         return data_file, lock_dir
 
+    def get_single_query_lock_dir(self):
+        return os.path.join(self.cache_root_dir, '.lock.single_query')
+
+    def get_cache_dir(self):
+        return os.path.join(self.cache_root_dir, self.cache_key_date.strftime('%Y%m%d'))
+
     def clean_cache_dirs(self, keep: int = 3):
-        if not os.path.exists(self.cache_dir):
+        if not os.path.exists(self.cache_root_dir):
             return
-        for filename in sorted(os.listdir(self.cache_dir))[:-keep]:
-            path = os.path.join(self.cache_dir, filename)
+        for filename in sorted(os.listdir(self.cache_root_dir))[:-keep]:
+            path = os.path.join(self.cache_root_dir, filename)
             shutil.rmtree(path, ignore_errors=True)
 
     @staticmethod

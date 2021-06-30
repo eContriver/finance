@@ -44,7 +44,7 @@ class TestRunner(Runner):
         if cls.instance is None:
             cls.instance = cls.__new__(cls)
             script_dir = os.path.dirname(os.path.realpath(__file__))
-            test_date_dir = FileSystem.get_and_clean_cache_dir(os.path.join(script_dir, '..', '..', '.cache', 'tests'))
+            test_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('tests'))
             cls.instance.test_runner = TestExecutor(test_date_dir)
             # self.runTests = []
             # self.runOnlyTests = []
@@ -60,7 +60,7 @@ class TestRunner(Runner):
         only_test_count = len(self.run_only_tests)
         assert only_test_count <= 1, "Run only tests only accepts 1 or no tests, but found: {}".format(
             self.run_only_tests)
-        test_jobs = self.run_only_tests[0] if only_test_count == 1 else self.tests_to_run
+        test_jobs = self.run_only_tests if only_test_count == 1 else self.tests_to_run
         for run_test in test_jobs:
             self.test_runner.add_job(Job(run_test, ()))
         success = self.test_runner.start()

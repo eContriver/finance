@@ -56,7 +56,7 @@ class Launcher:
         out_handler.setFormatter(logging.Formatter("%(message)s"))
         logging.getLogger().addHandler(out_handler)
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        cache_dir = FileSystem.get_and_clean_cache_dir(os.path.join(script_dir, '..', '.cache', 'runs'))
+        cache_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('runs'))
         run_log = os.path.join(cache_dir, 'run.log')
         file_handler = logging.FileHandler(run_log)
         file_handler.setLevel(logging.DEBUG)

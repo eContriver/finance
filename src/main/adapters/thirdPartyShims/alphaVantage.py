@@ -40,9 +40,9 @@ class AlphaVantage(Adapter):
         api_key = environ.get('ALPHA_VANTAGE_API_KEY')
         super().__init__(symbol, asset_type)
         self.api_key = api_key
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', AlphaVantage.name)
-        self.cache_dir = os.path.realpath(cache_dir)
+        # script_dir = os.path.dirname(os.path.realpath(__file__))
+        # cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', AlphaVantage.name)
+        # self.cache_root_dir = os.path.realpath(cache_dir)
         self.converters: List[Converter] = [
             # we allow for multiple strings to be converted into the value type, first match is used
             Converter(ValueType.OPEN, self.get_prices_response, ['1. open', '1a. open (USD)'], adjust_values=True),
@@ -123,6 +123,11 @@ class AlphaVantage(Adapter):
         query["symbol"] = self.symbol
         # data_date_format = '%Y-%m-%d'
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        # For now we use full for everything, but we could use...
+        # start_time: datetime = self.get_argument_value(ArgumentType.START_TIME)
+        # end_time: datetime = self.get_argument_value(ArgumentType.END_TIME)
+        # record_count = (end_time - start_time) / interval.timedelta
+        # output_size = "compact" if record_count < 100 else "full"
         if interval == TimeInterval.HOUR:
             query["function"] = "TIME_SERIES_INTRADAY"
             query["interval"] = TimeInterval.HOUR.value
@@ -450,7 +455,7 @@ class AlphaVantage(Adapter):
 
     def get_create_times(self):
         cache_requests = {}
-        date_dir = os.path.join(self.cache_dir, self.cache_key_date.strftime('%Y%m%d'))
+        date_dir = os.path.join(self.cache_root_dir, self.cache_key_date.strftime('%Y%m%d'))
         for filename in os.listdir(date_dir):
             file_path = os.path.join(date_dir, filename)
             if filename.startswith(".lock"):

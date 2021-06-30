@@ -16,7 +16,7 @@
 
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Optional
 
 from main.adapters.adapter import TimeInterval, AssetType, Adapter
@@ -138,9 +138,13 @@ class AlertRunner(Runner):
             asset_type: Optional[AssetType] = None  # means to auto select based off symbol
             adapter: Adapter = data_adapter_class(symbol, asset_type)
             adapter.base_symbol = 'USD'
+            end_time = datetime.now()
+            adapter.add_argument(Argument(ArgumentType.START_TIME, end_time - timedelta(days=1)))
+            adapter.add_argument(Argument(ArgumentType.END_TIME, end_time))
             adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.DAY))
             adapter.value_types = [ValueType.CLOSE]
             collection.add(adapter)
+        collection.set_all_cache_key_dates(datetime.now())
         collection.retrieve_all_data()
         # collection.retrieve_data_parallel() # return values are not being passed
 

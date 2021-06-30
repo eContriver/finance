@@ -16,17 +16,12 @@
 
 import logging
 from datetime import datetime
-from typing import Optional, List, Dict, Any, Set
+from typing import Optional, List, Dict, Set
 
 import pandas
 
 from main.adapters.adapter import Adapter, AssetType
 from main.adapters.valueType import ValueType
-
-# adapter data model
-# ValueType: Adapter .data is DataFrame
-#            [index: datetime = rows, columns are ValueType, cells are values]
-from main.common.profiler import Profiler
 
 
 class AdapterCollection:

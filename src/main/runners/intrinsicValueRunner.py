@@ -82,11 +82,11 @@ class IntrinsicValueRunner(Runner):
             # 'MO'    # Max: -3.4515%  Average: -27.2888%  Median: -6.3298%  Min: 0.0% on 2025-12-23
             # MO IEX doesn't have the latest report from 12/2020, so our report started at 12/2019
             # 'CVS'   # Max: 34.6431%  Average: 1.0215%  Median: 20.6921%  Min: 0.0% on 2030-12-19
-            'TCOM'
-            # 'QRVO'
-            # 'FB'
-            # 'GME'
-            # 'MSGN'
+            # 'TCOM'  # Max: 47.9983%  Average: 8.9896%  Median: 13.8364%  Min: 0.0% on 2025-12-25
+            # 'QRVO'  # Max: 3.0271%  Average: -1.5251%  Median: -2.3506%  Min: -4.2462% on 2026-03-25
+            # 'FB'    # Max: 31.6749%  Average: 29.1194%  Median: 31.1944%  Min: 21.3657% on 2025-12-25
+            # 'GME'    # Max: nan%  Average: nan%  Median: nan%  Min: -54.622% on 2025-11-24
+            'MSGN'
             # 'DISCA'
             # 'WDC'
             # 'QREA'
@@ -470,9 +470,7 @@ class IntrinsicValueRunner(Runner):
         return predictions[0]
 
     def plot_collections(self, collections, interval):
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        visual_date_dir = FileSystem.get_and_clean_cache_dir(
-            os.path.join(script_dir, '..', '..', '..', '.cache', 'visuals'))
+        visual_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('visuals'))
         # executor = SequentialExecutor(visual_date_dir)
         executor = ParallelExecutor(visual_date_dir)
         for name, collection in collections.items():

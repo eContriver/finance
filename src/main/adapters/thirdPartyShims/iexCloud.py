@@ -41,9 +41,9 @@ class IexCloud(Adapter):
                 "your account from the alphavantage.co site.")
         self.api_key = environ.get('IEX_CLOUD_API_KEY')
         super().__init__(symbol)
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', IexCloud.name)
-        self.cache_dir = os.path.realpath(cache_dir)
+        # script_dir = os.path.dirname(os.path.realpath(__file__))
+        # cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', IexCloud.name)
+        # self.cache_dir = os.path.realpath(cache_dir)
         self.converters: List[Converter] = [
             # we allow for multiple strings to be converted into the value type, first match is used
             Converter(ValueType.OPEN, self.get_prices_response, ['open'], adjust_values=True),

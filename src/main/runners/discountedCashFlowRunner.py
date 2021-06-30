@@ -163,7 +163,7 @@ class FundamentalRunner(Runner):
         # adapter_class = AlphaVantage
         adapter = adapter_class(symbol, asset_type=None)
         adapter.base_symbol = 'USD'
-        end_date = datetime(year=2021, month=6, day=3)
+        end_date = datetime.now()
         adapter.add_argument(Argument(ArgumentType.START_TIME, end_date - 10 * TimeInterval.YEAR.timedelta))
         adapter.add_argument(Argument(ArgumentType.END_TIME, end_date))
         adapter.cache_key_date = end_date
@@ -465,9 +465,7 @@ class FundamentalRunner(Runner):
         return predictions[0]
 
     def plot_collections(self, collections, interval):
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        visual_date_dir = FileSystem.get_and_clean_cache_dir(
-            os.path.join(script_dir, '..', '..', '..', '.cache', 'visuals'))
+        visual_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('visuals'))
         # executor = SequentialExecutor(visual_date_dir)
         executor = ParallelExecutor(visual_date_dir)
         for name, collection in collections.items():

@@ -5,17 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/alert.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/matrix.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/symbol.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/ml_predictor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/ml_trainer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/multi_symbol.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/order.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/finance_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/finance_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/intrinsic_value.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/intrinsic_value.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/finance_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/adapterCollection.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapterCollection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/fileSystem.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/fileSystem.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/common/launchers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/launchers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/strategy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/guiTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/guiTests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/srcTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/srcTests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/profiler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/profiler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/alertRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/alertRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/discountedCashFlowRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/discountedCashFlowRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/adapterTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/adapterTests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/portfolioTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/portfolioTests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/testExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/testExecutor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -101,7 +111,7 @@
       <recent name="$PROJECT_DIR$/analysis/TSLA" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.matrix">
+  <component name="RunManager" selected="Python.intrinsic_value">
     <configuration name="alert" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -123,49 +133,10 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="finance" type="PythonConfigurationType" factoryName="Python">
-      <module name="app" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="/usr/local/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/finance.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="finance_test" type="PythonConfigurationType" factoryName="Python">
-      <module name="app" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="/usr/local/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/finance_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="intrinsic_value" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -201,6 +172,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="ml_trainer" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="app" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/ml_trainer.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="symbol" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -219,20 +211,42 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python">
+      <module name="app" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/usr/local/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Python.finance" />
-      <item itemvalue="Python.finance_test" />
+      <item itemvalue="Python.test" />
       <item itemvalue="Python.intrinsic_value" />
       <item itemvalue="Python.symbol" />
       <item itemvalue="Python.matrix" />
       <item itemvalue="Python.alert" />
+      <item itemvalue="Python.ml_trainer" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.alert" />
-        <item itemvalue="Python.matrix" />
         <item itemvalue="Python.intrinsic_value" />
         <item itemvalue="Python.symbol" />
+        <item itemvalue="Python.alert" />
+        <item itemvalue="Python.ml_trainer" />
+        <item itemvalue="Python.matrix" />
       </list>
     </recent_temporary>
   </component>
@@ -289,12 +303,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py</url>
-          <line>381</line>
+          <line>386</line>
           <option name="timeStamp" value="121" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py</url>
-          <line>289</line>
+          <line>294</line>
           <option name="timeStamp" value="122" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -304,8 +318,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/symbolRunner.py</url>
-          <line>199</line>
+          <line>198</line>
           <option name="timeStamp" value="125" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/test/adapterTests.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="126" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

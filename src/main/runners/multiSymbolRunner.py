@@ -72,8 +72,7 @@ class MultiSymbolRunner(Runner):
         }
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        strategy_date_dir = FileSystem.get_and_clean_cache_dir(
-            os.path.join(script_dir, '..', '..', '..', '.cache', 'strategies'))
+        strategy_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('strategies'))
 
         # Can always run direct if things get messy...
         # MultiRelativeSmaSwapUp(symbols, copy.deepcopy(template), period=20, delta=1.05, look_back=10).run()
@@ -130,8 +129,7 @@ class MultiSymbolRunner(Runner):
         draw = True
         # draw = False
         if draw:
-            visual_date_dir = FileSystem.get_and_clean_cache_dir(
-                os.path.join(script_dir, '..', '..', '..', '.cache', 'visuals'))
+            visual_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('visuals'))
             # visual_runner = SequentialExecutor(visual_date_dir)
             visual_runner = ParallelExecutor(visual_date_dir)
             for strategy in strategy_runner.processed_strategies[key]:

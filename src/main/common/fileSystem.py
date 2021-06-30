@@ -24,6 +24,12 @@ from typing import Optional
 class FileSystem:
 
     @staticmethod
+    def get_cache_dir(name):
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache', name)
+        return cache_dir
+
+    @staticmethod
     def get_and_clean_cache_dir(root_dir, date_format: Optional[str] = "%Y%m%d_%H%M%S"):
         FileSystem.clean_cache_dirs(root_dir)
         cache_dir = root_dir if date_format is None else os.path.join(root_dir, datetime.now().strftime(date_format))

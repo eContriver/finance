@@ -21,7 +21,7 @@ import pandas
 from main.adapters.adapter import Adapter, AssetType
 from main.adapters.adapterCollection import AdapterCollection
 from main.adapters.valueType import ValueType
-from test.testExecutor import is_test
+from test.testExecutor import is_test, only_test
 from test.testUtils import setup_collection
 
 

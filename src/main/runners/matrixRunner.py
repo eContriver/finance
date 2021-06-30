@@ -145,8 +145,7 @@ class MatrixRunner(Runner):
         ]
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        strategy_date_dir = FileSystem.get_and_clean_cache_dir(
-            os.path.join(script_dir, '..', '..', '..', '.cache', 'strategies'))
+        strategy_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('strategies'))
 
         # strategy_runner = SequentialStrategyExecutor(strategy_date_dir)
         strategy_runner = ParallelStrategyExecutor(strategy_date_dir)
@@ -169,8 +168,7 @@ class MatrixRunner(Runner):
         # draw = True
         draw = False
         if draw:
-            visual_date_dir = FileSystem.get_and_clean_cache_dir(
-                os.path.join(script_dir, '..', '..', '..', '.cache', 'visuals'))
+            visual_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('visuals'))
             visual_runner = ParallelExecutor(visual_date_dir)
             for symbol in self.symbols:
                 for strategy in strategy_runner.processed_strategies[symbol]:
@@ -245,8 +243,8 @@ class MatrixRunner(Runner):
 
         buy_ups = [
             # 1.025, 1.05, 1.1, 1.2, 1.3, 1.4, 1.5, 1.3, 1.4,
-            # 1.5,
-            1.6,
+            1.5,
+            # 1.6,
             # 1.7,
         ]
         sell_downs = [
