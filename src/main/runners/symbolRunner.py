@@ -41,6 +41,10 @@ from main.strategies.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
 
+class StrategyResultsAreEmptyException(RuntimeError):
+    pass
+
+
 class SymbolRunner(Runner):
     def __init__(self):
         super().__init__()
@@ -69,11 +73,11 @@ class SymbolRunner(Runner):
                                         start_time, end_time)
         # template.interval = TimeInterval.DAY
         template.interval = TimeInterval.WEEK
-        # template.add_data_adapter_class(IexCloud)
-        # template.add_data_adapter_class(CoinbaseProAdapter)
-        # template.add_data_adapter_class(Quandl)
-        # template.add_data_adapter_class(FinancialModelingPrep)
-        template.add_adapter_class(AlphaVantage)
+        template.add_adapter_class(IexCloud)
+        # template.add_adapter_class(CoinbaseProAdapter)
+        # template.add_adapter_class(Quandl)
+        # template.add_adapter_class(FinancialModelingPrep)
+        # template.add_adapter_class(AlphaVantage)
         template.asset_type_overrides = {
             'ETH': AssetType.DIGITAL_CURRENCY,
             'LTC': AssetType.DIGITAL_CURRENCY
@@ -187,8 +191,8 @@ class SymbolRunner(Runner):
         #     strategy.run()
         # report_on = strategies
 
-        # strategy_runner = SequentialStrategyExecutor(strategy_date_dir)
-        strategy_runner = ParallelStrategyExecutor(strategy_date_dir)
+        strategy_runner = SequentialStrategyExecutor(strategy_date_dir)
+        # strategy_runner = ParallelStrategyExecutor(strategy_date_dir)
         for strategy in strategies:
             # whitelist = [MacdCrossing]
             whitelist = []
@@ -197,6 +201,8 @@ class SymbolRunner(Runner):
             key = str(strategy).replace(' ', '_')
             strategy_runner.add_strategy(strategy.run, (), symbol, key)
         success = strategy_runner.start()
+        if symbol not in strategy_runner.processed_strategies:
+            raise
         report_on = strategy_runner.processed_strategies[symbol]
 
         title = 'Symbol Runner - Strategy Comparison {}'.format(

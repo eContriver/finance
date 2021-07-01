@@ -52,7 +52,9 @@ class IntrinsicValueRunner(Runner):
         success = True
 
         symbols = [
-            # 'NVDA'  # Max: 29.233%  Average: 22.1999%  Median: 22.7916%  Min: 11.9359% on 2031-01-19
+            # 'NVDA'
+            # IEX (10y): Max: 29.233%  Average: 22.1999%  Median: 22.7916%  Min: 11.9359% on 2031-01-19
+            # AV  (5y) : Max: 41.3804%  Average: 34.8243%  Median: 35.6256%  Min: 20.9493% on 2026-01-25
             # 'XLNX'  # Max: 37.3804%  Average: 24.7713%  Median: 20.6971%  Min: 17.2527% on 2031-03-22
             # 'TTCF'
             # TTCF does not return any cash flow data using IEX, and it fails
@@ -86,7 +88,7 @@ class IntrinsicValueRunner(Runner):
             # 'QRVO'  # Max: 3.0271%  Average: -1.5251%  Median: -2.3506%  Min: -4.2462% on 2026-03-25
             # 'FB'    # Max: 31.6749%  Average: 29.1194%  Median: 31.1944%  Min: 21.3657% on 2025-12-25
             # 'GME'    # Max: nan%  Average: nan%  Median: nan%  Min: -54.622% on 2025-11-24
-            'MSGN'
+            # 'MSGN'
             # 'DISCA'
             # 'WDC'
             # 'QREA'
@@ -107,6 +109,7 @@ class IntrinsicValueRunner(Runner):
             # 'DNOW' # losing money and not progresing
             # 'LUMN'  # negative net income which just turned around
             # 'UBA'  # not great but price just dropped 2007-12-31  1.444139e+11       7.287707e+10         473332656.0     473332656.0              7.153683e+10         0.19 -1430703200.0             0.0  14.464989  13.967226  14.0842   73.511714   76.131519
+            'AMD'
         ]
 
         # Multiple collections == Multiple plots : Each collection is in it's own dict entry under the query type
@@ -161,8 +164,8 @@ class IntrinsicValueRunner(Runner):
 
     def new_adapter(self, symbol):
         # adapter_class = Sec
-        # adapter_class = IexCloud
-        adapter_class = AlphaVantage
+        adapter_class = IexCloud
+        # adapter_class = AlphaVantage
         adapter = adapter_class(symbol, asset_type=None)
         adapter.base_symbol = 'USD'
         end_date = datetime.now()

@@ -220,12 +220,12 @@ class Adapter:
             self.add_column(value_type)
 
     def get_default_cache_key_date(self) -> datetime:
-        return datetime(year=2021, month=6, day=29)
-        # return datetime.now()
+        return datetime.now()
 
     def add_column(self, value_type: ValueType) -> None:
         if self.cache_key_date is None:
             self.cache_key_date = self.get_default_cache_key_date()
+        self.cache_key_date = datetime(year=2021, month=6, day=29)
             # raise MissingCacheKeyException("The cache key should be set on each Adapter or on the Collection so that "
             #                                "the default makes since for the adapter type, but should also allow the "
             #                                "user to pin a cache key date so that they can work without downloading "

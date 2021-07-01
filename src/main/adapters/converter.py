@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any, List
+from typing import Any, List, Union
 
 from main.adapters.valueType import ValueType
 
@@ -25,7 +25,7 @@ class Converter:
     response_keys: List[str]
     adjust_values: bool
 
-    def __init__(self, value_type: ValueType, get_response_callback: Any, response_keys: List[str],
+    def __init__(self, value_type: ValueType, get_response_callback: Any, response_keys: List[Union[str, int]],
                  adjust_values: bool = False):
         self.value_type = value_type
         self.get_response_callback = get_response_callback

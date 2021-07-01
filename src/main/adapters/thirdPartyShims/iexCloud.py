@@ -19,6 +19,7 @@ import logging
 import os.path
 import time
 from datetime import datetime, timedelta
+from enum import Enum
 from os import environ
 from typing import Optional, List, Dict
 
@@ -28,6 +29,13 @@ from main.adapters.adapter import TimeInterval, AssetType, Adapter
 from main.adapters.valueType import ValueType
 from main.adapters.converter import Converter
 from main.adapters.argument import ArgumentType
+
+
+class OrderedOutput(Enum):
+    RSI = 0
+    MACD = 0
+    MACD_SIGNAL = 1
+    MACD_HIST = 2
 
 
 class IexCloud(Adapter):
@@ -43,7 +51,7 @@ class IexCloud(Adapter):
         super().__init__(symbol)
         # script_dir = os.path.dirname(os.path.realpath(__file__))
         # cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', IexCloud.name)
-        # self.cache_dir = os.path.realpath(cache_dir)
+        # self.cache_root_dir = os.path.realpath(cache_dir)
         self.converters: List[Converter] = [
             # we allow for multiple strings to be converted into the value type, first match is used
             Converter(ValueType.OPEN, self.get_prices_response, ['open'], adjust_values=True),
@@ -51,10 +59,10 @@ class IexCloud(Adapter):
             Converter(ValueType.LOW, self.get_prices_response, ['low'], adjust_values=True),
             Converter(ValueType.CLOSE, self.get_prices_response, ['close'], adjust_values=True),
             Converter(ValueType.VOLUME, self.get_prices_response, ['volume']),
-            Converter(ValueType.RSI, self.get_rsi_response, ['RSI']),
-            Converter(ValueType.MACD, self.get_macd_response, ['MACD']),
-            Converter(ValueType.MACD_HIST, self.get_macd_response, ['MACD_Hist']),
-            Converter(ValueType.MACD_SIGNAL, self.get_macd_response, ['MACD_Signal']),
+            Converter(ValueType.RSI, self.get_rsi_response, [OrderedOutput.RSI.value]),
+            Converter(ValueType.MACD, self.get_macd_response, [OrderedOutput.MACD.value]),
+            Converter(ValueType.MACD_HIST, self.get_macd_response, [OrderedOutput.MACD_HIST.value]),
+            Converter(ValueType.MACD_SIGNAL, self.get_macd_response, [OrderedOutput.MACD_SIGNAL.value]),
             # SMA = auto()
             # BOOK = auto()
             Converter(ValueType.REPORTED_EPS, self.get_reported_financials_response,
@@ -210,21 +218,39 @@ class IexCloud(Adapter):
         return data
 
     def get_macd_response(self):
-        indicator_key = self.get_indicator_key()  # e.g. BTCUSD
+        series_range = self.get_span_as_str()
+        slow: float = self.get_argument_value(ArgumentType.MACD_SLOW)
+        fast: float = self.get_argument_value(ArgumentType.MACD_FAST)
+        signal: float = self.get_argument_value(ArgumentType.MACD_SIGNAL)
         query = {
             "token": self.api_key,
-            "function": "MACD",
-            "symbol": indicator_key,
-            "interval": self.macd_interval.value,
-            "slowperiod": int(self.macd_slow_period),
-            "fastperiod": int(self.macd_fast_period),
-            "signalperiod": int(self.macd_signal_period),
-            "series_type": self.macd_series_type.value,
+            "range": series_range,
+            "fast": int(fast),
+            "slow": int(slow),
+            "signal": int(signal),
         }
-        raw_response, data_file = self.get_url_response(self.url, query)
-        self.validate_json_response(data_file, raw_response)
-        data = self.translate(raw_response, 'Technical Analysis: MACD')
-        return data
+        raw_response, data_file = self.get_url_response('{}/stock/{}/indicator/{}'.format(
+            self.url,
+            self.symbol,
+            'macd',
+        ),
+            query)
+        self.translate_map(raw_response, [ValueType.MACD, ValueType.MACD_HIST, ValueType.MACD_SIGNAL])
+        # indicator_key = self.get_indicator_key()  # e.g. BTCUSD
+        # query = {
+        #     "token": self.api_key,
+        #     "function": "MACD",
+        #     "symbol": indicator_key,
+        #     "interval": self.macd_interval.value,
+        #     "slowperiod": int(self.macd_slow_period),
+        #     "fastperiod": int(self.macd_fast_period),
+        #     "signalperiod": int(self.macd_signal_period),
+        #     "series_type": self.macd_series_type.value,
+        # }
+        # raw_response, data_file = self.get_url_response(self.url, query)
+        # self.validate_json_response(data_file, raw_response)
+        # data = self.translate(raw_response, 'Technical Analysis: MACD')
+        # return data
 
     def get_sma_response(self):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
@@ -243,20 +269,61 @@ class IexCloud(Adapter):
         return data
 
     def get_rsi_response(self):
-        indicator_key = self.get_indicator_key()  # e.g. BTCUSD
+        series_range = self.get_span_as_str()
+        period: float = self.get_argument_value(ArgumentType.RSI_PERIOD)
         query = {
             "token": self.api_key,
-            "function": "RSI",
-            "symbol": indicator_key,
-            "interval": self.rsi_interval.value,
-            "time_period": int(self.rsi_period),
-            "series_type": self.rsi_series_type.value,
+            "range": series_range,
+            "period": period,
         }
-        raw_response, data_file = self.get_url_response(self.url, query)
-        self.validate_json_response(data_file, raw_response)
-        key = 'Technical Analysis: RSI'
-        data = self.translate(raw_response, key)
-        return data
+        raw_response, data_file = self.get_url_response('{}/stock/{}/indicator/{}'.format(
+            self.url,
+            self.symbol,
+            'rsi',
+        ),
+            query)
+        self.translate_map(raw_response, [ValueType.RSI])
+        # indicator_key = self.get_indicator_key()  # e.g. BTCUSD
+        # query = {
+        #     "token": self.api_key,
+        #     "function": "RSI",
+        #     "symbol": indicator_key,
+        #     "interval": self.rsi_interval.value,
+        #     "time_period": int(self.rsi_period),
+        #     "series_type": self.rsi_series_type.value,
+        # }
+        # raw_response, data_file = self.get_url_response(self.url, query)
+        # self.validate_json_response(data_file, raw_response)
+        # key = 'Technical Analysis: RSI'
+        # data = self.translate(raw_response, key)
+        # return data
+
+    def translate_map(self, response_data, value_types=[], data_date_format='%Y-%m-%d'):
+        indicator_keys = ['indicator', 'Indicator']
+        chart_key = 'chart'
+        if chart_key not in response_data:
+            raise RuntimeError("Failed to find key in data: {}".format(chart_key))
+        if not response_data[chart_key]:
+            raise RuntimeError(
+                "There is no data (length is 0) for key: {} (maybe try a different time interval)".format(chart_key))
+        for converter in self.converters:
+            if converter.value_type in self.data:
+                continue  # if we've already added this value type, then don't do it again
+            if (value_types != 0) and (converter.value_type not in value_types):
+                continue
+            indexes = []
+            values = []
+            for idx, entry in enumerate(response_data[chart_key]):
+                value = None
+                for response_key in converter.response_keys:
+                    indicator_key = [k for k in indicator_keys if k in response_data][0]
+                    value = response_data[indicator_key][response_key][idx]
+                    # value = 0.0 if response_value == 'None' else float(response_value)
+                    break
+                if value is not None:
+                    indexes.append(datetime.strptime(entry['date'], data_date_format))
+                    values.append(value)
+            self.insert_data_column(converter.value_type, indexes, values)
 
     def get_earnings_response(self):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
@@ -423,7 +490,7 @@ class IexCloud(Adapter):
 
     def translate_financials(self, response_data, data_date_format='%Y-%m-%d'):
         indexes: Dict[ValueType, List[datetime]] = {}  # NOTE: in case one value type is missing from some entries
-        updates: Dict[ValueType, List[datetime]] = {}  #       we store the indexes for each value type
+        updates: Dict[ValueType, List[datetime]] = {}  # we store the indexes for each value type
         values: Dict[ValueType, List[float]] = {}
         for entry in response_data:
             instance = datetime.fromtimestamp(entry['periodEnd'] / 1000)
@@ -467,7 +534,8 @@ class IexCloud(Adapter):
         for converter in self.converters:
             if converter.value_type in indexes:
                 max_entries = max(max_entries, len(indexes[converter.value_type]))
-                self.insert_data_column(converter.value_type, indexes[converter.value_type], values[converter.value_type])
+                self.insert_data_column(converter.value_type, indexes[converter.value_type],
+                                        values[converter.value_type])
         for converter in self.converters:
             if converter.value_type in indexes:
                 if len(indexes[converter.value_type]) < max_entries:
@@ -589,7 +657,7 @@ class IexCloud(Adapter):
 
     def get_create_times(self):
         cache_requests = {}
-        date_dir = os.path.join(self.cache_dir, self.cache_key_date.strftime('%Y%m%d'))
+        date_dir = os.path.join(self.cache_root_dir, self.cache_key_date.strftime('%Y%m%d'))
         for filename in os.listdir(date_dir):
             file_path = os.path.join(date_dir, filename)
             if filename.startswith(".lock"):
