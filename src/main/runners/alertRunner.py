@@ -129,6 +129,7 @@ class AlertRunner(Runner):
             # high
             # now,, , 0.00 %,,
             # GOEV, 10,7.55,9.00,11.00,30.00, 22.22 %, 27.23 %,
+            'SOFI': [13.0, 15.0],
         }
 
         data_adapter_class = AlphaVantage

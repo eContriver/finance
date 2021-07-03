@@ -7,10 +7,10 @@
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/converter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/alertRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/alertRunner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +95,7 @@
       <recent name="$PROJECT_DIR$/analysis/TSLA" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.symbol">
+  <component name="RunManager" selected="Python.intrinsic_value">
     <configuration name="alert" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -181,6 +181,9 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -226,8 +229,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.symbol" />
         <item itemvalue="Python.intrinsic_value" />
+        <item itemvalue="Python.symbol" />
         <item itemvalue="Python.alert" />
         <item itemvalue="Python.ml_trainer" />
         <item itemvalue="Python.matrix" />
@@ -272,7 +275,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>378</line>
+          <line>382</line>
           <option name="timeStamp" value="95" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -281,29 +284,39 @@
           <option name="timeStamp" value="113" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>242</line>
-          <option name="timeStamp" value="118" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py</url>
-          <line>386</line>
+          <line>393</line>
           <option name="timeStamp" value="121" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py</url>
-          <line>294</line>
+          <line>298</line>
           <option name="timeStamp" value="122" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>241</line>
-          <option name="timeStamp" value="123" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/test/adapterTests.py</url>
           <line>30</line>
           <option name="timeStamp" value="126" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
+          <line>372</line>
+          <option name="timeStamp" value="128" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py</url>
+          <line>519</line>
+          <option name="timeStamp" value="132" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py</url>
+          <line>515</line>
+          <option name="timeStamp" value="134" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py</url>
+          <line>502</line>
+          <option name="timeStamp" value="135" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

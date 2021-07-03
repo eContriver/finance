@@ -211,6 +211,9 @@ class Adapter:
         self.cache_root_dir = os.path.realpath(cache_dir)
         # self.cache_root_dir = None
 
+    def __str__(self):
+        return f"{self.__class__.__name__} adapter with {self.symbol} ({self.base_symbol}) {self.asset_type} (cache key:{self.cache_key_date})"
+
     def add_value_type(self, value_type: ValueType):
         if value_type not in self.value_types:
             self.value_types.append(value_type)
@@ -236,7 +239,7 @@ class Adapter:
         # Consider passing the converter so the function gets it. Without this 3rd party adapters will write one
         # function per type, which might be a good thing, so perhaps we leave it? e.g.
         # converter.get_response_callback(converter)
-        converter.get_response_callback()
+        converter.get_response_callback(value_type)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)

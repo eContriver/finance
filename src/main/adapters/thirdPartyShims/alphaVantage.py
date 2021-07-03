@@ -111,13 +111,13 @@ class AlphaVantage(Adapter):
         data = [item[0] for item in data]
         return data
 
-    def get_prices_response(self) -> None:
+    def get_prices_response(self, value_type: ValueType) -> None:
         if self.asset_type is AssetType.DIGITAL_CURRENCY:
-            self.get_digital_currency_response()
+            self.get_digital_currency_response(value_type)
         else:
-            self.get_stock_prices_response()
+            self.get_stock_prices_response(value_type)
 
-    def get_stock_prices_response(self) -> None:
+    def get_stock_prices_response(self, value_type: ValueType) -> None:
         query = {}
         query["apikey"] = self.api_key
         query["symbol"] = self.symbol
@@ -150,9 +150,9 @@ class AlphaVantage(Adapter):
                 'Specified interval is not supported: \'{}\' (for: {})'.format(interval, self.__class__.__name__))
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
-        self.translate(raw_response, key)
+        self.translate(raw_response, value_type, key)
 
-    def get_digital_currency_response(self) -> None:
+    def get_digital_currency_response(self, value_type: ValueType) -> None:
         query = {}
         query["apikey"] = self.api_key
         query["symbol"] = self.symbol
@@ -172,11 +172,12 @@ class AlphaVantage(Adapter):
                 'Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
-        self.translate(raw_response, key)
+        self.translate(raw_response, value_type, key)
 
-    def translate(self, response_data, key, data_date_format='%Y-%m-%d') -> None:
+    def translate(self, response_data, value_type: ValueType, key, data_date_format='%Y-%m-%d') -> None:
         """
 
+        :param value_type:
         :param response_data: Data from an API or URL request (raw data generally JSON, CSV, etc.)
         :param key: The root key where we will pull the dictionary out of
         :param data_date_format: The incoming data time format, used to convert to datetime objects
@@ -190,6 +191,8 @@ class AlphaVantage(Adapter):
         for converter in self.converters:
             if converter.value_type in self.data:
                 continue  # if we've already added this value type, then don't do it again
+            if converter.value_type != value_type:
+                continue
             indexes = []
             values = []
             for entry_datetime, response_entry in response_data[key].items():
@@ -207,7 +210,7 @@ class AlphaVantage(Adapter):
                 values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
 
-    def get_macd_response(self) -> None:
+    def get_macd_response(self, value_type: ValueType) -> None:
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
             "apikey": self.api_key,
@@ -221,9 +224,9 @@ class AlphaVantage(Adapter):
         }
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
-        self.translate(raw_response, 'Technical Analysis: MACD')
+        self.translate(raw_response, value_type, 'Technical Analysis: MACD')
 
-    def get_sma_response(self):
+    def get_sma_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
             "apikey": self.api_key,
@@ -236,10 +239,9 @@ class AlphaVantage(Adapter):
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
         key = 'Technical Analysis: SMA'
-        data = self.translate(raw_response, key)
-        return data
+        self.translate(raw_response, value_type, key)
 
-    def get_rsi_response(self):
+    def get_rsi_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
             "apikey": self.api_key,
@@ -252,9 +254,9 @@ class AlphaVantage(Adapter):
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
         key = 'Technical Analysis: RSI'
-        self.translate(raw_response, key)
+        self.translate(raw_response, value_type, key)
 
-    def get_earnings_response(self):
+    def get_earnings_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         query = {
             "apikey": self.api_key,
@@ -270,9 +272,9 @@ class AlphaVantage(Adapter):
         else:
             raise RuntimeError(
                 'Interval not supported: {} (for: {})'.format(interval, self.__class__.__name__))
-        self.translate_earnings(raw_response, key)
+        self.translate_earnings(raw_response, value_type, key)
 
-    def translate_earnings(self, response_data, key, data_date_format='%Y-%m-%d'):
+    def translate_earnings(self, response_data, value_type: ValueType, key, data_date_format='%Y-%m-%d'):
         if key not in response_data:
             raise RuntimeError("Failed to find key in data: {}".format(key))
         if not response_data[key]:
@@ -281,6 +283,8 @@ class AlphaVantage(Adapter):
         for converter in self.converters:
             if converter.value_type in self.data:
                 continue  # if we've already added this value type, then don't do it again
+            if converter.value_type != value_type:
+                continue
             indexes = []
             values = []
             for entry in response_data[key]:
@@ -293,8 +297,11 @@ class AlphaVantage(Adapter):
                     indexes.append(datetime.strptime(entry['fiscalDateEnding'], data_date_format))
                     values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
+        assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
+                                        "no data was present after getting and parsing the response. Does the " \
+                                        "converter have the correct keys/locations for the raw data?".format(value_type)
 
-    def get_income_response(self):
+    def get_income_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         query = {
             "apikey": self.api_key,
@@ -310,8 +317,8 @@ class AlphaVantage(Adapter):
         else:
             raise RuntimeError(
                 'Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
-        self.translate_earnings(raw_response, key)
-        # self.translate_income(raw_response, key)
+        self.translate_earnings(raw_response, value_type, key)
+        # self.translate_income(raw_response, value_type, key)
 
     def translate_income(self, response_data, key, data_date_format='%Y-%m-%d'):
         if key not in response_data:
@@ -331,7 +338,7 @@ class AlphaVantage(Adapter):
                     translated[dt][value_type] = value
         return translated
 
-    def get_balance_sheet_response(self):
+    def get_balance_sheet_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         query = {
             "apikey": self.api_key,
@@ -347,8 +354,8 @@ class AlphaVantage(Adapter):
         else:
             raise RuntimeError(
                 'Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
-        self.translate_earnings(raw_response, key)
-        # self.translate_balance_sheet(raw_response, key)
+        self.translate_earnings(raw_response, value_type, key)
+        # self.translate_balance_sheet(raw_response, value_type, key)
 
     def translate_balance_sheet(self, response_data, key, data_date_format='%Y-%m-%d'):
         if key not in response_data:
@@ -368,7 +375,7 @@ class AlphaVantage(Adapter):
                     translated[dt][value_type] = value
         return translated
 
-    def get_cash_flow_response(self):
+    def get_cash_flow_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         query = {
             "apikey": self.api_key,
@@ -384,8 +391,8 @@ class AlphaVantage(Adapter):
         else:
             raise RuntimeError(
                 'Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
-        self.translate_earnings(raw_response, key)
-        # self.translate_cash_flow(raw_response, key)
+        self.translate_earnings(raw_response, value_type, key)
+        # self.translate_cash_flow(raw_response, value_type, key)
 
     def translate_cash_flow(self, response_data, key, data_date_format='%Y-%m-%d'):
         if key not in response_data:

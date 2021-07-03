@@ -31,6 +31,10 @@ from main.adapters.converter import Converter
 from main.adapters.argument import ArgumentType
 
 
+class NoDataReturnedException(RuntimeError):
+    pass
+
+
 class OrderedOutput(Enum):
     RSI = 0
     MACD = 0
@@ -151,7 +155,7 @@ class IexCloud(Adapter):
             series_range = 'max'
         return series_range
 
-    def get_prices_response(self):
+    def get_prices_response(self, value_type: ValueType):
         query = {"token": self.api_key, }
         series_range = self.get_span_as_str()
         raw_response, data_file = self.get_url_response('{}/stock/{}/chart/{}'.format(
@@ -159,7 +163,7 @@ class IexCloud(Adapter):
             self.symbol,
             series_range),
             query)
-        self.translate(raw_response)
+        self.translate(raw_response, value_type)
 
     # def translate(self, response_data, data_date_format='%Y-%m-%d'):
     #     if not response_data:
@@ -176,10 +180,12 @@ class IexCloud(Adapter):
     #                 translated[dt][series_type] = value
     #     return translated
 
-    def translate(self, response_data, data_date_format='%Y-%m-%d'):
+    def translate(self, response_data, value_type: ValueType, data_date_format='%Y-%m-%d'):
         for converter in self.converters:
             if converter.value_type in self.data:
                 continue  # if we've already added this value type, then don't do it again
+            if converter.value_type != value_type:
+                continue
             indexes = []
             values = []
             for entry in response_data:
@@ -192,6 +198,9 @@ class IexCloud(Adapter):
                     indexes.append(datetime.strptime(entry['date'], data_date_format))
                     values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
+        assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
+                                        "no data was present after getting and parsing the response. Does the " \
+                                        "converter have the correct keys/locations for the raw data?".format(value_type)
 
     def get_digital_series_response(self):
         if self.series_interval == TimeInterval.DAY:
@@ -217,7 +226,7 @@ class IexCloud(Adapter):
         data = self.translate(raw_response, key)
         return data
 
-    def get_macd_response(self):
+    def get_macd_response(self, value_type: ValueType):
         series_range = self.get_span_as_str()
         slow: float = self.get_argument_value(ArgumentType.MACD_SLOW)
         fast: float = self.get_argument_value(ArgumentType.MACD_FAST)
@@ -235,7 +244,7 @@ class IexCloud(Adapter):
             'macd',
         ),
             query)
-        self.translate_map(raw_response, [ValueType.MACD, ValueType.MACD_HIST, ValueType.MACD_SIGNAL])
+        self.translate_map(raw_response, value_type)
         # indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         # query = {
         #     "token": self.api_key,
@@ -252,7 +261,7 @@ class IexCloud(Adapter):
         # data = self.translate(raw_response, 'Technical Analysis: MACD')
         # return data
 
-    def get_sma_response(self):
+    def get_sma_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
             "token": self.api_key,
@@ -265,10 +274,10 @@ class IexCloud(Adapter):
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
         key = 'Technical Analysis: SMA'
-        data = self.translate(raw_response, key)
+        data = self.translate(raw_response, value_type, key)
         return data
 
-    def get_rsi_response(self):
+    def get_rsi_response(self, value_type: ValueType):
         series_range = self.get_span_as_str()
         period: float = self.get_argument_value(ArgumentType.RSI_PERIOD)
         query = {
@@ -282,7 +291,7 @@ class IexCloud(Adapter):
             'rsi',
         ),
             query)
-        self.translate_map(raw_response, [ValueType.RSI])
+        self.translate_map(raw_response, value_type)
         # indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         # query = {
         #     "token": self.api_key,
@@ -298,7 +307,7 @@ class IexCloud(Adapter):
         # data = self.translate(raw_response, key)
         # return data
 
-    def translate_map(self, response_data, value_types=[], data_date_format='%Y-%m-%d'):
+    def translate_map(self, response_data, value_type: ValueType, data_date_format='%Y-%m-%d'):
         indicator_keys = ['indicator', 'Indicator']
         chart_key = 'chart'
         if chart_key not in response_data:
@@ -309,7 +318,7 @@ class IexCloud(Adapter):
         for converter in self.converters:
             if converter.value_type in self.data:
                 continue  # if we've already added this value type, then don't do it again
-            if (value_types != 0) and (converter.value_type not in value_types):
+            if converter.value_type != value_type:
                 continue
             indexes = []
             values = []
@@ -324,6 +333,10 @@ class IexCloud(Adapter):
                     indexes.append(datetime.strptime(entry['date'], data_date_format))
                     values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
+        assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
+                                        "no data was present after getting and parsing the response. Does the " \
+                                        "converter have the correct keys/locations for the raw data?".format(value_type)
+
 
     def get_earnings_response(self):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
@@ -428,7 +441,7 @@ class IexCloud(Adapter):
     #                 translated[dt][series_type] = value
     #     return translated
     #
-    def get_balance_sheet_response(self):
+    def get_balance_sheet_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = 'quarter'
@@ -441,9 +454,9 @@ class IexCloud(Adapter):
         raw_response, data_file = self.get_url_response('{}/stock/{}/balance-sheet'.format(self.url, self.symbol),
                                                         query)
         key = 'balancesheet'
-        self.translate_balance_sheet(raw_response, key)
+        self.translate_balance_sheet(raw_response, value_type, key)
 
-    def translate_balance_sheet(self, response_data, key, data_date_format='%Y-%m-%d'):
+    def translate_balance_sheet(self, response_data, value_type: ValueType, key, data_date_format='%Y-%m-%d'):
         if key not in response_data:
             raise RuntimeError("Failed to find key in data: {}".format(key))
         if not response_data[key]:
@@ -465,7 +478,7 @@ class IexCloud(Adapter):
                     values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
 
-    def get_reported_financials_response(self):
+    def get_reported_financials_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = '10-Q'
@@ -486,63 +499,65 @@ class IexCloud(Adapter):
         raw_response, data_file = self.get_url_response(
             '{}/time-series/reported_financials/{}/{}'.format(self.url, self.symbol, period), query)
         # self.translate_fundamentals(raw_response)
-        self.translate_financials(raw_response)
+        self.validate_json_data(raw_response, data_file)
+        self.translate_financials(raw_response, value_type)
 
-    def translate_financials(self, response_data, data_date_format='%Y-%m-%d'):
-        indexes: Dict[ValueType, List[datetime]] = {}  # NOTE: in case one value type is missing from some entries
-        updates: Dict[ValueType, List[datetime]] = {}  # we store the indexes for each value type
-        values: Dict[ValueType, List[float]] = {}
+    def validate_json_data(self, data, data_file):
+        if not data:
+            raise NoDataReturnedException(f"No data was returned for {self} (file: {data_file}), data: {data}")
+
+    def translate_financials(self, response_data, value_type: ValueType, data_date_format='%Y-%m-%d'):
+        indexes: List[datetime] = []  # NOTE: in case one value type is missing from some entries
+        updates: List[datetime] = []  # we store the indexes for each value type
+        values: List[float] = []
+        converter = self.get_converter(value_type)
+        if converter.value_type in self.data:
+            return  # if we've already added this value type, then don't do it again
         for entry in response_data:
             instance = datetime.fromtimestamp(entry['periodEnd'] / 1000)
             # instance = datetime.strptime(entry['formFiscalYear'], '%Y')
             updated = datetime.fromtimestamp(entry['updated'] / 1000)
-            for converter in self.converters:
-                if converter.value_type in self.data:
-                    continue  # if we've already added this value type, then don't do it again
-                for response_key in converter.response_keys:
-                    if response_key not in entry:
+            for response_key in converter.response_keys:
+                if response_key not in entry:
+                    continue
+                response_value = entry[response_key]
+                value = 0.0 if response_value == 'None' else float(response_value)
+                assert type(value) is float, f"After parsing response value '{response_value}' for key " \
+                                             f"'{response_key}', the type was expected to be a 'float' but was " \
+                                             f"instead: '{type(value)}'"
+                if converter.value_type in indexes and instance in indexes:
+                    # same time, then need to check the 'updated' time and use the latest
+                    location = indexes.index(instance)
+                    if updated > updates[location]:
+                        logging.debug(f"Updating entry for period ending {instance}, as a more recent update "
+                                      f"{updated} was found (current record was updated "
+                                      f"{updates[location]}, entry {converter.value_type}).")
+                        # indexes[location] = instance  # these are already the same
+                        updates[location] = updated
+                        values[location] = value
                         continue
-                    response_value = entry[response_key]
-                    value = 0.0 if response_value == 'None' else float(response_value)
-                    assert type(value) is float, f"After parsing response value '{response_value}' for key " \
-                                                 f"'{response_key}', the type was expected to be a 'float' but was " \
-                                                 f"instead: '{type(value)}'"
-                    if converter.value_type in indexes and instance in indexes[converter.value_type]:
-                        # same time, then need to check the 'updated' time and use the latest
-                        location = indexes[converter.value_type].index(instance)
-                        if updated > updates[converter.value_type][location]:
-                            logging.debug(f"Updating entry for period ending {instance}, as a more recent update "
-                                          f"{updated} was found (current record was updated "
-                                          f"{updates[converter.value_type][location]}, entry {converter.value_type}).")
-                            # indexes[converter.value_type][location] = instance  # these are already the same
-                            updates[converter.value_type][location] = updated
-                            values[converter.value_type][location] = value
-                            continue
-                        else:
-                            logging.debug(f"Skipping entry for period ending {instance}, as this record was updated "
-                                          f"{updated} and we already have a record that is more recent (current record "
-                                          f"was updated {updates[converter.value_type][location]}, entry {converter.value_type}).")
-                            continue
-                    if converter.value_type not in indexes:
-                        indexes[converter.value_type] = []
-                        updates[converter.value_type] = []
-                        values[converter.value_type] = []
-                    indexes[converter.value_type].append(instance)  # these are already the same
-                    updates[converter.value_type].append(updated)
-                    values[converter.value_type].append(value)
-        max_entries = 0
-        for converter in self.converters:
-            if converter.value_type in indexes:
-                max_entries = max(max_entries, len(indexes[converter.value_type]))
-                self.insert_data_column(converter.value_type, indexes[converter.value_type],
-                                        values[converter.value_type])
-        for converter in self.converters:
-            if converter.value_type in indexes:
-                if len(indexes[converter.value_type]) < max_entries:
-                    logging.warning(f"The '{converter.value_type}' value type appears to have missing entries, "
-                                    f"only has entries for {[str(d) for d in indexes[converter.value_type]]}. Perhaps "
-                                    f"a new response key should be added, the currently searched for response keys "
-                                    f"are: {converter.response_keys}")
+                    else:
+                        logging.debug(f"Skipping entry for period ending {instance}, as this record was updated "
+                                      f"{updated} and we already have a record that is more recent (current record "
+                                      f"was updated {updates[location]}, entry {converter.value_type}).")
+                        continue
+                indexes.append(instance)  # these are already the same
+                updates.append(updated)
+                values.append(value)
+        # max_entries = 0
+        # if converter.value_type in indexes:
+        #     max_entries = max(max_entries, len(indexes))
+        #     self.insert_data_column(converter.value_type, indexes,
+        #                             values)
+        # if converter.value_type in indexes:
+        #     if len(indexes) < max_entries:
+        #         logging.warning(f"The '{converter.value_type}' value type appears to have missing entries, "
+        #                         f"only has entries for {[str(d) for d in indexes]}. Perhaps "
+        #                         f"a new response key should be added, the currently searched for response keys "
+        #                         f"are: {converter.response_keys}")
+        assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
+                                        "no data was present after getting and parsing the response. Does the " \
+                                        "converter have the correct keys/locations for the raw data?".format(value_type)
 
     def translate_fundamentals(self, response_data, data_date_format='%Y-%m-%d'):
         for converter in self.converters:
@@ -570,7 +585,7 @@ class IexCloud(Adapter):
         diluted_shares: pandas.Series = self.data.loc[:, ValueType.DILUTED_SHARES]
         self.data.loc[:, ValueType.REPORTED_EPS] = net_income_basic / diluted_shares
 
-    def get_cash_flow_response(self):
+    def get_cash_flow_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = 'quarter'
@@ -586,7 +601,7 @@ class IexCloud(Adapter):
             self.symbol),
             query)
         key = 'cashflow'
-        self.translate_balance_sheet(raw_response, key)
+        self.translate_balance_sheet(raw_response, value_type, key)
         # self.translate_cash_flow(raw_response, key)
 
     # def translate_cash_flow(self, response_data, key, data_date_format='%Y-%m-%d'):

@@ -75,9 +75,24 @@ class IntrinsicValueRunner(Runner):
             # 'PLUG' # Not expected to be profitable until
 
             # 'CHPT'
-            # 'SOFI'
+            'SOFI',
 
-            #### Michael Burry sold
+            # 'AMD'  # Max: nan % Average: nan % Median: 12.6684 % Min: 38.5113 % on 2030-12-14 (ROE: ~-26%)
+            # Last:  Max: 72.5051%  Average: 46.2533%  Median: nan%  Min: nan% on 2030-12-14 (ROE: 42.66%)
+            
+            # 'ADBE' # Max: 85.0311%  Average: 65.1608%  Median: 49.8244%  Min: 47.1294% on 2029-11-16
+            # Trading at 25 times forward earnings... calc this
+
+            # 'WBA'  # Wallgreens Boots
+
+            # 'PLTR'
+            # 'INTU' # Max: 23.5472%  Average: nan%  Median: 8.4842%  Min: nan% on 2028-07-19
+            # 25 * REvenue is an Okkkkkkkkay    keras_preprocessing
+
+            # 'SOFI'  # buy at 15, 14, 13
+            # 'ALLY'  # Max: 3.9047%  Average: -1.2474%  Median: -0.9519%  Min: nan% on 2025-09-24
+
+            ### Michael Burry sold
             # 'LILA'  # shareholder equity dropped 20% in last 3 years (2017-12-31)
             # 'PDS'  # showed negative, for earnings, we're disabling calculated_eps but first switch to iex
             # 'ROIC'  # Max: 32.6671 % Average: 15.8487 % Median: 10.9722 % Min: 4.4097% on 2028-12-19 (2020 report is missing...?)
@@ -87,9 +102,10 @@ class IntrinsicValueRunner(Runner):
             # 'TCOM'  # Max: 47.9983%  Average: 8.9896%  Median: 13.8364%  Min: 0.0% on 2025-12-25
             # 'QRVO'  # Max: 3.0271%  Average: -1.5251%  Median: -2.3506%  Min: -4.2462% on 2026-03-25
             # 'FB'    # Max: 31.6749%  Average: 29.1194%  Median: 31.1944%  Min: 21.3657% on 2025-12-25
-            # 'GME'    # Max: nan%  Average: nan%  Median: nan%  Min: -54.622% on 2025-11-24
-            # 'MSGN'
+            # 'GME'   # Max: nan%  Average: nan%  Median: nan%  Min: -54.622% on 2025-11-24
+            # 'MSGN',
             # 'DISCA'
+
             # 'WDC'
             # 'QREA'
             # 'UNIT'
@@ -109,7 +125,6 @@ class IntrinsicValueRunner(Runner):
             # 'DNOW' # losing money and not progresing
             # 'LUMN'  # negative net income which just turned around
             # 'UBA'  # not great but price just dropped 2007-12-31  1.444139e+11       7.287707e+10         473332656.0     473332656.0              7.153683e+10         0.19 -1430703200.0             0.0  14.464989  13.967226  14.0842   73.511714   76.131519
-            'AMD'
         ]
 
         # Multiple collections == Multiple plots : Each collection is in it's own dict entry under the query type
@@ -158,14 +173,14 @@ class IntrinsicValueRunner(Runner):
             ValueType.DILUTED_SHARES,
             ValueType.TOTAL_SHAREHOLDER_EQUITY,
         ]
-        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.YEAR))
-        # adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER)) # TODO: Fix IEX w/ this
+        # adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.YEAR))
+        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER)) # TODO: Fix IEX w/ this
         return adapter
 
     def new_adapter(self, symbol):
         # adapter_class = Sec
-        adapter_class = IexCloud
-        # adapter_class = AlphaVantage
+        # adapter_class = IexCloud
+        adapter_class = AlphaVantage
         adapter = adapter_class(symbol, asset_type=None)
         adapter.base_symbol = 'USD'
         end_date = datetime.now()
@@ -229,7 +244,6 @@ class IntrinsicValueRunner(Runner):
                 ValueType.TOTAL_ASSETS,
                 ValueType.TOTAL_LIABILITIES,
                 ValueType.OUTSTANDING_SHARES,
-                # ValueType.DILUTED_SHARES,
                 ValueType.TOTAL_SHAREHOLDER_EQUITY,
             ]
             earnings_value_types = [ValueType.REPORTED_EPS]
@@ -259,12 +273,6 @@ class IntrinsicValueRunner(Runner):
             for date in df.index:
                 closest_idx = e_df.index.get_loc(date, method='nearest')
                 df.loc[date, ValueType.REPORTED_EPS] = e_df.iloc[closest_idx, :][ValueType.REPORTED_EPS]
-                # for current_date in e_df.index:
-                #     df.loc[date, ValueType.REPORTED_EPS] = e_df.get_loc(current_date, method='nearest')
-                #     delta = abs(date - current_date)
-                #     if delta < timedelta(weeks=5):
-                #         df.loc[date, ValueType.REPORTED_EPS] = e_df.loc[current_date, ValueType.REPORTED_EPS]
-                #         break
 
             # use cash flow as the model for data - if something else makes more sense, then use it
             cf_df = collection.get_columns(symbol, cash_flow_value_types)
@@ -276,12 +284,6 @@ class IntrinsicValueRunner(Runner):
                 closest_idx = cf_df.index.get_loc(date, method='nearest')
                 df.loc[date, ValueType.NET_INCOME] = cf_df.iloc[closest_idx, :][ValueType.NET_INCOME]
                 df.loc[date, ValueType.DIVIDEND_PAYOUT] = cf_df.iloc[closest_idx, :][ValueType.DIVIDEND_PAYOUT]
-                # for current_date in cf_df.index:
-                #     delta = abs(date - current_date)
-                #     if delta < timedelta(weeks=8):
-                #         df.loc[date, ValueType.NET_INCOME] = cf_df.loc[current_date, ValueType.NET_INCOME]
-                #         df.loc[date, ValueType.DIVIDEND_PAYOUT] = cf_df.loc[current_date, ValueType.DIVIDEND_PAYOUT]
-                #         break
 
             # TODO: Where this is used, is it appropriate?
             outstanding = df.loc[last_time, ValueType.OUTSTANDING_SHARES]
@@ -365,9 +367,11 @@ class IntrinsicValueRunner(Runner):
             book_yield_per_share = earnings_per_share / book_value_per_share
             book_value_growth = book_yield_per_share * retention_ratio
 
+            # Predicted ROE - Using a trend-line equivalent predict where ROW will be
+            return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.TOTAL_SHAREHOLDER_EQUITY]
             # Average ROE - If the last net income is negative, then using average will hopefully be positive...
-            historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.TOTAL_SHAREHOLDER_EQUITY]
-            return_on_equity = sum(historic_roe) / len(historic_roe)
+            # historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.TOTAL_SHAREHOLDER_EQUITY]
+            # return_on_equity = sum(historic_roe) / len(historic_roe)
             # Last ROE
             # shareholder_equity = df.loc[last_time, ValueType.TOTAL_SHAREHOLDER_EQUITY]
             # net_income = df.loc[last_time, ValueType.NET_INCOME]
@@ -439,7 +443,7 @@ class IntrinsicValueRunner(Runner):
             median_irr = round(numpy.irr(cash_flows + [median_price]) * 100, 4)
             irr_report += "  Median: {}%".format(median_irr)
             min_irr = round(numpy.irr(cash_flows + [min_price]) * 100, 4)
-            min_irr = 0.0 if math.isnan(min_irr) else min_irr
+            # min_irr = 0.0 if math.isnan(min_irr) else min_irr
             irr_report += "  Min: {}%".format(min_irr)
             logging.info("  Today's prices: ${} ({})".format(todays_price, last_time.strftime("%Y-%m-%d")))
             logging.info(
