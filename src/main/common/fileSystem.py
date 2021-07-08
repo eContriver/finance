@@ -18,6 +18,7 @@ import os
 import re
 import shutil
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 
@@ -30,19 +31,32 @@ class FileSystem:
         return cache_dir
 
     @staticmethod
-    def get_and_clean_cache_dir(root_dir, date_format: Optional[str] = "%Y%m%d_%H%M%S"):
-        FileSystem.clean_cache_dirs(root_dir)
+    def get_output_dir(name):
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        output_dir = os.path.join(script_dir, '..', '..', '..', 'output', name)
+        return output_dir
+
+    @staticmethod
+    def get_user_dir():
+        home = str(Path.home())
+        user_dir = os.path.join(home, '.eContriver')
+        return user_dir
+
+    @staticmethod
+    def get_and_clean_timestamp_dir(root_dir, date_format: Optional[str] = "%Y%m%d_%H%M%S"):
+        FileSystem.clean_dir(root_dir)
         cache_dir = root_dir if date_format is None else os.path.join(root_dir, datetime.now().strftime(date_format))
         cache_dir = os.path.realpath(cache_dir)
         os.makedirs(cache_dir)
         return cache_dir
 
     @staticmethod
-    def clean_cache_dirs(cache_dir, keep: int = 3, ignore_errors: bool = True):
-        if not os.path.exists(cache_dir):
+    def clean_dir(output_dir, keep: int = 3, ignore_errors: bool = True):
+        if not os.path.exists(output_dir):
             return
-        for filename in sorted(os.listdir(cache_dir))[:-keep]:
-            path = os.path.join(cache_dir, filename)
+        children = sorted(Path(output_dir).iterdir(), key=os.path.getmtime)
+        for filename in children[:-keep]:
+            path = os.path.join(output_dir, filename)
             shutil.rmtree(path, ignore_errors)
 
     @staticmethod

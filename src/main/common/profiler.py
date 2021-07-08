@@ -45,7 +45,7 @@ class Profiler:
         if cls.instance is None:
             cls.instance = cls.__new__(cls)
             cls.instance.c_profiler = cProfile.Profile()
-            cache_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('profiles'))
+            cache_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('profiles'))
             cls.instance.profile_log = os.path.join(cache_dir, 'profile.log')
         return cls.instance
 

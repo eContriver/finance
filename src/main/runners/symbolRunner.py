@@ -84,7 +84,7 @@ class SymbolRunner(Runner):
         }
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        strategy_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('strategies'))
+        strategy_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('strategies'))
 
         # Strategies
         strategies: List[Strategy] = []
@@ -217,7 +217,7 @@ class SymbolRunner(Runner):
         # draw = True
         draw = False
         if draw:
-            visual_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('visuals'))
+            visual_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('visuals'))
             # visual_runner = SequentialExecutor(visual_date_dir)
             visual_runner = ParallelExecutor(visual_date_dir)
             for strategy in report_on:

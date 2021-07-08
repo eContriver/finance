@@ -1,6 +1,6 @@
-# Ignore our caches
+# Ignore our caches and outputs
 .cache/
-.logs/
+output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

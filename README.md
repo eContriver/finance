@@ -175,32 +175,6 @@ To get the data we need to connect the ValueType
     the key to the location of the ValueType
     a conversion algorithm
 
-1. 3rd Party Adapters should take the data in whatever format it is given and convert it to a standard json format
-    KEY: {DATE: VALUE}
-    Where KEY is one of our ValueTypes
-X. Add data look-up table that correlates the ValueType with where we want to get it from - perhaps we use the new
-    Configuration class to handle this
-X. Consider removing the Income/Series/Balance Sheet/Cash Flow adapters as this should all be generic now
-    We should move the concept of the Visualization stuff that was added into the per value basis, which
-    can be represented with the new AdapterValue class or it's derivatives
-2. The specific adapters are then responsible for deciding which queries get that data
-    The requested ValueTypes should be grouped up and then the adapter should determine from this group which queries
-    are needed and then make those queries - this should allow for outstanding stock to come from balance sheet or
-    financials etc.
-    We must also account for the fact that the queries have concepts like span and interval specific to each query
-    type which might be different for each of these
-    We also support querying something like NET_INCOME from one adapter and TOTAL_REVENUE from another adapter
-    We also support querying something like PRICES from one adapter for one symbol and for another adapter for another
-    symbol
-3. Create a new data type called AdapterValue which is extended by AdapterSeriesValue which has the span and interval
-    This AdapterValue that handles the query info should be defining the output
-4. The ValueType coupling to QueryType must be broken
-            # This is calling for a new design >
-            #   we just need OUTSTANDING_SHARES, don't tie it to the BALANCE_SHEET
-            #   let each adapter define how this data value is calculated, the clients just as for the value
-            #   need a set of low-level APIs to get any value in whatever format the data adapter provides it
-            #   need a set of high-level APIs to retrieve any value type
-
 # Proposal for new Visualizer design
 
 Given the canned data in a time-series format graph as: bar, line

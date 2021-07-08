@@ -5,12 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/alertRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/alertRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/fileSystem.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/fileSystem.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/launchers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/launchers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/profiler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/profiler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/discountedCashFlowRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/discountedCashFlowRunner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/testExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/testExecutor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +73,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/.cache/IexCloud/20210629/data.stable_stock_AAPL_indicator_macd_1y_12_26_9.json" />
+    <property name="last_opened_file_path" value="$USER_HOME$/.eContriver/intrinsicValueRunner.yaml" />
     <property name="settings.editor.selected.configurable" value="copyright.profiles" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -81,18 +89,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$USER_HOME$/.eContriver/" />
+      <recent name="~/.eContriver/" />
       <recent name="$PROJECT_DIR$/src" />
       <recent name="$PROJECT_DIR$/src/main/runners" />
       <recent name="$PROJECT_DIR$/src/main/adapters/thirdPartyShims" />
-      <recent name="$PROJECT_DIR$/src/main/executors" />
-      <recent name="$PROJECT_DIR$/src/main/adapters" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
       <recent name="$PROJECT_DIR$/.cache/iexCloud/20210627" />
       <recent name="$PROJECT_DIR$/analysis/matrix" />
       <recent name="$PROJECT_DIR$/.cache/iexCloud/20210625" />
       <recent name="$PROJECT_DIR$/doc/images" />
-      <recent name="$PROJECT_DIR$/analysis/TSLA" />
     </key>
   </component>
   <component name="RunManager" selected="Python.intrinsic_value">
@@ -273,25 +281,10 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>382</line>
-          <option name="timeStamp" value="95" />
-        </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/portfolio/portfolio.py</url>
           <line>271</line>
           <option name="timeStamp" value="113" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py</url>
-          <line>393</line>
-          <option name="timeStamp" value="121" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py</url>
-          <line>298</line>
-          <option name="timeStamp" value="122" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/test/adapterTests.py</url>
@@ -300,23 +293,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>372</line>
+          <line>320</line>
           <option name="timeStamp" value="128" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py</url>
-          <line>519</line>
-          <option name="timeStamp" value="132" />
+          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
+          <line>367</line>
+          <option name="timeStamp" value="136" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py</url>
-          <line>515</line>
-          <option name="timeStamp" value="134" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py</url>
-          <line>502</line>
-          <option name="timeStamp" value="135" />
+          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
+          <line>336</line>
+          <option name="timeStamp" value="141" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

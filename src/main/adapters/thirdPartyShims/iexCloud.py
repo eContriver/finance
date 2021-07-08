@@ -383,7 +383,7 @@ class IexCloud(Adapter):
                     values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
 
-    def get_income_response(self):
+    def get_income_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = 'quarter'
@@ -398,30 +398,33 @@ class IexCloud(Adapter):
             self.url,
             self.symbol),
             query)
+        self.validate_json_data(raw_response, data_file)
         key = 'income'
-        self.translate_income(raw_response, key)
+        self.translate_income(raw_response, value_type, key)
 
-    def translate_income(self, response_data, key, data_date_format='%Y-%m-%d'):
+    def translate_income(self, response_data, value_type: ValueType, key, data_date_format='%Y-%m-%d'):
         if key not in response_data:
             raise RuntimeError("Failed to find key in data: {}".format(key))
         if not response_data[key]:
             raise RuntimeError(
                 "There is no data (length is 0) for key: {} (maybe try a different time interval)".format(key))
-        for converter in self.converters:
-            if converter.value_type in self.data:
-                continue  # if we've already added this value type, then don't do it again
-            indexes = []
-            values = []
-            for entry in response_data[key]:
-                value = None
-                for response_key, response_value in entry.items():
-                    if response_key in converter.response_keys:
-                        value = 0.0 if response_value == 'None' else float(response_value)
-                        break
-                if value is not None:
-                    indexes.append(datetime.strptime(entry['fiscalDate'], data_date_format))
-                    values.append(value)
-            self.insert_data_column(converter.value_type, indexes, values)
+        converter = self.get_converter(value_type)
+        if converter.value_type in self.data:
+            return  # if we've already added this value type, then don't do it again
+        indexes = []
+        values = []
+        for entry in response_data[key]:
+            value = None
+            for response_key in converter.response_keys:
+                if response_key not in entry:
+                    continue
+                response_value = entry[response_key]
+                value = 0.0 if response_value == 'None' else float(response_value)
+                break
+            if value is not None:
+                indexes.append(datetime.strptime(entry['fiscalDate'], data_date_format))
+                values.append(value)
+        self.insert_data_column(converter.value_type, indexes, values)
 
     # def translate_income(self, response_data, key, data_date_format='%Y-%m-%d'):
     #     if key not in response_data:
@@ -453,6 +456,7 @@ class IexCloud(Adapter):
         query = {'token': self.api_key, 'period': period, 'last': last}
         raw_response, data_file = self.get_url_response('{}/stock/{}/balance-sheet'.format(self.url, self.symbol),
                                                         query)
+        self.validate_json_data(raw_response, data_file)
         key = 'balancesheet'
         self.translate_balance_sheet(raw_response, value_type, key)
 
@@ -525,7 +529,7 @@ class IexCloud(Adapter):
                 assert type(value) is float, f"After parsing response value '{response_value}' for key " \
                                              f"'{response_key}', the type was expected to be a 'float' but was " \
                                              f"instead: '{type(value)}'"
-                if converter.value_type in indexes and instance in indexes:
+                if instance in indexes:
                     # same time, then need to check the 'updated' time and use the latest
                     location = indexes.index(instance)
                     if updated > updates[location]:
@@ -544,6 +548,7 @@ class IexCloud(Adapter):
                 indexes.append(instance)  # these are already the same
                 updates.append(updated)
                 values.append(value)
+        self.insert_data_column(converter.value_type, indexes, values)
         # max_entries = 0
         # if converter.value_type in indexes:
         #     max_entries = max(max_entries, len(indexes))
@@ -601,6 +606,7 @@ class IexCloud(Adapter):
             self.symbol),
             query)
         key = 'cashflow'
+        self.validate_json_data(raw_response, data_file)
         self.translate_balance_sheet(raw_response, value_type, key)
         # self.translate_cash_flow(raw_response, key)
 

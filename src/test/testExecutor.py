@@ -44,7 +44,7 @@ class TestRunner(Runner):
         if cls.instance is None:
             cls.instance = cls.__new__(cls)
             script_dir = os.path.dirname(os.path.realpath(__file__))
-            test_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('tests'))
+            test_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('tests'))
             cls.instance.test_runner = TestExecutor(test_date_dir)
             # self.runTests = []
             # self.runOnlyTests = []

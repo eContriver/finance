@@ -17,12 +17,15 @@
 import logging
 import math
 import os
+import re
+import sys
 from datetime import timedelta, datetime
 from enum import Enum
 from typing import Dict, List, Set
 
 import numpy
 import pandas
+import yaml
 from numpy import median
 from sklearn import linear_model
 
@@ -44,93 +47,24 @@ class IntrinsicValueRunner(Runner):
     LOW_PE = 'Low P/E'
     # CALCULATED_EPS = 'Calculated EPS'
 
+    symbols: List[str]
+    base_symbol: str
+
     def __init__(self):
         super().__init__()
+        self.symbols = []
+        self.adapter_class = None
+        self.base_symbol = 'USD'
+        self.read_config_file('intrinsic_value.yaml')
 
     def start(self):
         logging.info("#### Starting intrinsic value runner...")
         success = True
 
-        symbols = [
-            # 'NVDA'
-            # IEX (10y): Max: 29.233%  Average: 22.1999%  Median: 22.7916%  Min: 11.9359% on 2031-01-19
-            # AV  (5y) : Max: 41.3804%  Average: 34.8243%  Median: 35.6256%  Min: 20.9493% on 2026-01-25
-            # 'XLNX'  # Max: 37.3804%  Average: 24.7713%  Median: 20.6971%  Min: 17.2527% on 2031-03-22
-            # 'TTCF'
-            # TTCF does not return any cash flow data using IEX, and it fails
-            # 'BRK.A',
-            # IEX doesn't report anything for reported_financials when asking for BRKA/BRK.A/BRK-A for 10-K, but 10-Q BRK.A works
-            # AlphaVantage has some serious problems with share count for BRK-A
-            # 'TSLA',  # D <- the numbers are trending in the right way
-            # TSLA fails with IEX as they report 3 10-K numbers that have the same periodEnd date 12/31/2013
-            # 'AAPL',  # Max: 77.1456%  Average: 54.9446%  Median: 44.7976%  Min: 19.1956% on 2030-09-14 (declining trend)
-            # 'GOOG'  # A
-            # 'GOOGL'  # Max: 35.1134%  Average: 28.6262%  Median: 27.5156%  Min: 23.194% on 2024-12-26
-            # 'COST',  # Max: 34.7726%  Average: 28.9067%  Median: 25.7128%  Min: 21.5404% on 2030-08-18
-            # 'DIS',   # Max: 21.5303%  Average: 11.2693%  Median: 10.5447%  Min: 0.0% on 2030-09-21
-            # DIS only get 3y balance sheet and 2y earnings from AlphaVantage for some reason
-            # 'NKE',   # Max: 34.6282%  Average: 23.9957%  Median: 20.0064%  Min: 6.7366% on 2030-05-19
-            # 'NFLX',  # Max: 43.7477%  Average: 29.4669%  Median: 25.5531%  Min: 6.678% on 2030-12-19
-            # 'DE'  # Max: 16.5115%  Average: 12.1755%  Median: 12.3128%  Min: 5.3439% on 2025-10-26
-            # 'PLUG' # Not expected to be profitable until
-
-            # 'CHPT'
-            'SOFI',
-
-            # 'AMD'  # Max: nan % Average: nan % Median: 12.6684 % Min: 38.5113 % on 2030-12-14 (ROE: ~-26%)
-            # Last:  Max: 72.5051%  Average: 46.2533%  Median: nan%  Min: nan% on 2030-12-14 (ROE: 42.66%)
-            
-            # 'ADBE' # Max: 85.0311%  Average: 65.1608%  Median: 49.8244%  Min: 47.1294% on 2029-11-16
-            # Trading at 25 times forward earnings... calc this
-
-            # 'WBA'  # Wallgreens Boots
-
-            # 'PLTR'
-            # 'INTU' # Max: 23.5472%  Average: nan%  Median: 8.4842%  Min: nan% on 2028-07-19
-            # 25 * REvenue is an Okkkkkkkkay    keras_preprocessing
-
-            # 'SOFI'  # buy at 15, 14, 13
-            # 'ALLY'  # Max: 3.9047%  Average: -1.2474%  Median: -0.9519%  Min: nan% on 2025-09-24
-
-            ### Michael Burry sold
-            # 'LILA'  # shareholder equity dropped 20% in last 3 years (2017-12-31)
-            # 'PDS'  # showed negative, for earnings, we're disabling calculated_eps but first switch to iex
-            # 'ROIC'  # Max: 32.6671 % Average: 15.8487 % Median: 10.9722 % Min: 4.4097% on 2028-12-19 (2020 report is missing...?)
-            # 'MO'    # Max: -3.4515%  Average: -27.2888%  Median: -6.3298%  Min: 0.0% on 2025-12-23
-            # MO IEX doesn't have the latest report from 12/2020, so our report started at 12/2019
-            # 'CVS'   # Max: 34.6431%  Average: 1.0215%  Median: 20.6921%  Min: 0.0% on 2030-12-19
-            # 'TCOM'  # Max: 47.9983%  Average: 8.9896%  Median: 13.8364%  Min: 0.0% on 2025-12-25
-            # 'QRVO'  # Max: 3.0271%  Average: -1.5251%  Median: -2.3506%  Min: -4.2462% on 2026-03-25
-            # 'FB'    # Max: 31.6749%  Average: 29.1194%  Median: 31.1944%  Min: 21.3657% on 2025-12-25
-            # 'GME'   # Max: nan%  Average: nan%  Median: nan%  Min: -54.622% on 2025-11-24
-            # 'MSGN',
-            # 'DISCA'
-
-            # 'WDC'
-            # 'QREA'
-            # 'UNIT'
-            # 'RPT'
-            # 'DBI'
-            # 'ALL'
-            # 'KBAL'
-            #### Michael Burry bought
-            # 'ARCC'  # looks good
-            # 'SXC'  # assets going down and shareholder equity
-            # 'IMKTA'  # A++ very attractive, last quarter was questionable, perhaps we need to verify it
-            # 'HFC' # I don't see it, maybe try yearly
-            # 'CXW'  # wow, why is this on sale?
-            # 'TAP'  # lost $900M this last year!
-            # 'GEO'  # not looking good
-            # 'WFC'  # more risk than reward
-            # 'DNOW' # losing money and not progresing
-            # 'LUMN'  # negative net income which just turned around
-            # 'UBA'  # not great but price just dropped 2007-12-31  1.444139e+11       7.287707e+10         473332656.0     473332656.0              7.153683e+10         0.19 -1430703200.0             0.0  14.464989  13.967226  14.0842   73.511714   76.131519
-        ]
-
         # Multiple collections == Multiple plots : Each collection is in it's own dict entry under the query type
         # collections = self.multiple_collections(symbols, overrides, base_symbol, adapter_class, interval, today)
         # Single collection == Single plots      : There is one collection in the dict with the key Fundamentals
-        collections: Dict[str, AdapterCollection] = self.single_collection(symbols)
+        collections: Dict[str, AdapterCollection] = self.single_collection(self.symbols)
 
         self.report_collections(collections)
 
@@ -140,6 +74,16 @@ class IntrinsicValueRunner(Runner):
         #     self.plot_collections(collections,  configuration.query_argument[QueryArgument.BALANCE_SHEET_INTERVAL])
 
         return success
+
+    def read_config_file(self, config_file):
+        user_dir = FileSystem.get_user_dir()
+        config_path = os.path.join(user_dir, config_file)
+        with open(config_path) as f:
+            config = yaml.full_load(f)
+            self.symbols = config['symbols']
+            class_name = config['adapter_class']
+            self.adapter_class = getattr(sys.modules[__name__], class_name)
+            self.base_symbol = config['base_symbol']
 
     def single_collection(self, symbols: List[str]) -> Dict[str, AdapterCollection]:
         collection: AdapterCollection = AdapterCollection()
@@ -174,20 +118,16 @@ class IntrinsicValueRunner(Runner):
             ValueType.TOTAL_SHAREHOLDER_EQUITY,
         ]
         # adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.YEAR))
-        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER)) # TODO: Fix IEX w/ this
+        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER))  # TODO: Fix IEX w/ this
         return adapter
 
     def new_adapter(self, symbol):
-        # adapter_class = Sec
-        # adapter_class = IexCloud
-        adapter_class = AlphaVantage
-        adapter = adapter_class(symbol, asset_type=None)
-        adapter.base_symbol = 'USD'
-        end_date = datetime.now()
+        adapter = self.adapter_class(symbol, asset_type=None)
+        adapter.base_symbol = self.base_symbol
+        end_date = datetime(year=2021, month=7, day=3)  # datetime.now()
         adapter.add_argument(Argument(ArgumentType.START_TIME, end_date - 10 * TimeInterval.YEAR.timedelta))
         adapter.add_argument(Argument(ArgumentType.END_TIME, end_date))
         adapter.cache_key_date = end_date
-        # adapter.cache_key_date = None
         asset_type_overrides = {
             'ETH': AssetType.DIGITAL_CURRENCY,
             'LTC': AssetType.DIGITAL_CURRENCY,
@@ -221,8 +161,7 @@ class IntrinsicValueRunner(Runner):
     #         collections[query_type.name] = self.get_collection(handles[query_type], base_symbol)
     #     return collections
     #
-    @staticmethod
-    def report_collections(collections: Dict[str, AdapterCollection]):
+    def report_collections(self, collections: Dict[str, AdapterCollection]):
         # A Collection can have multiple symbols tied to a variety of adapters, instead of iterating these right now,
         # we just support one, but if we want to do multiple then we can add support for it
         for name, collection in collections.items():
@@ -327,7 +266,16 @@ class IntrinsicValueRunner(Runner):
 
             #################################################################################
             # Report now...
-            logging.info("Data frame contents for intrinsic value...\n{}".format(df.to_string()))
+            message = "Data frame contents for intrinsic value...\n{}".format(df.to_string())
+            logging.info(message)
+            output_dir = FileSystem.get_output_dir(self.camel_to_snake(self.__class__.__name__))
+            if not os.path.isdir(output_dir):
+                os.makedirs(output_dir)
+            report_name = f"{symbol}_{last_time.strftime('%Y-%m-%d')}_{self.adapter_class.__name__}.log"
+            report_path = os.path.join(output_dir, report_name)
+            f = open(report_path, "w")
+            f.write(message)
+            f.close()
 
             # predict into the future as far forwards as we have data backwards
             intervals = len(df.index)
@@ -420,9 +368,13 @@ class IntrinsicValueRunner(Runner):
             calculated_eps = calculated_earnings[final_date]  # predictions[ValueType.REPORTED_EPS]
             logging.info("  - Future Share Price (future P/E * future EPS ${})".format(round(calculated_eps, 2)))
             max_price = max_pe * calculated_eps
+            max_price = -1.0 * max_price if (max_pe < 0) and (calculated_eps < 0) else max_price
             avg_price = avg_pe * calculated_eps
+            avg_price = -1.0 * avg_price if (avg_pe < 0) and (calculated_eps < 0) else avg_price
             median_price = median_pe * calculated_eps
+            median_price = -1.0 * median_price if (median_pe < 0) and (calculated_eps < 0) else median_price
             min_price = min_pe * calculated_eps
+            min_price = -1.0 * min_price if (min_pe < 0) and (calculated_eps < 0) else min_price
             logging.info("  Max Price: ${:.2f}  Average Price: ${:.2f}  Median Price: ${:.2f}  Min Price: ${:.2f}".
                          format(max_price, avg_price, median_price, min_price))
 
@@ -450,6 +402,11 @@ class IntrinsicValueRunner(Runner):
                 "  Annual Expected Rate of Return (IRR) - {} on {}".format(irr_report, final_date.strftime("%Y-%m-%d")))
             logging.info('-- End report for {}'.format(symbol))
 
+    @staticmethod
+    def camel_to_snake(name: str):
+        name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+
     # @staticmethod
     # def get_data(adapter: Adapter) -> pandas.DataFrame:  # , value_types):
     #     df = adapter.data
@@ -467,6 +424,7 @@ class IntrinsicValueRunner(Runner):
         start_time = adapter.get_common_start_time()
         end_time = adapter.get_common_end_time()
         column: pandas.Series = adapter.get_column_between(start_time, end_time, value_type)
+        column = column.sort_index(ascending=True)
         y = column.values
         days_from_start = (column.index - start_time).days.to_numpy()
         x = days_from_start.reshape(-1, 1)
@@ -477,7 +435,7 @@ class IntrinsicValueRunner(Runner):
         return predictions[0]
 
     def plot_collections(self, collections, interval):
-        visual_date_dir = FileSystem.get_and_clean_cache_dir(FileSystem.get_cache_dir('visuals'))
+        visual_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('visuals'))
         # executor = SequentialExecutor(visual_date_dir)
         executor = ParallelExecutor(visual_date_dir)
         for name, collection in collections.items():
