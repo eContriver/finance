@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
     <option name="CUSTOM_SCOPE_NAME" value="Project Files" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/intrinsic_value.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/intrinsic_value.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/binance.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/binance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/coinbasePro.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/coinbasePro.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/financialModelingPrep.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/financialModelingPrep.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/kraken.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/kraken.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/quandl.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/quandl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/sec.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/sec.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/tdAmeritrade.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/tdAmeritrade.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/common/fileSystem.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/fileSystem.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/common/launchers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/launchers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/common/profiler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/profiler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/discountedCashFlowRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/discountedCashFlowRunner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/testExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/testExecutor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,8 +72,8 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$/.eContriver/intrinsicValueRunner.yaml" />
-    <property name="settings.editor.selected.configurable" value="copyright.profiles" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/executors/parallelExecutor.py" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.tabs" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -135,7 +134,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/intrinsic_value.py" />
-      <option name="PARAMETERS" value="" />
+      <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -238,8 +237,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.intrinsic_value" />
-        <item itemvalue="Python.symbol" />
         <item itemvalue="Python.alert" />
+        <item itemvalue="Python.symbol" />
         <item itemvalue="Python.ml_trainer" />
         <item itemvalue="Python.matrix" />
       </list>
@@ -281,30 +280,25 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/portfolio/portfolio.py</url>
-          <line>271</line>
-          <option name="timeStamp" value="113" />
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/intrinsic_value.py</url>
+          <line>37</line>
+          <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/test/adapterTests.py</url>
-          <line>30</line>
-          <option name="timeStamp" value="126" />
+          <url>file://$PROJECT_DIR$/src/test/testUtils.py</url>
+          <line>71</line>
+          <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>320</line>
-          <option name="timeStamp" value="128" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>367</line>
-          <option name="timeStamp" value="136" />
+          <url>file://$PROJECT_DIR$/src/main/adapters/adapter.py</url>
+          <line>241</line>
+          <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py</url>
-          <line>336</line>
-          <option name="timeStamp" value="141" />
+          <line>44</line>
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -24,9 +24,9 @@ from typing import Optional
 
 class FileSystem:
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    parent_cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache')
-    parent_output_dir = os.path.join(script_dir, '..', '..', '..', 'output')
-    parent_user_dir = os.path.join(str(Path.home()), '.eContriver')
+    parent_cache_dir = os.path.realpath(os.path.join(script_dir, '..', '..', '..', '.cache'))
+    parent_output_dir = os.path.realpath(os.path.join(script_dir, '..', '..', '..', 'output'))
+    parent_user_dir = os.path.realpath(os.path.join(str(Path.home()), '.eContriver'))
 
     @staticmethod
     def get_cache_dir(name):

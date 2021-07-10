@@ -49,10 +49,10 @@ class Launcher:
                             help="Print debug messages to console")
         parser.add_argument("-p", "--profile", action="store_true",
                             help="Profile the run")
-        parser.add_argument("-c", "--cache-dir", dest='cache_dir', type=str, default=None,
-                            help=f"Write cache files to the specified location (default: {os.path.realpath(FileSystem.parent_cache_dir)})")
-        parser.add_argument("-o", "--output-dir", dest='output_dir', type=str, default=None,
-                            help=f"Write output files to the specified location (default: {os.path.realpath(FileSystem.parent_output_dir)})")
+        parser.add_argument("-c", "--cache-dir", dest='cache_dir', type=str, default=FileSystem.parent_cache_dir,
+                            help=f"Write cache files to the specified location")
+        parser.add_argument("-o", "--output-dir", dest='output_dir', type=str, default=FileSystem.parent_output_dir,
+                            help=f"Write output files to the specified location")
 
     @staticmethod
     def configure_logging(console_debug: bool):
