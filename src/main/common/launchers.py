@@ -45,8 +45,14 @@ class Launcher:
 
     @staticmethod
     def add_default_arguments(parser: ArgumentParser) -> None:
-        parser.add_argument("--debug", help="Print debug messages to console", action="store_true")
-        parser.add_argument("--profile", help="Profile the run", action="store_true")
+        parser.add_argument("-d", "--debug", action="store_true",
+                            help="Print debug messages to console")
+        parser.add_argument("-p", "--profile", action="store_true",
+                            help="Profile the run")
+        parser.add_argument("-c", "--cache-dir", dest='cache_dir', type=str, default=None,
+                            help=f"Write cache files to the specified location (default: {os.path.realpath(FileSystem.parent_cache_dir)})")
+        parser.add_argument("-o", "--output-dir", dest='output_dir', type=str, default=None,
+                            help=f"Write output files to the specified location (default: {os.path.realpath(FileSystem.parent_output_dir)})")
 
     @staticmethod
     def configure_logging(console_debug: bool):

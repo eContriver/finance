@@ -21,6 +21,7 @@ from typing import List, Any
 from main.common.fileSystem import FileSystem
 from main.executors.job import Job
 from main.executors.parallelExecutor import ParallelExecutor
+from main.executors.sequentialExecutor import SequentialExecutor
 from main.runners.runner import Runner
 
 
@@ -84,8 +85,8 @@ def is_test(_func=None, *, should_run: bool = True):
         return decorator_is_test(_func)
 
 
-# class TestExecutor(SequentialExecutor):
-class TestExecutor(ParallelExecutor):
+class TestExecutor(SequentialExecutor):
+# class TestExecutor(ParallelExecutor):
     def __init__(self, log_dir):
         super().__init__(log_dir)
 

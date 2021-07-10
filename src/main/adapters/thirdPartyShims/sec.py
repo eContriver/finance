@@ -49,7 +49,7 @@ class Sec(Series,
         script_dir = os.path.dirname(os.path.realpath(__file__))
         cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', Sec.name)
         self.cache_dir = os.path.realpath(cache_dir)
-        self.value_type_map[ValueType.DIVIDEND_PAYOUT] = "dividendsPaid"
+        self.value_type_map[ValueType.DIVIDENDS] = "dividendsPaid"
 
     def delay_requests(self, data_file):
         wait = True

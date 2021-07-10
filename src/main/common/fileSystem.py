@@ -23,24 +23,24 @@ from typing import Optional
 
 
 class FileSystem:
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    parent_cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache')
+    parent_output_dir = os.path.join(script_dir, '..', '..', '..', 'output')
+    parent_user_dir = os.path.join(str(Path.home()), '.eContriver')
 
     @staticmethod
     def get_cache_dir(name):
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache', name)
+        cache_dir = os.path.join(FileSystem.parent_cache_dir, name)
         return cache_dir
 
     @staticmethod
     def get_output_dir(name):
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        output_dir = os.path.join(script_dir, '..', '..', '..', 'output', name)
+        output_dir = os.path.join(FileSystem.parent_output_dir, name)
         return output_dir
 
     @staticmethod
-    def get_user_dir():
-        home = str(Path.home())
-        user_dir = os.path.join(home, '.eContriver')
-        return user_dir
+    def get_parent_user_dir():
+        return FileSystem.parent_user_dir
 
     @staticmethod
     def get_and_clean_timestamp_dir(root_dir, date_format: Optional[str] = "%Y%m%d_%H%M%S"):

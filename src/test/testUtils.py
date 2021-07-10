@@ -50,7 +50,7 @@ class DataGenerator:
     def get_base_price(self, period: int) -> float:
         raise RuntimeError("Implement: {}".format(inspect.currentframe().f_code.co_name))
 
-    def get_data(self) -> pandas.DataFrame:
+    def get_data(self, get_value_type: ValueType) -> pandas.DataFrame:
         translated: pandas.DataFrame = pandas.DataFrame()
         # self.end_time = datetime.now() if self.end_time is None else self.end_time
         start_time = self.end_time - (self.interval.timedelta * self.periods)
@@ -59,11 +59,15 @@ class DataGenerator:
             # translated[current_time] = {}
             price: float = self.get_base_price(i)
             for value_type, offset in self.base_offsets.items():
+                # if value_type == get_value_type:
+                #     continue
                 adjusted_offset = offset
                 if i > 0 and (value_type == ValueType.OPEN or value_type == ValueType.CLOSE):
                     adjusted_offset *= 1.0 if price > self.get_base_price(i - 1) else -1.0
                 translated.loc[current_time, value_type] = price + adjusted_offset
             for value_type, offset in self.static_values.items():
+                # if value_type == get_value_type:
+                #     continue
                 translated.loc[current_time, value_type] = offset
         return translated
 
@@ -137,17 +141,17 @@ class MockDataAdapter(Adapter):
             Converter(ValueType.MACD_SIGNAL, self.get_data, ['MACD_Signal']),
             # SMA = auto()
             # BOOK = auto()
-            Converter(ValueType.REPORTED_EPS, self.get_data, ['reportedEPS']),
+            Converter(ValueType.EPS, self.get_data, ['reportedEPS']),
             # ESTIMATED_EPS = auto()
             # SURPRISE_EPS = auto()
             # SURPRISE_PERCENTAGE_EPS = auto()
             # GROSS_PROFIT = auto()
             # TOTAL_REVENUE = auto()
             # OPERATING_CASH_FLOW = auto()
-            Converter(ValueType.DIVIDEND_PAYOUT, self.get_data, ['dividendPayout']),
+            Converter(ValueType.DIVIDENDS, self.get_data, ['dividendPayout']),
             Converter(ValueType.NET_INCOME, self.get_data, ['netIncome']),
-            Converter(ValueType.TOTAL_ASSETS, self.get_data, ['totalAssets']),
-            Converter(ValueType.TOTAL_LIABILITIES, self.get_data, ['totalLiabilities']),
+            Converter(ValueType.ASSETS, self.get_data, ['totalAssets']),
+            Converter(ValueType.LIABILITIES, self.get_data, ['totalLiabilities']),
             # This value was very wrong for BRK-A, it says something like 3687360528 shares outstanding, while there
             # are actually only something like 640000
             Converter(ValueType.OUTSTANDING_SHARES, self.get_data, ['commonStockSharesOutstanding']),
@@ -164,16 +168,16 @@ class MockDataAdapter(Adapter):
             # employees, which raises the total outstanding share count to 454,208,000. Dividing the same $2,761,395,
             # 000 of net income into 454,208,000 equals an EPS value of $6.08.
             Converter(ValueType.DILUTED_SHARES, self.get_data, ['commonStockSharesOutstanding']),
-            Converter(ValueType.TOTAL_SHAREHOLDER_EQUITY, self.get_data, ['totalShareholderEquity']),
+            Converter(ValueType.SHAREHOLDER_EQUITY, self.get_data, ['totalShareholderEquity']),
         ]
 
     # def collect_data(self, value_type: ValueType):
     #     super(SeriesAdapter, self).collect_data(value_type)
     #     super(RsiAdapter, self).collect_data(value_type)
 
-    def get_data(self):
+    def get_data(self, value_type: ValueType):
         generator: DataGenerator = self.get_generator()
-        self.data = generator.get_data()
+        self.data = generator.get_data(value_type)
 
     def get_generator(self) -> DataGenerator:
         # up/down
@@ -262,8 +266,8 @@ def setup_collection(symbols: List[str],
 def setup_symbol_adapter(symbol, interval: TimeInterval, asset_type: AssetType, base_symbol: str,
                          value_types: List[ValueType]):
     data_adapter: MockDataAdapter = MockDataAdapter(symbol, asset_type)
-    data_adapter.asset_type = asset_type
     data_adapter.value_types = value_types
+    data_adapter.base_symbol = base_symbol
     data_adapter.add_argument(Argument(ArgumentType.END_TIME, datetime.now()))
     data_adapter.add_argument(Argument(ArgumentType.INTERVAL, interval))
     # data_adapter.add_arg(Argument(ArgumentType.RSI_INTERVAL, interval))

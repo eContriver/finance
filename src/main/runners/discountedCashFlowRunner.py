@@ -138,20 +138,20 @@ class FundamentalRunner(Runner):
     def create_fundamentals_adapter(self, symbol):
         adapter = self.new_adapter(symbol)
         adapter.value_types = [
-            ValueType.REPORTED_EPS,
+            ValueType.EPS,
             # ValueType.ESTIMATED_EPS,
             # ValueType.SURPRISE_EPS,
             # ValueType.SURPRISE_PERCENTAGE_EPS,
             # ValueType.GROSS_PROFIT,
             # ValueType.TOTAL_REVENUE,
             # ValueType.OPERATING_CASH_FLOW,
-            ValueType.DIVIDEND_PAYOUT,
+            ValueType.DIVIDENDS,
             ValueType.NET_INCOME,
-            ValueType.TOTAL_ASSETS,
-            ValueType.TOTAL_LIABILITIES,
+            ValueType.ASSETS,
+            ValueType.LIABILITIES,
             ValueType.OUTSTANDING_SHARES,
             ValueType.DILUTED_SHARES,
-            ValueType.TOTAL_SHAREHOLDER_EQUITY,
+            ValueType.SHAREHOLDER_EQUITY,
         ]
         adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.YEAR))
         # adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER)) # TODO: Fix IEX w/ this
@@ -209,25 +209,25 @@ class FundamentalRunner(Runner):
             symbol = list(symbols)[0]
             logging.info('Report for {}'.format(symbol))
 
-            eps_adapter = collection.get_adapter(symbol, ValueType.REPORTED_EPS)
+            eps_adapter = collection.get_adapter(symbol, ValueType.EPS)
             eps_intervals: Set[TimeInterval] = set(
                 [argument.value for argument in eps_adapter.arguments if argument.argument_type ==
                  ArgumentType.INTERVAL])
             assert len(eps_intervals) == 1, "Expected to report on 1 interval for {}, but found: {}".format(
-                ValueType.REPORTED_EPS, eps_intervals)
+                ValueType.EPS, eps_intervals)
             interval: TimeInterval = list(eps_intervals)[0]
 
             # use balance sheet as the model for data - if something else makes more sense, then use it
             value_types = [
-                ValueType.TOTAL_ASSETS,
-                ValueType.TOTAL_LIABILITIES,
+                ValueType.ASSETS,
+                ValueType.LIABILITIES,
                 ValueType.OUTSTANDING_SHARES,
                 ValueType.DILUTED_SHARES,
-                ValueType.TOTAL_SHAREHOLDER_EQUITY,
+                ValueType.SHAREHOLDER_EQUITY,
             ]
-            earnings_value_types = [ValueType.REPORTED_EPS]
+            earnings_value_types = [ValueType.EPS]
             value_types += earnings_value_types
-            cash_flow_value_types = [ValueType.NET_INCOME, ValueType.DIVIDEND_PAYOUT]
+            cash_flow_value_types = [ValueType.NET_INCOME, ValueType.DIVIDENDS]
             value_types += cash_flow_value_types
             price_value_types = [ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
             value_types += price_value_types
@@ -248,10 +248,10 @@ class FundamentalRunner(Runner):
             e_df: pandas.DataFrame = collection.get_columns(symbol, earnings_value_types)
 
             # merge earnings data into the data - match earnings dates using +/- X weeks
-            df[ValueType.REPORTED_EPS] = ""
+            df[ValueType.EPS] = ""
             for date in df.index:
                 closest_idx = e_df.index.get_loc(date, method='nearest')
-                df.loc[date, ValueType.REPORTED_EPS] = e_df.iloc[closest_idx, :][ValueType.REPORTED_EPS]
+                df.loc[date, ValueType.EPS] = e_df.iloc[closest_idx, :][ValueType.EPS]
                 # for current_date in e_df.index:
                 #     df.loc[date, ValueType.REPORTED_EPS] = e_df.get_loc(current_date, method='nearest')
                 #     delta = abs(date - current_date)
@@ -264,11 +264,11 @@ class FundamentalRunner(Runner):
 
             # merge cash flow data into the data - match earnings dates using +/- 2 weeks
             df[ValueType.NET_INCOME] = ""
-            df[ValueType.DIVIDEND_PAYOUT] = ""
+            df[ValueType.DIVIDENDS] = ""
             for date in df.index:
                 closest_idx = cf_df.index.get_loc(date, method='nearest')
                 df.loc[date, ValueType.NET_INCOME] = cf_df.iloc[closest_idx, :][ValueType.NET_INCOME]
-                df.loc[date, ValueType.DIVIDEND_PAYOUT] = cf_df.iloc[closest_idx, :][ValueType.DIVIDEND_PAYOUT]
+                df.loc[date, ValueType.DIVIDENDS] = cf_df.iloc[closest_idx, :][ValueType.DIVIDENDS]
                 # for current_date in cf_df.index:
                 #     delta = abs(date - current_date)
                 #     if delta < timedelta(weeks=8):
@@ -312,8 +312,8 @@ class FundamentalRunner(Runner):
                 df.loc[date, ValueType.LOW] = p_df.iloc[closest_idx, :][ValueType.LOW]
                 df.loc[date, ValueType.HIGH] = p_df.iloc[closest_idx, :][ValueType.HIGH]
                 df.loc[date, ValueType.CLOSE] = p_df.iloc[closest_idx, :][ValueType.CLOSE]
-            df.loc[:, FundamentalRunner.LOW_PE] = df.loc[:, ValueType.LOW] / df.loc[:, ValueType.REPORTED_EPS]
-            df.loc[:, FundamentalRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / df.loc[:, ValueType.REPORTED_EPS]
+            df.loc[:, FundamentalRunner.LOW_PE] = df.loc[:, ValueType.LOW] / df.loc[:, ValueType.EPS]
+            df.loc[:, FundamentalRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / df.loc[:, ValueType.EPS]
             pe_ratios = df.loc[:, FundamentalRunner.LOW_PE] + df.loc[:, FundamentalRunner.HIGH_PE]
 
             #################################################################################
@@ -340,18 +340,18 @@ class FundamentalRunner(Runner):
                 logging.info("  Prediction :  {:.2f} (on {})".format(prediction, future_time.strftime("%Y-%m-%d")))
 
             logging.info("  - Book Value")
-            book_value = df.loc[last_time, ValueType.TOTAL_ASSETS] - df.loc[last_time, ValueType.TOTAL_LIABILITIES]
+            book_value = df.loc[last_time, ValueType.ASSETS] - df.loc[last_time, ValueType.LIABILITIES]
             assert book_value != 0.0, "Total Assets {} - Total Liabilities {} = {} (book value should not be 0)".format(
-                df.loc[last_time, ValueType.TOTAL_ASSETS], df.loc[last_time, ValueType.TOTAL_LIABILITIES], book_value)
+                df.loc[last_time, ValueType.ASSETS], df.loc[last_time, ValueType.LIABILITIES], book_value)
             logging.info("  Current    : ${:.2f} (on {})".format(book_value, last_time.strftime("%Y-%m-%d")))
-            predicted_book_value = predictions[ValueType.TOTAL_ASSETS] - predictions[ValueType.TOTAL_LIABILITIES]
+            predicted_book_value = predictions[ValueType.ASSETS] - predictions[ValueType.LIABILITIES]
             logging.info(
                 "  Prediction : ${:.2f} (on {})".format(predicted_book_value, future_time.strftime("%Y-%m-%d")))
 
             logging.info("  - Book Yield")
             # NOTE: we could do this math on the dataframe instead of scalar, but we don't currently need it
-            earnings_per_share = df.loc[last_time, ValueType.REPORTED_EPS]
-            dividends_per_share = df.loc[last_time, ValueType.DIVIDEND_PAYOUT] / outstanding
+            earnings_per_share = df.loc[last_time, ValueType.EPS]
+            dividends_per_share = df.loc[last_time, ValueType.DIVIDENDS] / outstanding
             payout_ratio = dividends_per_share / earnings_per_share
             retention_ratio = 1 - payout_ratio
             book_value_per_share = book_value / outstanding
@@ -359,7 +359,7 @@ class FundamentalRunner(Runner):
             book_value_growth = book_yield_per_share * retention_ratio
 
             # Average ROE - If the last net income is negative, then using average will hopefully be positive...
-            historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.TOTAL_SHAREHOLDER_EQUITY]
+            historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.SHAREHOLDER_EQUITY]
             return_on_equity = sum(historic_roe) / len(historic_roe)
             # Last ROE
             # shareholder_equity = df.loc[last_time, ValueType.TOTAL_SHAREHOLDER_EQUITY]
@@ -376,7 +376,7 @@ class FundamentalRunner(Runner):
                 calculated_earnings[current_date] = calculated_book_values[current_date] * return_on_equity
 
             logging.info(
-                "  Dividend Payout        : ${:.2f} (on {})".format(df.loc[last_time, ValueType.DIVIDEND_PAYOUT],
+                "  Dividend Payout        : ${:.2f} (on {})".format(df.loc[last_time, ValueType.DIVIDENDS],
                                                                     last_time.strftime("%Y-%m-%d")))
             logging.info("  Dividends per Share    : ${:.2f}".format(dividends_per_share))
             logging.info("  Payout Ratio           : {:.2f}%".format(payout_ratio * 100.0))

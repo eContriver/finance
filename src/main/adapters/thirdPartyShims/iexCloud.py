@@ -69,7 +69,7 @@ class IexCloud(Adapter):
             Converter(ValueType.MACD_SIGNAL, self.get_macd_response, [OrderedOutput.MACD_SIGNAL.value]),
             # SMA = auto()
             # BOOK = auto()
-            Converter(ValueType.REPORTED_EPS, self.get_reported_financials_response,
+            Converter(ValueType.EPS, self.get_reported_financials_response,
                       ['EarningsPerShareDiluted', 'EarningsPerShareBasicAndDiluted']),
             # Converter(ValueType.REPORTED_EPS, self.get_earnings_response, ['reportedEPS']),
             # ESTIMATED_EPS = auto()
@@ -78,11 +78,11 @@ class IexCloud(Adapter):
             # GROSS_PROFIT = auto()
             # TOTAL_REVENUE = auto()
             # OPERATING_CASH_FLOW = auto()
-            Converter(ValueType.DIVIDEND_PAYOUT, self.get_cash_flow_response, ['dividendsPaid']),
+            Converter(ValueType.DIVIDENDS, self.get_cash_flow_response, ['dividendsPaid']),
             Converter(ValueType.NET_INCOME, self.get_income_response, ['netIncomeBasic']),
 
-            Converter(ValueType.TOTAL_ASSETS, self.get_balance_sheet_response, ['Assets', 'totalAssets']),
-            Converter(ValueType.TOTAL_LIABILITIES, self.get_balance_sheet_response,
+            Converter(ValueType.ASSETS, self.get_balance_sheet_response, ['Assets', 'totalAssets']),
+            Converter(ValueType.LIABILITIES, self.get_balance_sheet_response,
                       ['Liabilities', 'totalLiabilities']),
 
             # This value was very wrong for BRK-A, it says something like 3687360528 shares outstanding, while there
@@ -104,7 +104,7 @@ class IexCloud(Adapter):
             Converter(ValueType.DILUTED_SHARES, self.get_reported_financials_response,
                       ['WeightedAverageNumberOfDilutedSharesOutstanding', 'CommonStockSharesOutstanding',
                        'commonStock']),
-            Converter(ValueType.TOTAL_SHAREHOLDER_EQUITY, self.get_reported_financials_response,
+            Converter(ValueType.SHAREHOLDER_EQUITY, self.get_reported_financials_response,
                       ['StockholdersEquity', 'shareholderEquity']),
         ]
 
@@ -588,7 +588,7 @@ class IexCloud(Adapter):
         net_income_basic: pandas.Series = self.data.loc[:, ValueType.NET_INCOME]
         self.retrieve(ValueType.DILUTED_SHARES)
         diluted_shares: pandas.Series = self.data.loc[:, ValueType.DILUTED_SHARES]
-        self.data.loc[:, ValueType.REPORTED_EPS] = net_income_basic / diluted_shares
+        self.data.loc[:, ValueType.EPS] = net_income_basic / diluted_shares
 
     def get_cash_flow_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)

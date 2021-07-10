@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+import importlib
 import logging
 import math
 import os
@@ -35,17 +35,38 @@ from main.adapters.argument import Argument, ArgumentType
 from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
 from main.adapters.thirdPartyShims.iexCloud import IexCloud
 from main.common.fileSystem import FileSystem
+from main.common.report import Report
 from main.executors.parallelExecutor import ParallelExecutor
 from main.adapters.adapterCollection import AdapterCollection
 from main.runners.runner import Runner
 from main.visual.visualizer import Visualizer
 
+# NOTE: This code automatically adds all modules in the thirdPartyShims directory
+# ext_adapter_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'adapters', 'thirdPartyShims'))
+# for module in os.listdir(ext_adapter_dir):
+#     if module == '__init__.py' or module[-3:] != '.py':
+#         continue
+#     importlib.import_module(f'.{module[:-3]}', ext_adapter_dir)
+# del module
+
+
+def format_in_millions(value: float) -> str:
+    return "${:.1f}M".format(value / 1000000)
+
+
+def format_in_dollars(value: float) -> str:
+    return "${:.2f}".format(value)
+
+
+class NoSymbolsSpecifiedException(RuntimeError):
+    pass
+
 
 class IntrinsicValueRunner(Runner):
-    # DAYS_FROM_START = 'Days'
-    HIGH_PE = 'High P/E'
-    LOW_PE = 'Low P/E'
-    # CALCULATED_EPS = 'Calculated EPS'
+    HIGH_PE: str = 'High P/E'
+    LOW_PE: str = 'Low P/E'
+
+    config_file: str = 'intrinsic_value.yaml'
 
     symbols: List[str]
     base_symbol: str
@@ -55,7 +76,13 @@ class IntrinsicValueRunner(Runner):
         self.symbols = []
         self.adapter_class = None
         self.base_symbol = 'USD'
-        self.read_config_file('intrinsic_value.yaml')
+        self.read_config_file(self.get_config_file())
+
+    @staticmethod
+    def get_config_file() -> str:
+        user_dir = FileSystem.get_parent_user_dir()
+        config_path = os.path.join(user_dir, IntrinsicValueRunner.config_file)
+        return config_path
 
     def start(self):
         logging.info("#### Starting intrinsic value runner...")
@@ -73,14 +100,19 @@ class IntrinsicValueRunner(Runner):
         # if draw:
         #     self.plot_collections(collections,  configuration.query_argument[QueryArgument.BALANCE_SHEET_INTERVAL])
 
+        self.write_config()
+
         return success
 
-    def read_config_file(self, config_file):
-        user_dir = FileSystem.get_user_dir()
-        config_path = os.path.join(user_dir, config_file)
+    def write_config(self):
+        pass
+
+    def read_config_file(self, config_path):
         with open(config_path) as f:
             config = yaml.full_load(f)
             self.symbols = config['symbols']
+            if not self.symbols:
+                raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
             class_name = config['adapter_class']
             self.adapter_class = getattr(sys.modules[__name__], class_name)
             self.base_symbol = config['base_symbol']
@@ -108,17 +140,17 @@ class IntrinsicValueRunner(Runner):
     def create_fundamentals_adapter(self, symbol):
         adapter = self.new_adapter(symbol)
         adapter.value_types = [
-            ValueType.REPORTED_EPS,
-            ValueType.DIVIDEND_PAYOUT,
+            ValueType.EPS,
+            ValueType.DIVIDENDS,
             ValueType.NET_INCOME,
-            ValueType.TOTAL_ASSETS,
-            ValueType.TOTAL_LIABILITIES,
+            ValueType.ASSETS,
+            ValueType.LIABILITIES,
             ValueType.OUTSTANDING_SHARES,
             ValueType.DILUTED_SHARES,
-            ValueType.TOTAL_SHAREHOLDER_EQUITY,
+            ValueType.SHAREHOLDER_EQUITY,
         ]
-        # adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.YEAR))
-        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER))  # TODO: Fix IEX w/ this
+        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.YEAR))
+        # adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER))
         return adapter
 
     def new_adapter(self, symbol):
@@ -160,7 +192,7 @@ class IntrinsicValueRunner(Runner):
     #     for query_type in query_types:
     #         collections[query_type.name] = self.get_collection(handles[query_type], base_symbol)
     #     return collections
-    #
+
     def report_collections(self, collections: Dict[str, AdapterCollection]):
         # A Collection can have multiple symbols tied to a variety of adapters, instead of iterating these right now,
         # we just support one, but if we want to do multiple then we can add support for it
@@ -168,34 +200,40 @@ class IntrinsicValueRunner(Runner):
             symbols: Set[str] = set([adapter.symbol for adapter in collection.adapters])
             assert len(symbols) == 1, "Expected to report on 1 symbol, but found: {}".format(list(symbols))
             symbol = list(symbols)[0]
-            logging.info('-- Start report for {}'.format(symbol))
 
-            eps_adapter = collection.get_adapter(symbol, ValueType.REPORTED_EPS)
+            eps_adapter = collection.get_adapter(symbol, ValueType.EPS)
             eps_intervals: Set[TimeInterval] = set(
                 [argument.value for argument in eps_adapter.arguments if argument.argument_type ==
                  ArgumentType.INTERVAL])
             assert len(eps_intervals) == 1, "Expected to report on 1 interval for {}, but found: {}".format(
-                ValueType.REPORTED_EPS, eps_intervals)
+                ValueType.EPS, eps_intervals)
             interval: TimeInterval = list(eps_intervals)[0]
 
             # use balance sheet as the model for data - if something else makes more sense, then use it
             value_types = [
-                ValueType.TOTAL_ASSETS,
-                ValueType.TOTAL_LIABILITIES,
+                ValueType.ASSETS,
+                ValueType.LIABILITIES,
                 ValueType.OUTSTANDING_SHARES,
-                ValueType.TOTAL_SHAREHOLDER_EQUITY,
+                ValueType.SHAREHOLDER_EQUITY,
             ]
-            earnings_value_types = [ValueType.REPORTED_EPS]
+            earnings_value_types = [ValueType.EPS]
             value_types += earnings_value_types
-            cash_flow_value_types = [ValueType.NET_INCOME, ValueType.DIVIDEND_PAYOUT]
+            cash_flow_value_types = [ValueType.NET_INCOME, ValueType.DIVIDENDS]
             value_types += cash_flow_value_types
             price_value_types = [ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
             value_types += price_value_types
 
             last_time = collection.get_common_end_time()
             first_time = collection.get_common_start_time()
-            logging.info('Last time: {}  First time: {}'.format(last_time.strftime("%Y-%m-%d"),
-                                                                first_time.strftime("%Y-%m-%d")))
+
+            output_dir = FileSystem.get_output_dir(Report.camel_to_snake(self.__class__.__name__))
+            report_name = f"{symbol}_{last_time.strftime('%Y-%m-%d')}_{self.adapter_class.__name__}.log"
+            report_path = os.path.join(output_dir, report_name)
+            report: Report = Report(report_path)
+
+            report.log('-- Start report for {}'.format(symbol))
+            report.log('Last time: {}  First time: {}'.format(last_time.strftime("%Y-%m-%d"),
+                                                              first_time.strftime("%Y-%m-%d")))
 
             unbound_df: pandas.DataFrame = collection.get_columns(symbol, value_types)
 
@@ -208,21 +246,21 @@ class IntrinsicValueRunner(Runner):
             e_df: pandas.DataFrame = collection.get_columns(symbol, earnings_value_types)
 
             # merge earnings data into the data - match earnings dates using +/- X weeks
-            df[ValueType.REPORTED_EPS] = ""
+            df[ValueType.EPS] = ""
             for date in df.index:
                 closest_idx = e_df.index.get_loc(date, method='nearest')
-                df.loc[date, ValueType.REPORTED_EPS] = e_df.iloc[closest_idx, :][ValueType.REPORTED_EPS]
+                df.loc[date, ValueType.EPS] = e_df.iloc[closest_idx, :][ValueType.EPS]
 
             # use cash flow as the model for data - if something else makes more sense, then use it
             cf_df = collection.get_columns(symbol, cash_flow_value_types)
 
             # merge cash flow data into the data - match earnings dates using +/- 2 weeks
             df[ValueType.NET_INCOME] = ""
-            df[ValueType.DIVIDEND_PAYOUT] = ""
+            df[ValueType.DIVIDENDS] = ""
             for date in df.index:
                 closest_idx = cf_df.index.get_loc(date, method='nearest')
                 df.loc[date, ValueType.NET_INCOME] = cf_df.iloc[closest_idx, :][ValueType.NET_INCOME]
-                df.loc[date, ValueType.DIVIDEND_PAYOUT] = cf_df.iloc[closest_idx, :][ValueType.DIVIDEND_PAYOUT]
+                df.loc[date, ValueType.DIVIDENDS] = cf_df.iloc[closest_idx, :][ValueType.DIVIDENDS]
 
             # TODO: Where this is used, is it appropriate?
             outstanding = df.loc[last_time, ValueType.OUTSTANDING_SHARES]
@@ -260,22 +298,25 @@ class IntrinsicValueRunner(Runner):
                 df.loc[date, ValueType.LOW] = p_df.iloc[closest_idx, :][ValueType.LOW]
                 df.loc[date, ValueType.HIGH] = p_df.iloc[closest_idx, :][ValueType.HIGH]
                 df.loc[date, ValueType.CLOSE] = p_df.iloc[closest_idx, :][ValueType.CLOSE]
-            df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / df.loc[:, ValueType.REPORTED_EPS]
-            df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / df.loc[:, ValueType.REPORTED_EPS]
+            df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / df.loc[:, ValueType.EPS]
+            df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / df.loc[:, ValueType.EPS]
             pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE] + df.loc[:, IntrinsicValueRunner.HIGH_PE]
 
             #################################################################################
             # Report now...
-            message = "Data frame contents for intrinsic value...\n{}".format(df.to_string())
-            logging.info(message)
-            output_dir = FileSystem.get_output_dir(self.camel_to_snake(self.__class__.__name__))
-            if not os.path.isdir(output_dir):
-                os.makedirs(output_dir)
-            report_name = f"{symbol}_{last_time.strftime('%Y-%m-%d')}_{self.adapter_class.__name__}.log"
-            report_path = os.path.join(output_dir, report_name)
-            f = open(report_path, "w")
-            f.write(message)
-            f.close()
+            df_print = df.copy()
+            df_print[ValueType.ASSETS] = df_print[ValueType.ASSETS].apply(format_in_millions)
+            df_print[ValueType.LIABILITIES] = df_print[ValueType.LIABILITIES].apply(format_in_millions)
+            df_print[ValueType.SHAREHOLDER_EQUITY] = df_print[ValueType.SHAREHOLDER_EQUITY].apply(format_in_millions)
+            df_print[ValueType.EPS] = df_print[ValueType.EPS].apply(format_in_dollars)
+            df_print[ValueType.NET_INCOME] = df_print[ValueType.NET_INCOME].apply(format_in_millions)
+            df_print[ValueType.DIVIDENDS] = df_print[ValueType.DIVIDENDS].apply(format_in_millions)
+            df_print[ValueType.HIGH] = df_print[ValueType.HIGH].apply(format_in_dollars)
+            df_print[ValueType.LOW] = df_print[ValueType.LOW].apply(format_in_dollars)
+            df_print[ValueType.CLOSE] = df_print[ValueType.CLOSE].apply(format_in_dollars)
+            df_print[IntrinsicValueRunner.LOW_PE] = df_print[IntrinsicValueRunner.LOW_PE].apply(format_in_dollars)
+            df_print[IntrinsicValueRunner.HIGH_PE] = df_print[IntrinsicValueRunner.HIGH_PE].apply(format_in_dollars)
+            report.log("Data frame contents for intrinsic value...\n{}".format(df_print.to_string()))
 
             # predict into the future as far forwards as we have data backwards
             intervals = len(df.index)
@@ -285,30 +326,30 @@ class IntrinsicValueRunner(Runner):
             # last = {}
             future_time = last_time + future_timedelta
             for value_type in value_types:
-                # predictions
-                prediction = IntrinsicValueRunner.predict_future_value_linear(symbol, future_time, collection, value_type)
+                prediction = IntrinsicValueRunner.predict_future_value_linear(symbol, future_time, collection,
+                                                                              value_type)
                 predictions[value_type] = prediction
                 # values = symbol_handle.get_all_items(value_type)
                 # end_time = max(values.keys())
-                logging.info("  - {}".format(value_type.as_title()))
+                report.log("  - {}".format(value_type.as_title()))
                 # last[value_type] = df[last_time, value_type]
-                logging.info("  Current    :  {:.2f} (on {})".format(df.loc[last_time, value_type],
-                                                                     last_time.strftime("%Y-%m-%d")))
-                logging.info("  Prediction :  {:.2f} (on {})".format(prediction, future_time.strftime("%Y-%m-%d")))
+                report.log("  Current    :  {:.2f} (on {})".format(df.loc[last_time, value_type],
+                                                                   last_time.strftime("%Y-%m-%d")))
+                report.log("  Prediction :  {:.2f} (on {})".format(prediction, future_time.strftime("%Y-%m-%d")))
 
-            logging.info("  - Book Value")
-            book_value = df.loc[last_time, ValueType.TOTAL_ASSETS] - df.loc[last_time, ValueType.TOTAL_LIABILITIES]
+            report.log("  - Book Value")
+            book_value = df.loc[last_time, ValueType.ASSETS] - df.loc[last_time, ValueType.LIABILITIES]
             assert book_value != 0.0, "Total Assets {} - Total Liabilities {} = {} (book value should not be 0)".format(
-                df.loc[last_time, ValueType.TOTAL_ASSETS], df.loc[last_time, ValueType.TOTAL_LIABILITIES], book_value)
-            logging.info("  Current    : ${:.2f} (on {})".format(book_value, last_time.strftime("%Y-%m-%d")))
-            predicted_book_value = predictions[ValueType.TOTAL_ASSETS] - predictions[ValueType.TOTAL_LIABILITIES]
-            logging.info(
+                df.loc[last_time, ValueType.ASSETS], df.loc[last_time, ValueType.LIABILITIES], book_value)
+            report.log("  Current    : ${:.2f} (on {})".format(book_value, last_time.strftime("%Y-%m-%d")))
+            predicted_book_value = predictions[ValueType.ASSETS] - predictions[ValueType.LIABILITIES]
+            report.log(
                 "  Prediction : ${:.2f} (on {})".format(predicted_book_value, future_time.strftime("%Y-%m-%d")))
 
-            logging.info("  - Book Yield")
+            report.log("  - Book Yield")
             # NOTE: we could do this math on the dataframe instead of scalar, but we don't currently need it
-            earnings_per_share = df.loc[last_time, ValueType.REPORTED_EPS]
-            dividends_per_share = df.loc[last_time, ValueType.DIVIDEND_PAYOUT] / outstanding
+            earnings_per_share = df.loc[last_time, ValueType.EPS]
+            dividends_per_share = df.loc[last_time, ValueType.DIVIDENDS] / outstanding
             payout_ratio = dividends_per_share / earnings_per_share
             retention_ratio = 1 - payout_ratio
             book_value_per_share = book_value / outstanding
@@ -316,7 +357,7 @@ class IntrinsicValueRunner(Runner):
             book_value_growth = book_yield_per_share * retention_ratio
 
             # Predicted ROE - Using a trend-line equivalent predict where ROW will be
-            return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.TOTAL_SHAREHOLDER_EQUITY]
+            return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.SHAREHOLDER_EQUITY]
             # Average ROE - If the last net income is negative, then using average will hopefully be positive...
             # historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.TOTAL_SHAREHOLDER_EQUITY]
             # return_on_equity = sum(historic_roe) / len(historic_roe)
@@ -334,39 +375,39 @@ class IntrinsicValueRunner(Runner):
                         1 + book_value_growth)
                 calculated_earnings[current_date] = calculated_book_values[current_date] * return_on_equity
 
-            logging.info(
-                "  Dividend Payout        : ${:.2f} (on {})".format(df.loc[last_time, ValueType.DIVIDEND_PAYOUT],
+            report.log(
+                "  Dividend Payout        : ${:.2f} (on {})".format(df.loc[last_time, ValueType.DIVIDENDS],
                                                                     last_time.strftime("%Y-%m-%d")))
-            logging.info("  Dividends per Share    : ${:.2f}".format(dividends_per_share))
-            logging.info("  Payout Ratio           : {:.2f}%".format(payout_ratio * 100.0))
-            logging.info("  Retention Ratio        : {:.2f}%".format(retention_ratio * 100.0))
-            logging.info("  Book Yield per Share   : {:.2f}%".format(book_yield_per_share * 100.0))
-            logging.info("  Growth in Book Value   : {:.2f}%".format(book_value_growth * 100.0))
-            logging.info("  Return on Equity (ROE) : {:.2f}%".format(return_on_equity * 100.0))
+            report.log("  Dividends per Share    : ${:.2f}".format(dividends_per_share))
+            report.log("  Payout Ratio           : {:.2f}%".format(payout_ratio * 100.0))
+            report.log("  Retention Ratio        : {:.2f}%".format(retention_ratio * 100.0))
+            report.log("  Book Yield per Share   : {:.2f}%".format(book_yield_per_share * 100.0))
+            report.log("  Growth in Book Value   : {:.2f}%".format(book_value_growth * 100.0))
+            report.log("  Return on Equity (ROE) : {:.2f}%".format(return_on_equity * 100.0))
 
-            logging.info("  - Estimate of Book Value per Share (using shares outstanding: {})".format(outstanding))
-            logging.info("  Current    : ${:.2f} (on {})".format(book_value_per_share, last_time.strftime("%Y-%m-%d")))
+            report.log("  - Estimate of Book Value per Share (using shares outstanding: {})".format(outstanding))
+            report.log("  Current    : ${:.2f} (on {})".format(book_value_per_share, last_time.strftime("%Y-%m-%d")))
             final_date = max(list(calculated_book_values.keys()))
-            logging.info("  Calculated : ${:.2f} (on {})".format(calculated_book_values[final_date],
-                                                                 final_date.strftime("%Y-%m-%d")))
+            report.log("  Calculated : ${:.2f} (on {})".format(calculated_book_values[final_date],
+                                                               final_date.strftime("%Y-%m-%d")))
 
-            logging.info("  - Estimate of Earnings per Share")
-            logging.info("  Current    : ${:.2f} (on {})".format(earnings_per_share, last_time.strftime("%Y-%m-%d")))
+            report.log("  - Estimate of Earnings per Share")
+            report.log("  Current    : ${:.2f} (on {})".format(earnings_per_share, last_time.strftime("%Y-%m-%d")))
             final_date = max(list(calculated_earnings.keys()))
-            logging.info("  Calculated : ${:.2f} (on {})".format(calculated_earnings[final_date],
-                                                                 final_date.strftime("%Y-%m-%d")))
+            report.log("  Calculated : ${:.2f} (on {})".format(calculated_earnings[final_date],
+                                                               final_date.strftime("%Y-%m-%d")))
 
-            logging.info("  - Future P/E (using historic P/E ratios)")
+            report.log("  - Future P/E (using historic P/E ratios)")
             max_pe = max(pe_ratios)
             avg_pe = sum(pe_ratios) / len(pe_ratios)
             median_pe = median(pe_ratios)
             min_pe = min(pe_ratios)
-            logging.info("  Max P/E: {:.2f}  Average P/E: {:.2f}  Median P/E: {:.2f}  Min P/E: {:.2f}  ".format(
+            report.log("  Max P/E: {:.2f}  Average P/E: {:.2f}  Median P/E: {:.2f}  Min P/E: {:.2f}  ".format(
                 max_pe, avg_pe, median_pe, min_pe))
 
             # the predictions are from a linear regression and could be used, but instead we do as Buffet does:
             calculated_eps = calculated_earnings[final_date]  # predictions[ValueType.REPORTED_EPS]
-            logging.info("  - Future Share Price (future P/E * future EPS ${})".format(round(calculated_eps, 2)))
+            report.log("  - Future Share Price (future P/E * future EPS ${})".format(round(calculated_eps, 2)))
             max_price = max_pe * calculated_eps
             max_price = -1.0 * max_price if (max_pe < 0) and (calculated_eps < 0) else max_price
             avg_price = avg_pe * calculated_eps
@@ -375,10 +416,10 @@ class IntrinsicValueRunner(Runner):
             median_price = -1.0 * median_price if (median_pe < 0) and (calculated_eps < 0) else median_price
             min_price = min_pe * calculated_eps
             min_price = -1.0 * min_price if (min_pe < 0) and (calculated_eps < 0) else min_price
-            logging.info("  Max Price: ${:.2f}  Average Price: ${:.2f}  Median Price: ${:.2f}  Min Price: ${:.2f}".
-                         format(max_price, avg_price, median_price, min_price))
+            report.log("  Max Price: ${:.2f}  Average Price: ${:.2f}  Median Price: ${:.2f}  Min Price: ${:.2f}".
+                       format(max_price, avg_price, median_price, min_price))
 
-            logging.info("  - Future Return on Investment (ROI)")
+            report.log("  - Future Return on Investment (ROI)")
             common_dividends = {}
             roi_report = "  Common Dividends - "
             todays_price = df.loc[last_time, ValueType.CLOSE]
@@ -387,7 +428,7 @@ class IntrinsicValueRunner(Runner):
                 common_dividends[date] = earnings * payout_ratio
                 roi_report += "{}: {}  ".format(date.strftime("%Y-%m-%d"), round(common_dividends[date], 2))
                 cash_flows += [common_dividends[date]]
-            logging.info(roi_report)
+            report.log(roi_report)
             max_irr = round(numpy.irr(cash_flows + [max_price]) * 100, 4)
             irr_report = "Max: {}%".format(max_irr)
             avg_irr = round(numpy.irr(cash_flows + [avg_price]) * 100, 4)
@@ -397,15 +438,10 @@ class IntrinsicValueRunner(Runner):
             min_irr = round(numpy.irr(cash_flows + [min_price]) * 100, 4)
             # min_irr = 0.0 if math.isnan(min_irr) else min_irr
             irr_report += "  Min: {}%".format(min_irr)
-            logging.info("  Today's prices: ${} ({})".format(todays_price, last_time.strftime("%Y-%m-%d")))
-            logging.info(
+            report.log("  Today's prices: ${} ({})".format(todays_price, last_time.strftime("%Y-%m-%d")))
+            report.log(
                 "  Annual Expected Rate of Return (IRR) - {} on {}".format(irr_report, final_date.strftime("%Y-%m-%d")))
-            logging.info('-- End report for {}'.format(symbol))
-
-    @staticmethod
-    def camel_to_snake(name: str):
-        name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+            report.log('-- End report for {}'.format(symbol))
 
     # @staticmethod
     # def get_data(adapter: Adapter) -> pandas.DataFrame:  # , value_types):
@@ -468,3 +504,4 @@ class IntrinsicValueRunner(Runner):
         for word in words:
             title.append(word.capitalize())
         return ' '.join(title)
+

@@ -43,7 +43,7 @@ def new_adapter():
         QueryType.BALANCE_SHEET
     ]
     # 2:
-    value_types = [ValueType.TOTAL_ASSETS]
+    value_types = [ValueType.ASSETS]
     # 3:
     interval = TimeInterval.QUARTER
     # 4:

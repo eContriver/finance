@@ -78,8 +78,9 @@ class Job:
     def get_key(self):
         if self.key_override is None:
             args_string = "" if len(self.args) == 0 else "." + "_".join([str(arg) for arg in self.args])
+            mod = self.function.__module__ + "." if hasattr(self.function, '__module__') else ""
             cls = self.function.__self__.__class__.__name__ + "." if hasattr(self.function, '__self__') else ""
-            key = '{}{}{}'.format(cls, self.function.__name__, args_string)
+            key = '{}{}{}{}'.format(mod, cls, self.function.__name__, args_string)
         else:
             key = self.key_override
         return key
