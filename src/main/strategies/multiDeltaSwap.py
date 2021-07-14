@@ -33,7 +33,7 @@ class MultiDeltaSwap(MultiSymbolStrategy):
     def __init__(self, symbols: List[str], portfolio: Portfolio, delta: float):
         super().__init__("Delta swap {:0.2f}".format(delta), symbols, portfolio)
         self.delta = delta
-        self.build_series_collection()
+        self.build_price_collection()
         self.last_symbol = symbols[1]
         self.last_quantity = self.portfolio.quantities[self.last_symbol]
 

@@ -154,7 +154,7 @@ class MockDataAdapter(Adapter):
             Converter(ValueType.LIABILITIES, self.get_data, ['totalLiabilities']),
             # This value was very wrong for BRK-A, it says something like 3687360528 shares outstanding, while there
             # are actually only something like 640000
-            Converter(ValueType.OUTSTANDING_SHARES, self.get_data, ['commonStockSharesOutstanding']),
+            Converter(ValueType.SHARES, self.get_data, ['commonStockSharesOutstanding']),
             # This is not quite right...
             # https://www.fool.com/investing/stock-market/basics/earnings-per-share/
 
@@ -168,7 +168,7 @@ class MockDataAdapter(Adapter):
             # employees, which raises the total outstanding share count to 454,208,000. Dividing the same $2,761,395,
             # 000 of net income into 454,208,000 equals an EPS value of $6.08.
             Converter(ValueType.DILUTED_SHARES, self.get_data, ['commonStockSharesOutstanding']),
-            Converter(ValueType.SHAREHOLDER_EQUITY, self.get_data, ['totalShareholderEquity']),
+            Converter(ValueType.EQUITY, self.get_data, ['totalShareholderEquity']),
         ]
 
     # def collect_data(self, value_type: ValueType):

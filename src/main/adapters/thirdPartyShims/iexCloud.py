@@ -87,7 +87,7 @@ class IexCloud(Adapter):
 
             # This value was very wrong for BRK-A, it says something like 3687360528 shares outstanding, while there
             # are actually only something like 640000
-            Converter(ValueType.OUTSTANDING_SHARES, self.get_reported_financials_response,
+            Converter(ValueType.SHARES, self.get_reported_financials_response,
                       ['WeightedAverageNumberOfSharesOutstandingBasic', 'CommonStockSharesOutstanding', 'commonStock']),
             # This is not quite right...
             # https://www.fool.com/investing/stock-market/basics/earnings-per-share/
@@ -104,7 +104,7 @@ class IexCloud(Adapter):
             Converter(ValueType.DILUTED_SHARES, self.get_reported_financials_response,
                       ['WeightedAverageNumberOfDilutedSharesOutstanding', 'CommonStockSharesOutstanding',
                        'commonStock']),
-            Converter(ValueType.SHAREHOLDER_EQUITY, self.get_reported_financials_response,
+            Converter(ValueType.EQUITY, self.get_reported_financials_response,
                       ['StockholdersEquity', 'shareholderEquity']),
         ]
 

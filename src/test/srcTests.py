@@ -17,7 +17,7 @@
 from datetime import datetime
 
 from main.common.launchers import Launcher
-from test.testExecutor import is_test
+from test.executor_test import is_test
 
 
 

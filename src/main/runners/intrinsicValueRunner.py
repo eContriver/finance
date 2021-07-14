@@ -16,13 +16,11 @@
 import importlib
 import logging
 import os
-import sys
 from datetime import datetime
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Optional
 
 import numpy
 import pandas
-import yaml
 from numpy import median
 from sklearn import linear_model
 
@@ -48,18 +46,27 @@ del module
 def to_dollars(value: float) -> str:
     abs_value = abs(value)
     if abs_value > 10000000000:
-        value_as_str = "${:.1f}B".format(value / 1000000000)
+        value_as_str = "${:.1f}b".format(value / 1000000000)
     elif abs_value > 10000000:
-        value_as_str = "${:.1f}M".format(value / 1000000)
+        value_as_str = "${:.1f}m".format(value / 1000000)
     elif abs_value > 10000:
-        value_as_str = "${:.1f}K".format(value / 1000)
+        value_as_str = "${:.1f}k".format(value / 1000)
     else:
         value_as_str = "${:.2f}".format(value)
     return value_as_str
 
 
-class NoSymbolsSpecifiedException(RuntimeError):
-    pass
+def to_abbrev(value: float) -> str:
+    abs_value = abs(value)
+    if abs_value > 10000000000:
+        value_as_str = "{:.1f}b".format(value / 1000000000)
+    elif abs_value > 10000000:
+        value_as_str = "{:.1f}m".format(value / 1000000)
+    elif abs_value > 10000:
+        value_as_str = "{:.1f}k".format(value / 1000)
+    else:
+        value_as_str = "{:.2f}".format(value)
+    return value_as_str
 
 
 def report_common_dividends(common_dividends):
@@ -95,16 +102,24 @@ class IntrinsicValueRunner(Runner):
     HIGH_PE: str = 'High P/E'
     LOW_PE: str = 'Low P/E'
 
-
     symbols: List[str]
+    adapter_class: Optional[type]
     base_symbol: str
+    run_name: str
+    draw: bool
+    fundamentals_interval: TimeInterval
+    price_interval: TimeInterval
 
-    def __init__(self, config_path):
+    def __init__(self):
         super().__init__()
         self.symbols = []
         self.adapter_class = None
         self.base_symbol = 'USD'
-        self.read_config_file(config_path)
+        self.run_name = 'not_started'
+        self.draw = True
+        self.price_interval = TimeInterval.WEEK
+        self.fundamentals_interval = TimeInterval.YEAR
+        # self.fundamentals_interval = TimeInterval.QUARTER
 
     # @staticmethod
     # def get_config_file() -> str:
@@ -113,19 +128,13 @@ class IntrinsicValueRunner(Runner):
     def start(self):
         logging.info("#### Starting intrinsic value runner...")
         success = True
-
         # Multiple collections == Multiple plots : Each collection is in it's own dict entry under the query type
         # collections = self.multiple_collections(symbols, overrides, base_symbol, adapter_class, interval, today)
         # Single collection == Single plots      : There is one collection in the dict with the key Fundamentals
         collections: Dict[str, AdapterCollection] = self.single_collection(self.symbols)
-
         self.report_collections(collections)
-
-        # draw = True
-        # draw = False
-        # if draw:
-        #     self.plot_collections(collections,  configuration.query_argument[QueryArgument.BALANCE_SHEET_INTERVAL])
-
+        if self.draw:
+            self.plot_collections(collections, self.fundamentals_interval)
         self.write_config()
 
         return success
@@ -133,16 +142,16 @@ class IntrinsicValueRunner(Runner):
     def write_config(self):
         pass
 
-    def read_config_file(self, config_path):
-        with open(config_path) as f:
-            config = yaml.full_load(f)
-            self.symbols = config['symbols']
-            if not self.symbols:
-                raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
-            class_name = config['adapter_class']
-            self.adapter_class = getattr(sys.modules[f'main.adapters.thirdPartyShims.{class_name[0].lower()}{class_name[1:]}'], f'{class_name}')
-            # self.adapter_class = getattr(sys.modules[__name__], class_name)
-            self.base_symbol = config['base_symbol']
+    def get_run_name(self) -> str:
+        return self.run_name
+
+    def get_config(self) -> Dict:
+        config = {
+            'adapter_class': self.adapter_class.__name__,
+            'base_symbol': self.base_symbol,
+            'symbols': self.symbols,
+        }
+        return config
 
     def single_collection(self, symbols: List[str]) -> Dict[str, AdapterCollection]:
         collection: AdapterCollection = AdapterCollection()
@@ -161,7 +170,7 @@ class IntrinsicValueRunner(Runner):
             ValueType.CLOSE,
             ValueType.LOW,
         ]
-        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.WEEK))
+        adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))
         return adapter
 
     def create_fundamentals_adapter(self, symbol):
@@ -172,18 +181,18 @@ class IntrinsicValueRunner(Runner):
             ValueType.NET_INCOME,
             ValueType.ASSETS,
             ValueType.LIABILITIES,
-            ValueType.OUTSTANDING_SHARES,
+            ValueType.SHARES,
             ValueType.DILUTED_SHARES,
-            ValueType.SHAREHOLDER_EQUITY,
+            ValueType.EQUITY,
         ]
-        adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.YEAR))
-        # adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.QUARTER))
+        adapter.add_argument(Argument(ArgumentType.INTERVAL, self.fundamentals_interval))
         return adapter
 
     def new_adapter(self, symbol):
         adapter = self.adapter_class(symbol, asset_type=None)
         adapter.base_symbol = self.base_symbol
-        end_date = datetime(year=2021, month=7, day=3)  # datetime.now()
+        # end_date = datetime(year=2021, month=7, day=3)
+        end_date = datetime.now()
         adapter.add_argument(Argument(ArgumentType.START_TIME, end_date - 10 * TimeInterval.YEAR.timedelta))
         adapter.add_argument(Argument(ArgumentType.END_TIME, end_date))
         adapter.cache_key_date = end_date
@@ -241,8 +250,8 @@ class IntrinsicValueRunner(Runner):
             value_types = [
                 ValueType.ASSETS,
                 ValueType.LIABILITIES,
-                ValueType.OUTSTANDING_SHARES,
-                ValueType.SHAREHOLDER_EQUITY,
+                ValueType.SHARES,
+                ValueType.EQUITY,
             ]
             earnings_value_types = [ValueType.EPS]
             value_types += earnings_value_types
@@ -255,7 +264,8 @@ class IntrinsicValueRunner(Runner):
             first_time = collection.get_common_start_time()
 
             output_dir = FileSystem.get_output_dir(Report.camel_to_snake(self.__class__.__name__))
-            report_name = f"{symbol}_{last_time.strftime('%Y-%m-%d')}_{self.adapter_class.__name__}.log"
+            self.run_name = f"{symbol}_{last_time.strftime('%Y-%m-%d')}_{self.adapter_class.__name__}"
+            report_name = f"{self.run_name}.log"
             report_path = os.path.join(output_dir, report_name)
             report: Report = Report(report_path)
 
@@ -291,7 +301,7 @@ class IntrinsicValueRunner(Runner):
                 df.loc[date, ValueType.DIVIDENDS] = cf_df.iloc[closest_idx, :][ValueType.DIVIDENDS]
 
             # TODO: Where this is used, is it appropriate?
-            outstanding = df.loc[last_time, ValueType.OUTSTANDING_SHARES]
+            outstanding = df.loc[last_time, ValueType.SHARES]
 
             # # calculate the earnings info
             # # ETF, AAPL works fine here but GOOGL fails here, where does this get set? get_date(EARNINGS... is?
@@ -334,8 +344,9 @@ class IntrinsicValueRunner(Runner):
             # Report now...
             df_print = df.copy()
             df_print[ValueType.ASSETS] = df_print[ValueType.ASSETS].apply(to_dollars)
+            df_print[ValueType.SHARES] = df_print[ValueType.SHARES].apply(to_abbrev)
             df_print[ValueType.LIABILITIES] = df_print[ValueType.LIABILITIES].apply(to_dollars)
-            df_print[ValueType.SHAREHOLDER_EQUITY] = df_print[ValueType.SHAREHOLDER_EQUITY].apply(to_dollars)
+            df_print[ValueType.EQUITY] = df_print[ValueType.EQUITY].apply(to_dollars)
             df_print[ValueType.EPS] = df_print[ValueType.EPS].apply(to_dollars)
             df_print[ValueType.NET_INCOME] = df_print[ValueType.NET_INCOME].apply(to_dollars)
             df_print[ValueType.DIVIDENDS] = df_print[ValueType.DIVIDENDS].apply(to_dollars)
@@ -361,7 +372,7 @@ class IntrinsicValueRunner(Runner):
                 # end_time = max(values.keys())
                 report.log("  - {}".format(value_type.as_title()))
                 # last[value_type] = df[last_time, value_type]
-                non_dollar_columns = [ValueType.OUTSTANDING_SHARES]
+                non_dollar_columns = [ValueType.SHARES]
                 current_value = df.loc[last_time, value_type]
                 current_value = f'{current_value:.2f}' if value_type in non_dollar_columns else to_dollars(current_value)
                 report.log("  Current    :  {} (on {})".format(current_value, last_time.strftime("%Y-%m-%d")))
@@ -388,7 +399,7 @@ class IntrinsicValueRunner(Runner):
             book_value_growth = book_yield_per_share * retention_ratio
 
             # Predicted ROE - Using a trend-line equivalent predict where ROW will be
-            return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.SHAREHOLDER_EQUITY]
+            return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.EQUITY]
             # Average ROE - If the last net income is negative, then using average will hopefully be positive...
             # historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.TOTAL_SHAREHOLDER_EQUITY]
             # return_on_equity = sum(historic_roe) / len(historic_roe)
@@ -501,7 +512,7 @@ class IntrinsicValueRunner(Runner):
         # executor = SequentialExecutor(visual_date_dir)
         executor = ParallelExecutor(visual_date_dir)
         for name, collection in collections.items():
-            title = "{} {}".format(list(collection.symbol_handles.keys())[0], self.get_title_string(interval, name))
+            title = "{} {}".format(list(set([adapter.symbol for adapter in collection.adapters])), self.get_title_string(interval, name))
             visualizer: Visualizer = Visualizer(str(title), collection)
             # visualizer.annotate_canceled_orders = True
             # visualizer.annotate_opened_orders = True
@@ -530,4 +541,3 @@ class IntrinsicValueRunner(Runner):
         for word in words:
             title.append(word.capitalize())
         return ' '.join(title)
-

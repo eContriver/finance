@@ -27,7 +27,7 @@ class BookDepth(SingleSymbolStrategy):
     def __init__(self, symbol: str, portfolio: Portfolio, period: float):
         super().__init__("Book depth period {:0.2f}".format(period), symbol, portfolio)
         self.period = period
-        self.build_book_collection(self.period)
+        self.build_book_collection(symbol, self.period)
 
     def next_step(self, current_time):
         last_time = self.portfolio.get_last_completed_time()

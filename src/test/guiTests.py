@@ -20,8 +20,8 @@ from main.portfolio.portfolio import Portfolio
 from main.strategies.boundedRsi import BoundedRsi
 from main.strategies.strategy import Strategy
 from main.visual.visualizer import Visualizer
-from test.testExecutor import is_test, TestRunner
-from test.testUtils import setup_collection, MockDataAdapter
+from test.executor_test import is_test, TestRunner
+from test.utils_test import setup_collection, MockDataAdapter
 
 
 @is_test(should_run=TestRunner.get_instance().run_gui_tests)

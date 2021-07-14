@@ -44,9 +44,9 @@ class ValueType(Enum):
     NET_INCOME = auto()
     ASSETS = auto()
     LIABILITIES = auto()
-    OUTSTANDING_SHARES = auto()
+    SHARES = auto()
     DILUTED_SHARES = auto()
-    SHAREHOLDER_EQUITY = auto()
+    EQUITY = auto()
 
     def __str__(self):
         return self.as_title()

@@ -17,27 +17,33 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 import argparse
 import importlib
+import logging
 import os
+import unittest
 
 from main.common.launchers import Launcher
-from test.testExecutor import TestRunner
+from test.executor_test import TestRunner
 
 # NOTE: This code automatically adds all modules in the test directory
 test_dir = 'test'
 for module in os.listdir(os.path.join(os.path.dirname(__file__), test_dir)):
     if module == '__init__.py' or module[-3:] != '.py':
         continue
+    logging.debug(f"Importing: {test_dir}.{module[:-3]}")
     importlib.import_module(f'.{module[:-3]}', test_dir)
 del module
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    Launcher.add_default_arguments(parser)
+    Launcher.add_common_arguments(parser)
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
     launcher = Launcher(TestRunner.get_instance())
-    exit(0 if launcher.run(args) else 1)
+    return_code = 0 if launcher.run(args) else 1
+    if return_code == 0:
+        unittest.main()
+    exit(return_code)

@@ -1,5 +1,3 @@
-#!/usr/local/bin/python
-
 #  Copyright 2021 eContriver LLC
 #  This file is part of Finance from eContriver.
 #
@@ -15,20 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import argparse
 
-from main.common.launchers import Launcher
-from main.runners.matrixRunner import MatrixRunner
+from unittest import TestCase
 
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    Launcher.add_common_arguments(parser)
-    return parser.parse_args()
+from main.visual.pane import Pane
 
 
-if __name__ == "__main__":
-    args = parse_args()
-    runner = MatrixRunner()
-    launcher = Launcher(runner)
-    exit(0 if launcher.run(args) else 1)
+class TestGraph(TestCase):
+    def test_to_json(self):
+        pane = Pane()

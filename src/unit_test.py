@@ -15,20 +15,20 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import argparse
-
-from main.common.launchers import Launcher
-from main.runners.matrixRunner import MatrixRunner
+import os
+import unittest
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    Launcher.add_common_arguments(parser)
-    return parser.parse_args()
+def load_tests(loader, standard_tests, pattern):
+    # top level directory cached on loader instance
+    test_dir = os.path.join(os.path.dirname(__file__), 'test')
+    if pattern is None:
+        package_tests = loader.discover(start_dir=test_dir)
+    else:
+        package_tests = loader.discover(start_dir=test_dir, pattern=pattern)
+    standard_tests.addTests(package_tests)
+    return standard_tests
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    runner = MatrixRunner()
-    launcher = Launcher(runner)
-    exit(0 if launcher.run(args) else 1)
+    unittest.main()

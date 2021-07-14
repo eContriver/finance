@@ -16,12 +16,54 @@
 
 import logging
 import os
+import pickle
 import sys
 from argparse import ArgumentParser
 from datetime import datetime
 
+import yaml
+
 from main.common.fileSystem import FileSystem
 from main.common.profiler import Profiler
+from main.common.report import Report
+from main.runners.runner import Runner
+
+
+class NoSymbolsSpecifiedException(RuntimeError):
+    pass
+
+
+def read_pkl_config_file(config_path: str) -> Runner:
+    return pickle.load(open(config_path))
+
+
+def read_yaml_config_file(runner: Runner, config_path: str) -> None:
+    logging.debug(f"Reading YAML config file: file://{config_path}")
+    with open(config_path) as infile:
+        config = yaml.safe_load(infile)
+        runner.symbols = config['symbols']
+        if not runner.symbols:
+            raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
+        class_name = config['adapter_class']
+        # intrinsic_value.adapter_class = getattr(
+        runner.adapter_class = getattr(
+            sys.modules[f'main.adapters.thirdPartyShims.{class_name[0].lower()}{class_name[1:]}'], f'{class_name}')
+        # self.adapter_class = getattr(sys.modules[__name__], class_name)
+        runner.base_symbol = config['base_symbol']
+
+
+# def write_pkl_config_file(runner: Runner) -> None:
+#     config_path = get_output_pkl_config_path(runner.run_name)
+#     pickle.dump(runner, open(config_path, 'wb'))
+
+
+def write_yaml_config_file(runner: Runner) -> None:
+    output_dir = FileSystem.get_output_dir(Report.camel_to_snake(runner.__class__.__name__))
+    config_path = os.path.join(output_dir, f"{runner.get_run_name()}.yaml")
+    # config_path = get_output_yaml_config_path(runner.run_name)
+    logging.debug(f"Writing YAML config file: file://{config_path}")
+    with open(config_path, 'w') as outfile:
+        yaml.dump(runner.get_config(), outfile, default_flow_style=False)
 
 
 class Launcher:
@@ -36,7 +78,11 @@ class Launcher:
         Launcher.check_environment()
         success = True
         run_start = datetime.now()
+        if 'config_path' in args:
+            read_yaml_config_file(self.runner, args.config_path)
         success = success and self.runner.start()
+        if 'config_path' in args:
+            write_yaml_config_file(self.runner)
         run_end = datetime.now()
         logging.info(">> Running took: {}s".format(run_end - run_start))
         if Profiler.instance is not None:  # if get_instance hasn't been called yet, then don't do the reporting
@@ -44,7 +90,7 @@ class Launcher:
         return success
 
     @staticmethod
-    def add_default_arguments(parser: ArgumentParser) -> None:
+    def add_common_arguments(parser: ArgumentParser) -> None:
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Print debug messages to console")
         parser.add_argument("-p", "--profile", action="store_true",
@@ -54,6 +100,11 @@ class Launcher:
         parser.add_argument("-o", "--output-dir", dest='output_dir', type=str, default=FileSystem.parent_output_dir,
                             help=f"Write output files to the specified location")
 
+    @classmethod
+    def add_input_config_argument(cls, parser: ArgumentParser, default: str) -> None:
+        parser.add_argument("-i", "--input-config", dest='config_path', type=str, default=default,
+                            help=f"Read config file from the specified location")
+
     @staticmethod
     def configure_logging(console_debug: bool):
         logging.getLogger().setLevel(logging.DEBUG)
@@ -61,7 +112,7 @@ class Launcher:
         out_handler.setLevel(logging.DEBUG if console_debug else logging.INFO)
         out_handler.setFormatter(logging.Formatter("%(message)s"))
         logging.getLogger().addHandler(out_handler)
-        script_dir = os.path.dirname(os.path.realpath(__file__))
+        # script_dir = os.path.dirname(os.path.realpath(__file__))
         cache_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('runs'))
         run_log = os.path.join(cache_dir, 'run.log')
         file_handler = logging.FileHandler(run_log)
@@ -95,3 +146,4 @@ class Launcher:
                 "container to the host machine for the plots.")
         else:
             logging.debug("Using display: {}".format(os.environ.get('DISPLAY')))
+

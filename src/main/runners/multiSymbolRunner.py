@@ -53,7 +53,20 @@ class MultiSymbolRunner(Runner):
         logging.info("#### Starting multi-symbol runner...")
 
         # SymbolCollection
-        symbols = ['ETH', 'BTC']
+        # symbols = ['ETH', 'BTC']
+        # Sector Analysis
+        # https://discord.com/channels/584088953788039174/780316832531873844/864730112104595467
+        symbols = [
+            # 'XLF',
+            'XLK',
+            # 'XLI',
+            # 'XLB',
+            # 'XLV',
+            # 'XLU',
+            'XLE',
+            # 'XLP',
+            # 'XLY'
+        ]
         # Portfolio
         start_time = None
         end_time = None
@@ -84,7 +97,6 @@ class MultiSymbolRunner(Runner):
             strategies.append(BuyAndHold(symbol, copy.deepcopy(template)))
             pass
 
-
         deltas = [
             1.1,
             1.05,
@@ -110,10 +122,11 @@ class MultiSymbolRunner(Runner):
         for period in periods:
             for delta in deltas:
                 for look_back in look_backs:
-                    strategies.append(MultiRelativeSmaSwapUp(symbols, copy.deepcopy(template), period, delta, look_back))
-                    strategies.append(MultiRelativeSmaSwapDown(symbols, copy.deepcopy(template), period, delta, look_back))
+                    strategies.append(
+                        MultiRelativeSmaSwapUp(symbols, copy.deepcopy(template), period, delta, look_back))
+                    strategies.append(
+                        MultiRelativeSmaSwapDown(symbols, copy.deepcopy(template), period, delta, look_back))
                     pass
-
 
         key = "_".join(symbols)
         # strategy_runner = SequentialStrategyExecutor(strategy_date_dir)
@@ -123,7 +136,8 @@ class MultiSymbolRunner(Runner):
         success = strategy_runner.start()
         report_on = strategy_runner.processed_strategies[key] if key in strategy_runner.processed_strategies else [None]
 
-        title = 'Multi-Symbol Runner - Strategy Comparison {}'.format(symbols)  # - {} - {} to {}'.format(symbol, start_time, end_time)
+        title = 'Multi-Symbol Runner - Strategy Comparison {}'.format(
+            symbols)  # - {} - {} to {}'.format(symbol, start_time, end_time)
         self.summarize(title, report_on)
 
         draw = True

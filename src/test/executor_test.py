@@ -44,7 +44,7 @@ class TestRunner(Runner):
     def get_instance(cls):
         if cls.instance is None:
             cls.instance = cls.__new__(cls)
-            script_dir = os.path.dirname(os.path.realpath(__file__))
+            # script_dir = os.path.dirname(os.path.realpath(__file__))
             test_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('tests'))
             cls.instance.test_runner = TestExecutor(test_date_dir)
             # self.runTests = []
@@ -85,8 +85,8 @@ def is_test(_func=None, *, should_run: bool = True):
         return decorator_is_test(_func)
 
 
-class TestExecutor(SequentialExecutor):
-# class TestExecutor(ParallelExecutor):
+# class TestExecutor(SequentialExecutor):
+class TestExecutor(ParallelExecutor):
     def __init__(self, log_dir):
         super().__init__(log_dir)
 

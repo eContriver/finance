@@ -23,7 +23,7 @@ from main.runners.mlTrainingRunner import MLTrainingRunner
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    Launcher.add_default_arguments(parser)
+    Launcher.add_common_arguments(parser)
     return parser.parse_args()
 
 

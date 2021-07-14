@@ -36,7 +36,7 @@ class BoundedRsi(SingleSymbolStrategy):
         self.lower = lower
         self.period = period
         self.build_price_collection()
-        self.build_rsi_collection(self.period)
+        self.build_rsi_collection(symbol, self.period)
 
     def next_step(self, current_time):
         last_time = self.portfolio.get_last_completed_time()

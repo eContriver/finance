@@ -21,8 +21,8 @@ from main.adapters.valueType import ValueType
 from main.portfolio.order import LimitOrder, OrderSide
 
 from main.portfolio.portfolio import Portfolio
-from test.testExecutor import is_test
-from test.testUtils import setup_collection
+from test.executor_test import is_test
+from test.utils_test import setup_collection
 
 
 @is_test

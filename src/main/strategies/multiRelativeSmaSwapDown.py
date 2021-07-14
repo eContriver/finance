@@ -43,7 +43,7 @@ class MultiRelativeSmaSwapDown(MultiSymbolStrategy):
         self.period = period
         self.delta = delta
         self.look_back = look_back
-        self.build_series_collection()
+        self.build_price_collection()
         self.build_sma_collection(self.period)
 
     def next_step(self, current_time: datetime) -> None:

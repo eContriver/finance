@@ -23,7 +23,7 @@ from main.runners.mlPredictionRunner import MLPredictionRunner
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    Launcher.add_default_arguments(parser)
+    Launcher.add_common_arguments(parser)
     return parser.parse_args()
 
 

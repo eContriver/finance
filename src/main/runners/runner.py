@@ -14,14 +14,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 import inspect
+from typing import Dict
 
 
 class Runner:
+    run_name: str
+
     def __init__(self):
-        # self.adapter = adapter
+        self.run_name = "not_started"
         pass
 
     def start(self) -> bool:
+        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+
+    def get_run_name(self) -> str:
+        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+
+    def get_config(self) -> Dict:
         raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
 
     # @staticmethod
@@ -34,4 +43,3 @@ class Runner:
     #         current_end = strategy.get_end_time()
     #         end_time = current_end if end_time is None or current_end < end_time else end_time
     #     return end_time, start_time
-

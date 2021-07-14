@@ -21,8 +21,8 @@ from main.strategies.buyDownSellUpTrailing import BuyDownSellUpTrailing
 from main.strategies.buyUpSellDownTrailing import BuyUpSellDownTrailing
 from main.strategies.lastBounce import LastBounce
 from main.strategies.strategy import Strategy
-from test.testExecutor import is_test
-from test.testUtils import MockDataAdapter
+from test.executor_test import is_test
+from test.utils_test import MockDataAdapter
 
 
 @is_test

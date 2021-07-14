@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from main.portfolio.portfolio import Portfolio
 from main.strategies.strategy import Strategy
@@ -33,110 +33,22 @@ class MultiSymbolStrategy(Strategy):
         string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
         return string
 
-    def build_series_collection(self):
-        assert self.collection is None
-        builder = CollectionBuilder(self.symbols)
-        builder.add_series_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.SERIES),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_order_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.ORDERING),
-            self.portfolio.base_symbol,
-            self.portfolio.asset_type_overrides
-        )
-        self.collection = builder.build_coln(self.portfolio.base_symbol)
+    def build_price_collection(self, cache_key_date: Optional[datetime] = None):
+        for symbol in self.symbols:
+            self.add_price_collection(symbol, cache_key_date)
 
-    def build_macd_collection(self, slow, fast, signal):
-        assert self.collection is None
-        builder = CollectionBuilder(self.symbols)
-        builder.add_series_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.SERIES),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_order_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.ORDERING),
-            self.portfolio.base_symbol,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_macd_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.MACD),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides,
-            slow, fast, signal
-        )
-        self.collection = builder.build_coln(self.portfolio.base_symbol)
+    def build_sma_collection(self, period, cache_key_date: Optional[datetime] = None):
+        for symbol in self.symbols:
+            self.add_rsi_collection(symbol, period, cache_key_date)
 
-    def build_rsi_collection(self, period):
-        assert self.collection is None
-        builder = CollectionBuilder(self.symbols)
-        builder.add_series_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.SERIES),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_order_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.ORDERING),
-            self.portfolio.base_symbol,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_rsi_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.RSI),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides,
-            period
-        )
-        self.collection = builder.build_coln(self.portfolio.base_symbol)
+    def build_macd_collection(self, slow, fast, signal, cache_key_date: Optional[datetime] = None):
+        for symbol in self.symbols:
+            self.add_macd_collection(symbol, slow, fast, signal, cache_key_date)
 
-    def build_sma_collection(self, period):
-        assert self.collection is None
-        builder = CollectionBuilder(self.symbols)
-        builder.add_series_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.SERIES),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_order_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.ORDERING),
-            self.portfolio.base_symbol,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_sma_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.SMA),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides,
-            period
-        )
-        self.collection = builder.build_coln(self.portfolio.base_symbol)
+    def build_rsi_collection(self, period, cache_key_date: Optional[datetime] = None):
+        for symbol in self.symbols:
+            self.add_rsi_collection(symbol, period, cache_key_date)
 
-    def build_book_collection(self, period):
-        assert self.collection is None
-        builder = CollectionBuilder(self.symbols)
-        builder.add_series_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.SERIES),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_order_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.ORDERING),
-            self.portfolio.base_symbol,
-            self.portfolio.asset_type_overrides
-        )
-        builder.add_book_adapter_coln(
-            self.portfolio.get_adapter_class(QueryType.BOOK),
-            self.portfolio.base_symbol,
-            self.portfolio.interval,
-            self.portfolio.asset_type_overrides,
-            period
-        )
-        self.collection = builder.build_coln(self.portfolio.base_symbol)
+    def build_book_collection(self, period, cache_key_date: Optional[datetime] = None):
+        for symbol in self.symbols:
+            self.add_book_collection(symbol, period, cache_key_date)
