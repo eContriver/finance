@@ -21,10 +21,10 @@ from datetime import datetime
 
 from typing import List, Dict
 
-from main.common.fileSystem import FileSystem
-from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
+from main.common.file_system import FileSystem
+from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 from main.executors.parallelExecutor import ParallelExecutor
 from main.executors.sequentialStrategyExecutor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
@@ -145,7 +145,7 @@ class MatrixRunner(Runner):
         ]
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        strategy_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('strategies'))
+        strategy_date_dir = get_and_clean_timestamp_dir()
 
         # strategy_runner = SequentialStrategyExecutor(strategy_date_dir)
         strategy_runner = ParallelStrategyExecutor(strategy_date_dir)
@@ -168,7 +168,7 @@ class MatrixRunner(Runner):
         # draw = True
         draw = False
         if draw:
-            visual_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('visuals'))
+            visual_date_dir = get_and_clean_timestamp_dir()
             visual_runner = ParallelExecutor(visual_date_dir)
             for symbol in self.symbols:
                 for strategy in strategy_runner.processed_strategies[symbol]:

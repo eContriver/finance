@@ -21,11 +21,11 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 
 from main.adapters.adapter import Adapter, AssetType
-from main.adapters.adapterCollection import AdapterCollection
+from main.adapters.adapter_collection import AdapterCollection
 from main.adapters.argument import Argument, ArgumentType
 from main.adapters.orders.order import Order
-from main.adapters.valueType import ValueType
-from main.common.timeZones import TimeZones
+from main.adapters.value_type import ValueType
+from main.common.time_zones import TimeZones
 from main.portfolio.portfolio import Portfolio
 
 

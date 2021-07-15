@@ -6,44 +6,64 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/visual/pane.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/test_graph.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/test_intrinsic_value_runner.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/unit_test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/common/locations.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/common/shared_locations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/alert.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/alert.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/intrinsic_value.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/intrinsic_value.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/valueType.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/valueType.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/adapterCollection.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter_collection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/converter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/alpha_vantage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/binance.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/binance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/coinbasePro.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/coinbase_pro.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/financialModelingPrep.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/financial_modeling_prep.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/iexCloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/iex_cloud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/kraken.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/kraken.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/quandl.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/quandl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/robinhood.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/robinhood.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/sec.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/sec.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/tdAmeritrade.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/td_ameritrade.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/thirdPartyShims/yahoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_shims/yahoo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/valueType.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/value_type.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/fileSystem.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/file_system.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/common/launchers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/launchers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/discountedCashFlowRunner.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/profiler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/profiler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/timeZones.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/time_zones.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/executors/executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/executors/executor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/executors/parallelStrategyExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/executors/parallelStrategyExecutor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/executors/sequentialExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/executors/sequentialExecutor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/executors/sequentialStrategyExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/executors/sequentialStrategyExecutor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/portfolio/order.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/portfolio/order.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/alertRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/alertRunner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsicValueRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/matrixRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/mlPredictionRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/mlPredictionRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/mlTrainingRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/mlTrainingRunner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/multiSymbolRunner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/orderRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/orderRunner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbolRunner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/strategies/bookDepth.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/bookDepth.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/strategies/boundedRsi.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/boundedRsi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/strategies/buyDownSellUp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/buyDownSellUp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/strategies/buyDownSellUpTrailing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/buyDownSellUpTrailing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/strategies/lastBounce.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/lastBounce.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/strategies/macdCrossing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/macdCrossing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/strategies/multiDeltaSwap.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/multiDeltaSwap.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/strategies/multiRelativeSmaSwapDown.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/multiRelativeSmaSwapDown.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/multiSymbolStrategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/multiSymbolStrategy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/singleSymbolStrategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/singleSymbolStrategy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/strategies/multiRelativeSmaSwapUp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/multiRelativeSmaSwapUp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/strategies/soldiersAndCrows.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/soldiersAndCrows.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/strategies/strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/strategy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/matrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/matrix.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ml_predictor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ml_predictor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ml_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ml_trainer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/multi_symbol.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/multi_symbol.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/order.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/order.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/symbol.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/symbol.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/visual/visualizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/visual/visualizer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/adapterTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/adapterTests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/addAdapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/addAdapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/executor_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/executor_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/guiTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/guiTests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/portfolioTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/portfolioTests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/srcTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/srcTests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/strategyTests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/strategyTests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/testExecutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/executor_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/testUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/utils_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/utils_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/utils_test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,11 +92,11 @@
     <setting file="file://$PROJECT_DIR$/src/main/strategies/boundedRsi.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/README.md" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/strategies/strategy.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/common/fileSystem.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/common/file_system.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/visual/extra.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/visual/annotation.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/visual/visualizer.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/adapters/thirdPartyShims/alphaVantage.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/adapters/third_party_shims/alpha_vantage.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/executors/executor.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/executors/sequentialStrategyExecutor.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/runners/mlPredictionRunner.py" root0="FORCE_HIGHLIGHTING" />

@@ -18,7 +18,7 @@ import logging
 import os
 from typing import List, Any
 
-from main.common.fileSystem import FileSystem
+from main.common.file_system import FileSystem
 from main.executors.job import Job
 from main.executors.parallelExecutor import ParallelExecutor
 from main.executors.sequentialExecutor import SequentialExecutor
@@ -45,7 +45,8 @@ class TestRunner(Runner):
         if cls.instance is None:
             cls.instance = cls.__new__(cls)
             # script_dir = os.path.dirname(os.path.realpath(__file__))
-            test_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('tests'))
+            from main.common.locations import get_and_clean_timestamp_dir
+            test_date_dir = get_and_clean_timestamp_dir()
             cls.instance.test_runner = TestExecutor(test_date_dir)
             # self.runTests = []
             # self.runOnlyTests = []
@@ -97,7 +98,7 @@ class TestExecutor(ParallelExecutor):
     def start(self) -> bool:
         success = super().start()
         logging.info(
-            ' -- Testing Complete - results follow... {}'.format(FileSystem.file_link_format(self.get_log_file())))
+            ' -- Testing Complete - results follow... {}'.format(file_link_format()))
         (passed, failed) = self.get_results()
         passed_count = len(passed)
         failed_count = len(failed)

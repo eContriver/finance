@@ -23,33 +23,22 @@ from datetime import datetime
 
 import yaml
 
-from main.common.fileSystem import FileSystem
+from main.common.file_system import FileSystem
 from main.common.profiler import Profiler
 from main.common.report import Report
+from main.common.shared_locations import SharedLocations
 from main.runners.runner import Runner
 
 
-class NoSymbolsSpecifiedException(RuntimeError):
-    pass
-
-
-def read_pkl_config_file(config_path: str) -> Runner:
-    return pickle.load(open(config_path))
+# def read_pkl_config_file(config_path: str) -> Runner:
+#     return pickle.load(open(config_path))
 
 
 def read_yaml_config_file(runner: Runner, config_path: str) -> None:
     logging.debug(f"Reading YAML config file: file://{config_path}")
     with open(config_path) as infile:
         config = yaml.safe_load(infile)
-        runner.symbols = config['symbols']
-        if not runner.symbols:
-            raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
-        class_name = config['adapter_class']
-        # intrinsic_value.adapter_class = getattr(
-        runner.adapter_class = getattr(
-            sys.modules[f'main.adapters.thirdPartyShims.{class_name[0].lower()}{class_name[1:]}'], f'{class_name}')
-        # self.adapter_class = getattr(sys.modules[__name__], class_name)
-        runner.base_symbol = config['base_symbol']
+        runner.set_from_config(config, config_path)
 
 
 # def write_pkl_config_file(runner: Runner) -> None:
@@ -90,14 +79,14 @@ class Launcher:
         return success
 
     @staticmethod
-    def add_common_arguments(parser: ArgumentParser) -> None:
+    def add_common_arguments(cache_dir: str, output_dir: str, parser: ArgumentParser) -> None:
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Print debug messages to console")
         parser.add_argument("-p", "--profile", action="store_true",
                             help="Profile the run")
-        parser.add_argument("-c", "--cache-dir", dest='cache_dir', type=str, default=FileSystem.parent_cache_dir,
+        parser.add_argument("-c", "--cache-dir", dest='cache_dir', type=str, default=cache_dir,
                             help=f"Write cache files to the specified location")
-        parser.add_argument("-o", "--output-dir", dest='output_dir', type=str, default=FileSystem.parent_output_dir,
+        parser.add_argument("-o", "--output-dir", dest='output_dir', type=str, default=output_dir,
                             help=f"Write output files to the specified location")
 
     @classmethod
@@ -113,13 +102,13 @@ class Launcher:
         out_handler.setFormatter(logging.Formatter("%(message)s"))
         logging.getLogger().addHandler(out_handler)
         # script_dir = os.path.dirname(os.path.realpath(__file__))
-        cache_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('runs'))
+        cache_dir = get_and_clean_timestamp_dir()
         run_log = os.path.join(cache_dir, 'run.log')
         file_handler = logging.FileHandler(run_log)
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(logging.Formatter("%(levelname)-5s: %(message)-320s %(asctime)s %(threadName)s"))
         logging.getLogger().addHandler(file_handler)
-        logging.info(">> Run log: {}".format(FileSystem.file_link_format(run_log)))
+        logging.info(">> Run log: {}".format(file_link_format()))
 
     @staticmethod
     def print_copyright_notice():

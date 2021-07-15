@@ -21,9 +21,9 @@ from datetime import datetime
 from typing import List
 
 from main.adapters.adapter import AssetType, TimeInterval, Adapter
-from main.adapters.adapterCollection import AdapterCollection
-from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
-from main.adapters.valueType import ValueType
+from main.adapters.adapter_collection import AdapterCollection
+from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
+from main.adapters.value_type import ValueType
 
 
 # @is_test

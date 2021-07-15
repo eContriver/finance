@@ -22,7 +22,7 @@ import traceback
 from datetime import timedelta, datetime
 from typing import Any, Dict
 
-from main.common.fileSystem import FileSystem
+from main.common.file_system import FileSystem
 from main.executors.executor import Executor
 from main.executors.job import Job, JobState
 
@@ -120,7 +120,7 @@ class SequentialExecutor(Executor):
         for job in jobs:
             level = logging.INFO if (job.state == JobState.PASSED) else logging.ERROR
             job_log = job.get_log_file(self.log_dir)
-            logging.log(level, "{} {}".format(str(job), FileSystem.file_link_format(job_log)))
+            logging.log(level, "{} {}".format(str(job), file_link_format()))
         for job in jobs:
             if job.state == JobState.EXCEPTION:
                 raise job.exception  # throw the first exception

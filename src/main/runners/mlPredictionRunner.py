@@ -24,7 +24,7 @@ import pandas_datareader as web
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow import keras
 
-from main.common.timeZones import TimeZones
+from main.common.time_zones import TimeZones
 from main.runners.runner import Runner
 
 

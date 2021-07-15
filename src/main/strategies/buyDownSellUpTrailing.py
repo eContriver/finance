@@ -16,7 +16,7 @@
 
 from typing import List
 
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 from main.portfolio.order import LimitOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
 from main.strategies.singleSymbolStrategy import SingleSymbolStrategy

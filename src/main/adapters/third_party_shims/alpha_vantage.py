@@ -23,7 +23,7 @@ from os import environ
 from typing import Dict, List, Optional
 
 from main.adapters.adapter import DataType, TimeInterval, AssetType, Adapter
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 from main.adapters.converter import Converter
 from main.adapters.argument import ArgumentType
 

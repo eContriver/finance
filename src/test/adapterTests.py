@@ -19,8 +19,8 @@ from datetime import datetime, timedelta
 import pandas
 
 from main.adapters.adapter import Adapter, AssetType
-from main.adapters.adapterCollection import AdapterCollection
-from main.adapters.valueType import ValueType
+from main.adapters.adapter_collection import AdapterCollection
+from main.adapters.value_type import ValueType
 from test.executor_test import is_test, only_test
 from test.utils_test import setup_collection
 

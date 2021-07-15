@@ -26,8 +26,8 @@ import pandas_datareader
 from pandas_datareader import DataReader
 
 from main.adapters.adapter import TimeInterval, AssetType, DataType, Adapter
-from main.adapters.valueType import ValueType
-from main.common.timeZones import TimeZones
+from main.adapters.value_type import ValueType
+from main.common.time_zones import TimeZones
 
 
 class Yahoo(Adapter):

@@ -14,8 +14,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-from main.adapters.adapterCollection import AdapterCollection
-from main.adapters.valueType import ValueType
+from main.adapters.adapter_collection import AdapterCollection
+from main.adapters.value_type import ValueType
 from main.portfolio.portfolio import Portfolio
 from main.strategies.boundedRsi import BoundedRsi
 from main.strategies.strategy import Strategy

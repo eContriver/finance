@@ -21,7 +21,7 @@ from typing import Optional, List, Dict, Set
 import pandas
 
 from main.adapters.adapter import Adapter, AssetType
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 
 
 class AdapterCollection:

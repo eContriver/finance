@@ -16,6 +16,7 @@
 import importlib
 import logging
 import os
+import sys
 from datetime import datetime
 from typing import Dict, List, Set, Optional
 
@@ -25,21 +26,21 @@ from numpy import median
 from sklearn import linear_model
 
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.adapterCollection import AdapterCollection
+from main.adapters.adapter_collection import AdapterCollection
 from main.adapters.argument import Argument, ArgumentType
-from main.adapters.valueType import ValueType
-from main.common.fileSystem import FileSystem
+from main.adapters.value_type import ValueType
+from main.common.file_system import FileSystem
 from main.common.report import Report
 from main.executors.parallelExecutor import ParallelExecutor
 from main.runners.runner import Runner
 from main.visual.visualizer import Visualizer
 
-# NOTE: This code automatically adds all modules in the thirdPartyShims directory
-ext_adapter_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'adapters', 'thirdPartyShims'))
+# NOTE: This code automatically adds all modules in the third_party_shims directory
+ext_adapter_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'adapters', 'third_party_shims'))
 for module in os.listdir(ext_adapter_dir):
     if module == '__init__.py' or module[-3:] != '.py':
         continue
-    importlib.import_module(f'.{module[:-3]}', f'main.adapters.thirdPartyShims')
+    importlib.import_module(f'.{module[:-3]}', f'main.adapters.third_party_shims')
 del module
 
 
@@ -98,6 +99,10 @@ def report_irr(future_earnings, common_dividends, at_price, avg_price, max_price
     return irr_report
 
 
+class NoSymbolsSpecifiedException(RuntimeError):
+    pass
+
+
 class IntrinsicValueRunner(Runner):
     HIGH_PE: str = 'High P/E'
     LOW_PE: str = 'Low P/E'
@@ -105,8 +110,7 @@ class IntrinsicValueRunner(Runner):
     symbols: List[str]
     adapter_class: Optional[type]
     base_symbol: str
-    run_name: str
-    draw: bool
+    graph: bool
     fundamentals_interval: TimeInterval
     price_interval: TimeInterval
 
@@ -115,8 +119,7 @@ class IntrinsicValueRunner(Runner):
         self.symbols = []
         self.adapter_class = None
         self.base_symbol = 'USD'
-        self.run_name = 'not_started'
-        self.draw = True
+        self.graph = True
         self.price_interval = TimeInterval.WEEK
         self.fundamentals_interval = TimeInterval.YEAR
         # self.fundamentals_interval = TimeInterval.QUARTER
@@ -133,23 +136,28 @@ class IntrinsicValueRunner(Runner):
         # Single collection == Single plots      : There is one collection in the dict with the key Fundamentals
         collections: Dict[str, AdapterCollection] = self.single_collection(self.symbols)
         self.report_collections(collections)
-        if self.draw:
+        if self.graph:
             self.plot_collections(collections, self.fundamentals_interval)
-        self.write_config()
-
         return success
 
-    def write_config(self):
-        pass
-
-    def get_run_name(self) -> str:
-        return self.run_name
+    def set_from_config(self, config, config_path):
+        self.symbols = config['symbols']
+        if not self.symbols:
+            raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
+        class_name = config['adapter_class']
+        self.adapter_class = getattr(
+            sys.modules[f'main.adapters.third_party_shims.{Report.camel_to_snake(class_name)}'], f'{class_name}')
+        self.base_symbol = config['base_symbol']
+        self.fundamentals_interval = TimeInterval(config['fundamentals_interval'])
+        self.graph = config['graph']
 
     def get_config(self) -> Dict:
         config = {
             'adapter_class': self.adapter_class.__name__,
             'base_symbol': self.base_symbol,
             'symbols': self.symbols,
+            'graph': self.graph,
+            'fundamentals_interval': TimeInterval.YEAR.value,
         }
         return config
 
@@ -508,7 +516,7 @@ class IntrinsicValueRunner(Runner):
         return predictions[0]
 
     def plot_collections(self, collections, interval):
-        visual_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('visuals'))
+        visual_date_dir = get_and_clean_timestamp_dir()
         # executor = SequentialExecutor(visual_date_dir)
         executor = ParallelExecutor(visual_date_dir)
         for name, collection in collections.items():

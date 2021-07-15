@@ -25,8 +25,8 @@ from matplotlib import dates
 from mplfinance.original_flavor import candlestick_ochl
 
 from main.adapters.adapter import Adapter
-from main.adapters.valueType import ValueType
-from main.adapters.adapterCollection import AdapterCollection
+from main.adapters.value_type import ValueType
+from main.adapters.adapter_collection import AdapterCollection
 from main.portfolio.portfolio import Portfolio
 from main.portfolio.order import OrderSide, Order
 from main.visual.annotation import Annotation

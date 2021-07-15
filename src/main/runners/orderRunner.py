@@ -17,11 +17,11 @@
 import logging
 from datetime import datetime
 
-from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
+from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 from main.adapters.orders.order import Order
-from main.adapters.thirdPartyShims.robinhood import Robinhood
+from main.adapters.third_party_shims.robinhood import Robinhood
 from main.portfolio.order import OrderSide
 from main.portfolio.portfolio import Portfolio
 from main.runners.runner import Runner

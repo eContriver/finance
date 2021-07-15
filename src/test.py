@@ -22,6 +22,7 @@ import os
 import unittest
 
 from main.common.launchers import Launcher
+from main.common.shared_locations import SharedLocations
 from test.executor_test import TestRunner
 
 # NOTE: This code automatically adds all modules in the test directory
@@ -34,14 +35,15 @@ for module in os.listdir(os.path.join(os.path.dirname(__file__), test_dir)):
 del module
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    Launcher.add_common_arguments(parser)
+def parse_args(locations: SharedLocations):
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    Launcher.add_common_arguments(locations.parent_cache_dir, locations.parent_output_dir, parser)
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    args = parse_args()
+    locations = SharedLocations()
+    args = parse_args(locations)
     launcher = Launcher(TestRunner.get_instance())
     return_code = 0 if launcher.run(args) else 1
     if return_code == 0:

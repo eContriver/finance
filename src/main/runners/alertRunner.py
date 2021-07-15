@@ -20,11 +20,11 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional
 
 from main.adapters.adapter import TimeInterval, AssetType, Adapter
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 from main.adapters.argument import Argument, ArgumentType
-from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
-from main.adapters.thirdPartyShims.yahoo import Yahoo
-from main.adapters.adapterCollection import AdapterCollection
+from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
+from main.adapters.third_party_shims.yahoo import Yahoo
+from main.adapters.adapter_collection import AdapterCollection
 from main.runners.runner import Runner
 
 

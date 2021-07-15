@@ -23,7 +23,7 @@ from typing import Optional, Dict
 import robin_stocks as rs
 
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 from main.adapters.orders.order import Order
 from main.portfolio.order import LimitOrder, OrderSide, StopOrder
 

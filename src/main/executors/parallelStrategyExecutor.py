@@ -21,7 +21,7 @@ import traceback
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 
-from main.common.fileSystem import FileSystem
+from main.common.file_system import FileSystem
 from main.executors.job import Job, JobState
 from main.executors.parallelExecutor import ParallelExecutor
 from main.strategies.strategy import Strategy
@@ -84,7 +84,7 @@ class ParallelStrategyExecutor(ParallelExecutor):
 
     def start(self):
         success = super().start()
-        logging.info('-- Strategies Complete - results follow... {}'.format(FileSystem.file_link_format(self.get_log_file())))
+        logging.info('-- Strategies Complete - results follow... {}'.format(file_link_format()))
         (passed, failed) = self.get_results()
         passed_count = len(passed)
         failed_count = len(failed)

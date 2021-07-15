@@ -20,8 +20,8 @@ import os.path
 from typing import List
 
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.thirdPartyShims.alphaVantage import AlphaVantage
-from main.common.fileSystem import FileSystem
+from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
+from main.common.file_system import FileSystem
 from main.executors.parallelExecutor import ParallelExecutor
 from main.executors.parallelStrategyExecutor import ParallelStrategyExecutor
 from main.portfolio.portfolio import Portfolio
@@ -85,7 +85,7 @@ class MultiSymbolRunner(Runner):
         }
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        strategy_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('strategies'))
+        strategy_date_dir = get_and_clean_timestamp_dir()
 
         # Can always run direct if things get messy...
         # MultiRelativeSmaSwapUp(symbols, copy.deepcopy(template), period=20, delta=1.05, look_back=10).run()
@@ -143,7 +143,7 @@ class MultiSymbolRunner(Runner):
         draw = True
         # draw = False
         if draw:
-            visual_date_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('visuals'))
+            visual_date_dir = get_and_clean_timestamp_dir()
             # visual_runner = SequentialExecutor(visual_date_dir)
             visual_runner = ParallelExecutor(visual_date_dir)
             for strategy in strategy_runner.processed_strategies[key]:

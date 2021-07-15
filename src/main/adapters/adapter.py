@@ -34,8 +34,8 @@ import requests
 
 from main.adapters.argument import Argument, ArgumentType
 from main.adapters.converter import Converter
-from main.adapters.valueType import ValueType
-from main.common.fileSystem import FileSystem
+from main.adapters.value_type import ValueType
+from main.common.file_system import FileSystem
 
 
 class MissingCacheKeyException(RuntimeError):
@@ -278,9 +278,9 @@ class Adapter:
             if not os.path.exists(data_file):  # only download files once per data_id - includes cache_key (e.g.daily)
                 self.delay_requests(data_file)
                 self.write_api_response_to_file(data_file, api, args, data_type)
-                logging.debug('Data saved to: {}'.format(FileSystem.file_link_format(data_file)))
+                logging.debug('Data saved to: {}'.format(file_link_format()))
             else:
-                logging.debug('Using cached file: {}'.format(FileSystem.file_link_format(data_file)))
+                logging.debug('Using cached file: {}'.format(file_link_format()))
         except Exception:
             raise
         finally:
@@ -308,9 +308,9 @@ class Adapter:
                 if delay:
                     self.delay_requests(data_file)
                 self.write_url_response_to_file(data_file, query, url)
-                logging.debug('Data saved to: {}'.format(FileSystem.file_link_format(data_file)))
+                logging.debug('Data saved to: {}'.format(file_link_format()))
             else:
-                logging.debug('Using cached file: {}'.format(FileSystem.file_link_format(data_file)))
+                logging.debug('Using cached file: {}'.format(file_link_format()))
         except Exception:
             raise
         finally:
@@ -342,11 +342,11 @@ class Adapter:
     def read_cache_file(self, data_file, data_type, cache: bool = True):
         content_cache_key = "{}-{}".format(data_file, data_type)
         if cache and content_cache_key in self.content_cache:  # read files only once per process, else get from memory
-            logging.debug('Using cached content for: {} (type: {})'.format(FileSystem.file_link_format(data_file),
+            logging.debug('Using cached content for: {} (type: {})'.format(file_link_format(),
                                                                            data_type))
             data = self.content_cache[content_cache_key]
         else:
-            logging.debug('Reading data from cache file: {} (type: {})'.format(FileSystem.file_link_format(data_file),
+            logging.debug('Reading data from cache file: {} (type: {})'.format(file_link_format(),
                                                                                data_type))
             if data_type == DataType.JSON:
                 with open(data_file, 'r') as fd:

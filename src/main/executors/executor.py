@@ -19,7 +19,7 @@ import os
 import shutil
 import sys
 
-from main.common.fileSystem import FileSystem
+from main.common.file_system import FileSystem
 from main.executors.job import Job, JobState
 
 
@@ -85,7 +85,7 @@ class Executor:
         for job in jobs:
             level = logging.INFO if (job.state == JobState.PASSED) else logging.ERROR
             log_file = job.get_log_file(self.log_dir)
-            logging.log(level, "{} {}".format(str(job), FileSystem.file_link_format(log_file)))
+            logging.log(level, "{} {}".format(str(job), file_link_format()))
 
 #     def __init__(self, log_dir):
 #         self.jobs: list[Job] = []

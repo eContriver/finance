@@ -20,10 +20,10 @@ from typing import Optional, KeysView, List, Dict, Set
 import pandas
 
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.valueType import ValueType
+from main.adapters.value_type import ValueType
 from datetime import datetime, timedelta
 
-from main.adapters.adapterCollection import AdapterCollection
+from main.adapters.adapter_collection import AdapterCollection
 from main.common.profiler import Profiler
 from main.portfolio.order import OrderSide, Order, LimitOrder
 

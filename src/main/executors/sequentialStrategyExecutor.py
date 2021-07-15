@@ -21,7 +21,7 @@ import traceback
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 
-from main.common.fileSystem import FileSystem
+from main.common.file_system import FileSystem
 from main.executors.sequentialExecutor import SequentialExecutor
 from main.executors.job import Job, JobState
 from main.strategies.strategy import Strategy
@@ -72,7 +72,7 @@ class SequentialStrategyExecutor(SequentialExecutor):
     def start(self):
         success = super().start()
         log_file = self.get_log_file()
-        logging.info('-- Strategies Complete - results follow... {}'.format(FileSystem.file_link_format(log_file)))
+        logging.info('-- Strategies Complete - results follow... {}'.format(file_link_format()))
         (passed, failed) = self.get_results()
         passed_count = len(passed)
         failed_count = len(failed)

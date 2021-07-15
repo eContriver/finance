@@ -26,8 +26,8 @@ import pandas
 
 from main.adapters.adapter import TimeInterval, AssetType, Adapter
 from main.adapters.converter import Converter
-from main.adapters.valueType import ValueType
-from main.adapters.adapterCollection import AdapterCollection
+from main.adapters.value_type import ValueType
+from main.adapters.adapter_collection import AdapterCollection
 
 from main.adapters.argument import ArgumentType, Argument
 

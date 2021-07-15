@@ -19,7 +19,7 @@ import logging
 import os
 import pstats
 
-from main.common.fileSystem import FileSystem
+from main.common.file_system import FileSystem
 
 
 class Profiler:
@@ -45,7 +45,7 @@ class Profiler:
         if cls.instance is None:
             cls.instance = cls.__new__(cls)
             cls.instance.c_profiler = cProfile.Profile()
-            cache_dir = FileSystem.get_and_clean_timestamp_dir(FileSystem.get_cache_dir('profiles'))
+            cache_dir = get_and_clean_timestamp_dir()
             cls.instance.profile_log = os.path.join(cache_dir, 'profile.log')
         return cls.instance
 
@@ -62,7 +62,7 @@ class Profiler:
         # logging.info(">> Profiling disabled")
 
     def report(self):
-        logging.info(">> Profiling finished, see: {}".format(FileSystem.file_link_format(self.profile_log)))
+        logging.info(">> Profiling finished, see: {}".format(file_link_format()))
         with open(self.profile_log, 'w') as stream:
             stats = pstats.Stats(self.c_profiler, stream=stream).sort_stats('cumtime')
             stats.print_stats()

@@ -23,9 +23,9 @@ from typing import Optional
 
 import pandas
 
-from main.adapters.adapterCollection import AdapterCollection
-from main.common.timeZones import TimeZones
-from main.adapters.valueType import ValueType
+from main.adapters.adapter_collection import AdapterCollection
+from main.common.time_zones import TimeZones
+from main.adapters.value_type import ValueType
 
 
 class OrderSide(Enum):
