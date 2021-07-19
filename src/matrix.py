@@ -18,7 +18,7 @@
 import argparse
 
 from main.common.launchers import Launcher
-from main.runners.matrixRunner import MatrixRunner
+from main.runners.matrix_runner import MatrixRunner
 
 
 def parse_args():

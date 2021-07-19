@@ -11,9 +11,47 @@ inaccurate. You are responsible for verifying the results that are produced.
 
 # Features
 
-It also provides adapters to external services.
+The Finance from eContriver toolkit provides basic functionality for technical analysis and value investing.
 
-# Open Source
+Some of these features are:
+
+* Back-Testing Investment Strategies
+* Machine Learning Predictors
+* Investment Strategy Comparitors
+* Intrinsic Value Calculations
+* Alerts
+* Automated Order Placement
+
+## Single Stock Strategies
+
+Some of the already added strategies are:
+
+* Buy and Hold strategy
+* Buy low Sell High
+* Trade on MACD Signal
+* Trade on RSI
+* Black soldiers and white crows
+
+It's easy to add more, so this list will continue to grow.
+
+## Multi stock strategy
+
+Monitor 5 stocks, when any are below RSI 40 buy, when it crosses 70 sell, buy the next of the five to cross 40, rinse and repeat
+
+## Use different values with one stock to find the optimal - then do this across multiples
+
+* First part is done, but now we need to use it to determine the optimal strategy across several symbols
+
+## Build table of RSI and MACD and use it to predict the next relative price movement of a stock
+
+* This is the correlation of RSI and MACD with how other investors act based on this data
+
+## Integrated ML/AI to make price model predictor and then use it to trade
+
+* Separate groups of data are used for training the model and another for testing/prediction
+
+
+# Donations
 
 If you want to donate, then you can do that here:
 * 0x9046e392d4F12ec5950F058960aF48B3929eCad6 (ETH)
@@ -62,6 +100,42 @@ In a ~/.bash_profile or equivalent
 ## Install all dependencies
 
     pip install -r requirements.txt
+
+# Testing
+
+## Sequential
+
+The built in unittest runner can be invoked here
+
+    python -m unittest discover ./test/
+
+The built in unittest runner can also be invoked here with custom configuration:
+
+    /app/src/test.py
+
+## Parallel
+
+To test in parallel use:
+
+    pip install unittest-parallel
+    cd /app
+    unittest-parallel -t ./src/ -s ./src/test/ -v
+
+In PyCharm this can be setup using a configuration with runs script:
+
+* Script path
+
+    /usr/local/bin/unittest-parallel
+
+* Parameters
+
+    -t ./src/ -s ./src/test/ -v
+
+# Coverage
+
+Working flow is to run this as you work and make sure you are maintaining coverage.
+
+    unittest-parallel -t ./src/ -s ./src/test/ --coverage --coverage-rcfile .coveragerc --coverage-html ./coverage
 
 # Example output
 
@@ -147,24 +221,6 @@ Used to test a set of strategies with settings across a bunch of different secur
 ## Graphical
 
 ![BTC to USD Example](doc/images/btc_example.png)
-
-
-# Features
-
-## Multi stock strategy
-Monitor 5 stocks, when any are below RSI 40 buy, what it crosses 70 sell, buy the next of the five to cross 40, rinse and repeat
-
-## Use different values with one stock to find the optimal - then do this across multiples
-
-* First part is done, but now we need to use it to determine the optimal strategy across several symbols
-
-## Build table of RSI and MACD and use it to predict the next relative price movement of a stock
-
-* This is the correlation of RSI and MACD with how other investors act based on this data
-
-## Integrated AI to make price model predictor and then use it to trade
-
-* Separate groups of data are used for training the model and another for testing/prediction
 
 # Proposal for new Adapter design
 
@@ -280,33 +336,22 @@ Crypto leverage
 * How does the price of a house in Gold change over time?
 * How does the price of a house in Ethereum change over time?
 
+## Calendar
+
+Unemployment runs out in September
+Evictions
+Tapering
+Etc.
+
+Stimulus payments with
+* Consumer spending
+* Stock prices
+
 # Service Signups
 
 Sign-up for IEX Cloud: https://iexcloud.io/s/becb5771
 
-# Following Investors
-
-Add knowledge from investors
-
-* Michael Burry
-* Jeff Green?
-* Tim Draper
-* Warren Buffet
-* Ray Dalio
-* Guiera
-* Mark Moss - General education - hmmm
-* Dave Ramsey
-* Michael Saylor
-* Chamath Palihapitiya
-* Rick Rule
-* Marin Katusa
-* Doug Casey
-* Tom Lee
-* Balaji Srinivasan
-* Dave Portnoy - Perhaps don’t follow, but watch to see what he does as it is generally short term, a bit of a gambler
-### Gold
-* David Garofalo - the who is who of gold
-* Ami Adnani - Gold and gldlf
+# Social Media
 
 * Social Media to Follow
     * https://www.reddit.com/user/Criand/

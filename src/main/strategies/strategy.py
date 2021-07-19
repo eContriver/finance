@@ -126,9 +126,9 @@ class Strategy:
                                                                                             matching_adapters))
         return adapter
 
-    def add_price_collection(self, symbol: str, cache_key_date: Optional[datetime] = None):
+    def add_price_collection(self, symbol: str, cache_key_date: Optional[datetime] = None) -> None:
         asset_type = self.collection.asset_type_overrides[symbol] if symbol in \
-                                                                          self.collection.asset_type_overrides else None
+                                                                     self.collection.asset_type_overrides else None
         value_types = [ValueType.OPEN, ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
         adapters: Dict[ValueType, Any] = {}
         for value_type in value_types:
@@ -138,6 +138,21 @@ class Strategy:
             adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
             adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
             adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
+            adapter.add_value_type(value_type)
+
+    def add_sma_collection(self, symbol: str, period: str, cache_key_date: Optional[datetime] = None) -> None:
+        asset_type = self.collection.asset_type_overrides[symbol] if symbol in \
+                                                                          self.collection.asset_type_overrides else None
+        value_types = [ValueType.SMA]
+        adapters: Dict[ValueType, Any] = {}
+        for value_type in value_types:
+            adapters[value_type] = self.portfolio.get_adapter_class(value_type)
+        for value_type, adapter_class in adapters.items():
+            adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
+            adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
+            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
+            adapter.arguments.append(Argument(ArgumentType.SMA_PERIOD, period))
             adapter.add_value_type(value_type)
 
     def add_macd_collection(self, symbol, slow, fast, signal, cache_key_date: Optional[datetime] = None):

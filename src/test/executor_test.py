@@ -13,77 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import inspect
 import logging
 import os
-from typing import List, Any
 
-from main.common.file_system import FileSystem
-from main.executors.job import Job
-from main.executors.parallelExecutor import ParallelExecutor
-from main.executors.sequentialExecutor import SequentialExecutor
-from main.runners.runner import Runner
-
-
-class TestRunner(Runner):
-    instance = None
-    only_test_specified: bool = False
-    tests_to_run: List[Any] = []
-    run_only_tests: List[Any] = []
-    # run_gui_tests = True
-    run_gui_tests = False
-    ui_tests_block = False
-    # ui_tests_block = True
-    test_runner = None
-
-    def __init__(self):
-        super().__init__()
-        raise RuntimeError('Use instance() instead')
-
-    @classmethod
-    def get_instance(cls):
-        if cls.instance is None:
-            cls.instance = cls.__new__(cls)
-            # script_dir = os.path.dirname(os.path.realpath(__file__))
-            from main.common.locations import get_and_clean_timestamp_dir
-            test_date_dir = get_and_clean_timestamp_dir()
-            cls.instance.test_runner = TestExecutor(test_date_dir)
-            # self.runTests = []
-            # self.runOnlyTests = []
-        return cls.instance
-
-    def add_test_override(self, function):
-        self.run_only_tests.append(function)
-
-    def add_test(self, function):
-        self.tests_to_run.append(function)
-
-    def start(self) -> bool:
-        only_test_count = len(self.run_only_tests)
-        assert only_test_count <= 1, "Run only tests only accepts 1 or no tests, but found: {}".format(
-            self.run_only_tests)
-        test_jobs = self.run_only_tests if only_test_count == 1 else self.tests_to_run
-        for run_test in test_jobs:
-            self.test_runner.add_job(Job(run_test, ()))
-        success = self.test_runner.start()
-        return success
-
-
-def only_test(function):
-    TestRunner.get_instance().add_test_override(function)
-    return function
-
-
-def is_test(_func=None, *, should_run: bool = True):
-    def decorator_is_test(function):
-        if should_run:
-            TestRunner.get_instance().add_test(function)
-        return function
-
-    if _func is None:
-        return decorator_is_test
-    else:
-        return decorator_is_test(_func)
+from main.common.locations import file_link_format
+from main.executors.parallel_executor import ParallelExecutor
 
 
 # class TestExecutor(SequentialExecutor):
@@ -98,7 +32,7 @@ class TestExecutor(ParallelExecutor):
     def start(self) -> bool:
         success = super().start()
         logging.info(
-            ' -- Testing Complete - results follow... {}'.format(file_link_format()))
+            ' -- Testing Complete - results follow... {}'.format(file_link_format(self.get_log_file())))
         (passed, failed) = self.get_results()
         passed_count = len(passed)
         failed_count = len(failed)

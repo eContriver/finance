@@ -18,34 +18,28 @@
 from main.adapters.value_type import ValueType
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.strategies.singleSymbolStrategy import SingleSymbolStrategy
+from main.strategies.single_symbol_strategy import SingleSymbolStrategy
 
 
-class MacdCrossing(SingleSymbolStrategy):
-    slow: float
-    fast: float
-    signal: float
+class BookDepth(SingleSymbolStrategy):
+    period: float
 
-    def __init__(self, symbol: str, portfolio: Portfolio, slow: float, fast: float, signal: float):
-        super().__init__("MACD crossing slow {} fast {} signal {}".format(slow, fast, signal), symbol, portfolio)
-        self.slow = slow
-        self.fast = fast
-        self.signal = signal
-        self.build_price_collection(symbol)
-        self.build_macd_collection(symbol, slow, fast, signal)
+    def __init__(self, symbol: str, portfolio: Portfolio, period: float):
+        super().__init__("Book depth period {:0.2f}".format(period), symbol, portfolio)
+        self.period = period
+        self.build_book_collection(symbol, self.period)
 
     def next_step(self, current_time):
         last_time = self.portfolio.get_last_completed_time()
         if last_time is not None:
-            cash = self.portfolio.quantities[self.collection.get_base_symbol()]
+            cash = self.portfolio.quantities[self.collection.base_symbol]
             quantity: float = self.portfolio.quantities[self.symbol]
-            hist = self.collection.get_value(self.symbol, last_time, ValueType.MACD_HIST)
-            threshold = 0.0
-            if (quantity > 0.0) and (hist <= threshold):
+            book = self.collection.get_value(self.symbol, last_time, ValueType.BOOK)
+            if (quantity > 0.0) and (book >= self.upper):
                 order = MarketOrder(self.symbol, OrderSide.SELL, quantity, current_time)
-                order.message = "macd histogram {:0.1f} crossed above {:0.1f}".format(hist, threshold)
+                order.message = "book ({:0.1f}) crossed above {:0.1f}".format(book, self.upper)
                 self.portfolio.open_order(order)
-            elif (cash > 0.0) and (hist >= threshold):
+            elif (cash > 0.0) and (book <= self.lower):
                 order = MarketOrder(self.symbol, OrderSide.BUY, cash, current_time)
-                order.message = "macd histogram {:0.1f} crossed below {:0.1f}".format(hist, threshold)
+                order.message = "book ({:0.1f}) crossed below {:0.1f}".format(book, self.lower)
                 self.portfolio.open_order(order)

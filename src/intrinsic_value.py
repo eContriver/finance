@@ -16,62 +16,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 import argparse
-import logging
 import os.path
-import pickle
-import sys
 
-import yaml
-
-from main.common.file_system import FileSystem
 from main.common.launchers import Launcher
-from main.common.locations import get_and_clean_timestamp_dir
-from main.common.report import Report
-from main.common.shared_locations import SharedLocations
-from main.runners.intrinsicValueRunner import IntrinsicValueRunner
+from main.common.locations import Locations
+from main.runners.intrinsic_value_runner import IntrinsicValueRunner
 
 
-def get_yaml_config_file_name() -> str:
-    return 'intrinsic_value.yaml'
-
-
-def get_input_yaml_config_path(locations: SharedLocations) -> str:
-    user_dir = locations.get_parent_user_dir()
-    config_path = os.path.join(user_dir, get_yaml_config_file_name())
-    return config_path
-
-
-def get_output_pkl_config_path(locations: SharedLocations, run_name: str) -> str:
-    output_dir = locations.get_output_dir(Report.camel_to_snake(IntrinsicValueRunner.__name__))
-    config_path = os.path.join(output_dir, f"{run_name}.pkl")
-    return config_path
-
-
-def get_output_yaml_config_path(locations: SharedLocations, run_name: str) -> str:
-    output_dir = locations.get_output_dir(Report.camel_to_snake(IntrinsicValueRunner.__name__))
-    config_path = os.path.join(output_dir, f"{run_name}.yaml")
-    return config_path
-
-
-def parse_args(default_cache_dir: str, default_output_dir: str):
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    Launcher.add_common_arguments(default_cache_dir, default_output_dir, parser)
-    Launcher.add_input_config_argument(parser, get_input_yaml_config_path(locations))
+def parse_args(default_cache_dir: str, default_output_dir: str, default_config_file: str):
+    parser = argparse.ArgumentParser(prog='intrinsic_value', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    Launcher.add_common_arguments(parser, default_cache_dir, default_output_dir)
+    Launcher.add_config_arguments(parser, default_config_file)
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    locations = SharedLocations()
-    args = parse_args(locations.parent_cache_dir, locations.parent_output_dir)
+    locations = Locations()
+    input_config_path = os.path.join(locations.get_parent_user_dir(), 'intrinsic_value.yaml')
+    args = parse_args(locations.parent_cache_dir, locations.parent_output_dir, input_config_path)
     locations.parent_cache_dir = args.cache_dir
     locations.parent_output_dir = args.output_dir
-    # runner: IntrinsicValueRunner = read_pkl_config_file(args.config_path)
+    input_config_path = args.config_path
     runner = IntrinsicValueRunner()
-    # read_yaml_config_file(runner, args.config_path)
     launcher = Launcher(runner)
-    cache_dir = locations.get_and_clean_timestamp_dir(
-    )
-    return_code = 0 if launcher.run(args) else 1
-    # write_pkl_config_file(runner)
-    # write_yaml_config_file(runner)
+    return_code = 0 if launcher.run(locations, args) else 1
     exit(return_code)

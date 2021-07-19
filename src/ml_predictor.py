@@ -18,7 +18,7 @@
 import argparse
 
 from main.common.launchers import Launcher
-from main.runners.mlPredictionRunner import MLPredictionRunner
+from main.runners.ml_prediction_runner import MLPredictionRunner
 
 
 def parse_args():

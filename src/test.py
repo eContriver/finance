@@ -16,14 +16,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 import argparse
+import glob
 import importlib
 import logging
 import os
 import unittest
 
 from main.common.launchers import Launcher
-from main.common.shared_locations import SharedLocations
-from test.executor_test import TestRunner
+from main.common.locations import Locations
+from test.runner_test import TestRunner
+
+g_locations = Locations()
+TestRunner.get_instance(g_locations.get_cache_dir('test'))
 
 # NOTE: This code automatically adds all modules in the test directory
 test_dir = 'test'
@@ -35,17 +39,32 @@ for module in os.listdir(os.path.join(os.path.dirname(__file__), test_dir)):
 del module
 
 
-def parse_args(locations: SharedLocations):
+def parse_args(locations: Locations):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    Launcher.add_common_arguments(locations.parent_cache_dir, locations.parent_output_dir, parser)
+    Launcher.add_common_arguments(parser, locations.parent_cache_dir, locations.parent_output_dir)
     return parser.parse_args()
 
 
+def create_test_suite():
+    test_file_strings = glob.glob('test/test_*.py')
+    module_strings = ['test.'+string[5:len(string)-3] for string in test_file_strings]
+    suites = [unittest.defaultTestLoader.loadTestsFromName(name) for name in module_strings]
+    test_suite = unittest.TestSuite(suites)
+    return test_suite
+
+
 if __name__ == "__main__":
-    locations = SharedLocations()
-    args = parse_args(locations)
-    launcher = Launcher(TestRunner.get_instance())
-    return_code = 0 if launcher.run(args) else 1
-    if return_code == 0:
-        unittest.main()
+    locations = g_locations
+    # No need for args with unittest it defines it's own
+    # args = parse_args(locations)
+    return_code = 0
+    test_suite = create_test_suite()
+    text_runner = unittest.TextTestRunner().run(test_suite)
+    # unittest.main()
+    # Custom Tests
+    # launcher = Launcher(TestRunner.get_instance())
+    # return_code = 0 if launcher.run(args) else 1
+    # Python unittest
+    # if return_code == 0:
+    #     unittest.main()
     exit(return_code)

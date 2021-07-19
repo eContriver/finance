@@ -18,12 +18,12 @@
 import argparse
 
 from main.common.launchers import Launcher
-from main.runners.symbolRunner import SymbolRunner
+from main.runners.symbol_runner import SymbolRunner
 
 
-def parse_args():
+def parse_args(cache_dir: str, output_dir: str):
     parser = argparse.ArgumentParser()
-    Launcher.add_common_arguments(parser)
+    Launcher.add_common_arguments(cache_dir, output_dir, parser)
     return parser.parse_args()
 
 

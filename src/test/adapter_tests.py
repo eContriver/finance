@@ -21,23 +21,9 @@ import pandas
 from main.adapters.adapter import Adapter, AssetType
 from main.adapters.adapter_collection import AdapterCollection
 from main.adapters.value_type import ValueType
-from test.executor_test import is_test, only_test
+from test.runner_test import only_test, is_test
 from test.utils_test import setup_collection
 
-
-@is_test
-# @only_test
-def verify_common_start():
-    adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
-    adapter.data = pandas.DataFrame()
-    common_time = datetime(year=3000, month=2, day=1)
-    adapter.data.loc[common_time, ValueType.OPEN] = 1.0
-    adapter.data.loc[common_time + timedelta(weeks=1), ValueType.OPEN] = 1.0
-    adapter.data.loc[common_time - timedelta(weeks=1), ValueType.CLOSE] = 1.0
-    adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
-    adapter.data.loc[common_time + timedelta(weeks=1), ValueType.CLOSE] = 1.0
-    assert adapter.get_common_start_time() == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
-    return True
 
 
 @is_test
@@ -53,7 +39,7 @@ def verify_find_closest_instance_after_mismatch():
     assert adapter.find_closest_instance_after(mismatch_time) == common_time, f"Did not get the correct common end " \
                                                                               f"time, expected {common_time}, " \
                                                                               f"received " \
-                                                                              f"{adapter.get_common_end_time()} "
+                                                                              f"{get_common_end_time(adapter.data)} "
     return True
 
 
@@ -68,7 +54,7 @@ def verify_find_closest_instance_before_mismatch():
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
     assert adapter.find_closest_instance_before(
-        mismatch_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+        mismatch_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {get_common_end_time(adapter.data)}"
     return True
 
 
@@ -95,7 +81,7 @@ def verify_find_closest_instance_before():
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
     assert adapter.find_closest_instance_before(
-        common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+        common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {get_common_end_time(adapter.data)}"
     return True
 
 
@@ -109,7 +95,7 @@ def verify_find_closest_instance_after():
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
     assert adapter.find_closest_instance_after(
-        common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+        common_time) == common_time, f"Did not get the correct common end time, expected {common_time}, received {get_common_end_time(adapter.data)}"
     return True
 
 
@@ -124,5 +110,6 @@ def verify_common_end():
     adapter.data.loc[common_time - timedelta(weeks=1), ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
     adapter.data.loc[common_time + timedelta(weeks=1), ValueType.CLOSE] = 1.0
-    assert adapter.get_common_end_time() == common_time, f"Did not get the correct common end time, expected {common_time}, received {adapter.get_common_end_time()}"
+    assert get_common_end_time(
+        adapter.data) == common_time, f"Did not get the correct common end time, expected {common_time}, received {get_common_end_time(adapter.data)}"
     return True

@@ -20,7 +20,7 @@ import logging
 from datetime import datetime
 
 from main.common.profiler import Profiler
-from main.runners.intrinsicValueRunner import IntrinsicValueRunner
+from main.runners.intrinsic_value_runner import IntrinsicValueRunner
 
 
 def run_launcher():

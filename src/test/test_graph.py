@@ -13,12 +13,17 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+from time import sleep
 from unittest import TestCase
 
 from main.visual.pane import Pane
 
 
 class TestGraph(TestCase):
+    def test_to_json_1(self):
+        # sleep(10)
+        pane = Pane()
+
     def test_to_json(self):
+        # sleep(10)
         pane = Pane()

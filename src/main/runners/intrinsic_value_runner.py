@@ -13,35 +13,27 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import importlib
 import logging
 import os
 import sys
 from datetime import datetime
-from typing import Dict, List, Set, Optional
+from typing import Dict, Set, Optional, Any
 
 import numpy
 import pandas
 from numpy import median
 from sklearn import linear_model
 
-from main.adapters.adapter import TimeInterval, AssetType
+from main.adapters.adapter import TimeInterval, AssetType, Adapter, get_common_start_time, get_common_end_time
 from main.adapters.adapter_collection import AdapterCollection
 from main.adapters.argument import Argument, ArgumentType
 from main.adapters.value_type import ValueType
-from main.common.file_system import FileSystem
+from main.common.launchers import Launcher
 from main.common.report import Report
-from main.executors.parallelExecutor import ParallelExecutor
-from main.runners.runner import Runner
+from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
+from main.executors.parallel_executor import ParallelExecutor
+from main.runners.runner import Runner, NoSymbolsSpecifiedException
 from main.visual.visualizer import Visualizer
-
-# NOTE: This code automatically adds all modules in the third_party_shims directory
-ext_adapter_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'adapters', 'third_party_shims'))
-for module in os.listdir(ext_adapter_dir):
-    if module == '__init__.py' or module[-3:] != '.py':
-        continue
-    importlib.import_module(f'.{module[:-3]}', f'main.adapters.third_party_shims')
-del module
 
 
 def to_dollars(value: float) -> str:
@@ -99,15 +91,22 @@ def report_irr(future_earnings, common_dividends, at_price, avg_price, max_price
     return irr_report
 
 
-class NoSymbolsSpecifiedException(RuntimeError):
+class UnexpectedDataTypeException(RuntimeError):
     pass
+
+
+def validate_type(input_key: str, variable: Any, variable_type: type, config_path: Optional[str] = None):
+    if type(variable) is not variable_type:
+        path_message = f" (see: {file_link_format(config_path)})"
+        raise UnexpectedDataTypeException(f"Input '{input_key}' is expected to be type '{variable_type.__name__}', but "
+                                          f"instead found: '{type(variable).__name__}'{path_message}")
 
 
 class IntrinsicValueRunner(Runner):
     HIGH_PE: str = 'High P/E'
     LOW_PE: str = 'Low P/E'
 
-    symbols: List[str]
+    symbol: Optional[str]
     adapter_class: Optional[type]
     base_symbol: str
     graph: bool
@@ -116,7 +115,7 @@ class IntrinsicValueRunner(Runner):
 
     def __init__(self):
         super().__init__()
-        self.symbols = []
+        self.symbol = None
         self.adapter_class = None
         self.base_symbol = 'USD'
         self.graph = True
@@ -128,49 +127,55 @@ class IntrinsicValueRunner(Runner):
     # def get_config_file() -> str:
     #     return IntrinsicValueRunner.config_path
 
-    def start(self):
+    def start(self, locations: Locations):
         logging.info("#### Starting intrinsic value runner...")
         success = True
         # Multiple collections == Multiple plots : Each collection is in it's own dict entry under the query type
         # collections = self.multiple_collections(symbols, overrides, base_symbol, adapter_class, interval, today)
         # Single collection == Single plots      : There is one collection in the dict with the key Fundamentals
-        collections: Dict[str, AdapterCollection] = self.single_collection(self.symbols)
-        self.report_collections(collections)
+        collections: Dict[str, AdapterCollection] = self.single_collection(self.symbol)
+        self.report_collections(locations, collections)
         if self.graph:
-            self.plot_collections(collections, self.fundamentals_interval)
+            self.plot_collections(locations, collections, self.fundamentals_interval)
         return success
 
+    def get_config(self) -> Dict:
+        config = {
+            'adapter_class': self.adapter_class.__name__,
+            'base_symbol': self.base_symbol,
+            'symbol': self.symbol,
+            'graph': self.graph,
+            'fundamentals_interval': self.fundamentals_interval.value,
+        }
+        return config
+
     def set_from_config(self, config, config_path):
-        self.symbols = config['symbols']
-        if not self.symbols:
-            raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
+        self.symbol = config['symbol']
         class_name = config['adapter_class']
         self.adapter_class = getattr(
             sys.modules[f'main.adapters.third_party_shims.{Report.camel_to_snake(class_name)}'], f'{class_name}')
         self.base_symbol = config['base_symbol']
         self.fundamentals_interval = TimeInterval(config['fundamentals_interval'])
         self.graph = config['graph']
+        self.check_member_variables(config_path)
 
-    def get_config(self) -> Dict:
-        config = {
-            'adapter_class': self.adapter_class.__name__,
-            'base_symbol': self.base_symbol,
-            'symbols': self.symbols,
-            'graph': self.graph,
-            'fundamentals_interval': TimeInterval.YEAR.value,
-        }
-        return config
+    def check_member_variables(self, config_path: str):
+        validate_type('symbol', self.symbol, str, config_path)
+        if not self.symbol:
+            raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
 
-    def single_collection(self, symbols: List[str]) -> Dict[str, AdapterCollection]:
+    def get_run_name(self):
+        return f"{self.symbol}_{self.fundamentals_interval.value}_{self.adapter_class.__name__}"
+
+    def single_collection(self, symbol: str) -> Dict[str, AdapterCollection]:
         collection: AdapterCollection = AdapterCollection()
-        for symbol in symbols:
-            collection.add(self.create_price_adapter(symbol))
-            collection.add(self.create_fundamentals_adapter(symbol))
+        collection.add(self.create_price_adapter(symbol))
+        collection.add(self.create_fundamentals_adapter(symbol))
         # collection.set_all_cache_key_dates(datetime(year=2021, month=6, day=25))
         collection.retrieve_all_data()
         return {'Fundamentals': collection}
 
-    def create_price_adapter(self, symbol):
+    def create_price_adapter(self, symbol: str):
         adapter = self.new_adapter(symbol)
         adapter.value_types = [
             ValueType.HIGH,
@@ -238,15 +243,11 @@ class IntrinsicValueRunner(Runner):
     #         collections[query_type.name] = self.get_collection(handles[query_type], base_symbol)
     #     return collections
 
-    def report_collections(self, collections: Dict[str, AdapterCollection]):
+    def report_collections(self, locations: Locations, collections: Dict[str, AdapterCollection]):
         # A Collection can have multiple symbols tied to a variety of adapters, instead of iterating these right now,
         # we just support one, but if we want to do multiple then we can add support for it
         for name, collection in collections.items():
-            symbols: Set[str] = set([adapter.symbol for adapter in collection.adapters])
-            assert len(symbols) == 1, "Expected to report on 1 symbol, but found: {}".format(list(symbols))
-            symbol = list(symbols)[0]
-
-            eps_adapter = collection.get_adapter(symbol, ValueType.EPS)
+            eps_adapter = collection.get_adapter(self.symbol, ValueType.EPS)
             eps_intervals: Set[TimeInterval] = set(
                 [argument.value for argument in eps_adapter.arguments if argument.argument_type ==
                  ArgumentType.INTERVAL])
@@ -271,17 +272,17 @@ class IntrinsicValueRunner(Runner):
             last_time = collection.get_common_end_time()
             first_time = collection.get_common_start_time()
 
-            output_dir = FileSystem.get_output_dir(Report.camel_to_snake(self.__class__.__name__))
-            self.run_name = f"{symbol}_{last_time.strftime('%Y-%m-%d')}_{self.adapter_class.__name__}"
-            report_name = f"{self.run_name}.log"
+            output_dir = locations.get_output_dir(Report.camel_to_snake(self.__class__.__name__))
+            report_name = f"{self.get_run_name()}.log"
             report_path = os.path.join(output_dir, report_name)
             report: Report = Report(report_path)
 
-            report.log('-- Start report for {}'.format(symbol))
+            report.log('-- Start report for {}'.format(self.symbol))
+            report.log('\n'.join(Launcher.get_copyright_notice()))
             report.log('Last time: {}  First time: {}'.format(last_time.strftime("%Y-%m-%d"),
                                                               first_time.strftime("%Y-%m-%d")))
 
-            unbound_df: pandas.DataFrame = collection.get_columns(symbol, value_types)
+            unbound_df: pandas.DataFrame = collection.get_columns(self.symbol, value_types)
 
             # NOTE: In the future we can add an interpolation that will either fill nan values with the previous or
             #       we can do some kind of linear interpolation between data points to fill nans, but with boundaries
@@ -289,7 +290,7 @@ class IntrinsicValueRunner(Runner):
             df: pandas.DataFrame = unbound_df.truncate(first_time, last_time)
 
             # get earnings data - we requested access to earnings info from IEX, but if not then we'll calculate it
-            e_df: pandas.DataFrame = collection.get_columns(symbol, earnings_value_types)
+            e_df: pandas.DataFrame = collection.get_columns(self.symbol, earnings_value_types)
 
             # merge earnings data into the data - match earnings dates using +/- X weeks
             df[ValueType.EPS] = ""
@@ -298,7 +299,7 @@ class IntrinsicValueRunner(Runner):
                 df.loc[date, ValueType.EPS] = e_df.iloc[closest_idx, :][ValueType.EPS]
 
             # use cash flow as the model for data - if something else makes more sense, then use it
-            cf_df = collection.get_columns(symbol, cash_flow_value_types)
+            cf_df = collection.get_columns(self.symbol, cash_flow_value_types)
 
             # merge cash flow data into the data - match earnings dates using +/- 2 weeks
             df[ValueType.NET_INCOME] = ""
@@ -329,7 +330,7 @@ class IntrinsicValueRunner(Runner):
             #     # https://www.fool.com/investing/stock-market/basics/earnings-per-share/#:~:text=EPS%20is%20calculated%20by%20subtracting,the%20number%20of%20shares%20outstanding.
 
             # get series data
-            p_df = collection.get_columns(symbol, price_value_types)
+            p_df = collection.get_columns(self.symbol, price_value_types)
 
             # merge series data into the data - match earnings dates using +/- 2 weeks
             df[ValueType.LOW] = ""
@@ -344,8 +345,9 @@ class IntrinsicValueRunner(Runner):
                 df.loc[date, ValueType.LOW] = p_df.iloc[closest_idx, :][ValueType.LOW]
                 df.loc[date, ValueType.HIGH] = p_df.iloc[closest_idx, :][ValueType.HIGH]
                 df.loc[date, ValueType.CLOSE] = p_df.iloc[closest_idx, :][ValueType.CLOSE]
-            df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / df.loc[:, ValueType.EPS]
-            df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / df.loc[:, ValueType.EPS]
+            multiple = 4 if self.fundamentals_interval is TimeInterval.QUARTER else 1
+            df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / (df.loc[:, ValueType.EPS] * 4)
+            df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / (df.loc[:, ValueType.EPS] * 4)
             pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE] + df.loc[:, IntrinsicValueRunner.HIGH_PE]
 
             #################################################################################
@@ -373,7 +375,7 @@ class IntrinsicValueRunner(Runner):
             # last = {}
             future_time = last_time + future_timedelta
             for value_type in value_types:
-                prediction = IntrinsicValueRunner.predict_future_value_linear(symbol, future_time, collection,
+                prediction = IntrinsicValueRunner.predict_future_value_linear(self.symbol, future_time, collection,
                                                                               value_type)
                 predictions[value_type] = prediction
                 # values = symbol_handle.get_all_items(value_type)
@@ -382,7 +384,8 @@ class IntrinsicValueRunner(Runner):
                 # last[value_type] = df[last_time, value_type]
                 non_dollar_columns = [ValueType.SHARES]
                 current_value = df.loc[last_time, value_type]
-                current_value = f'{current_value:.2f}' if value_type in non_dollar_columns else to_dollars(current_value)
+                current_value = f'{current_value:.2f}' if value_type in non_dollar_columns else to_dollars(
+                    current_value)
                 report.log("  Current    :  {} (on {})".format(current_value, last_time.strftime("%Y-%m-%d")))
                 prediction = f'{prediction:.2f}' if value_type in non_dollar_columns else to_dollars(prediction)
                 report.log("  Prediction :  {} (on {})".format(prediction, future_time.strftime("%Y-%m-%d")))
@@ -391,10 +394,10 @@ class IntrinsicValueRunner(Runner):
             book_value = df.loc[last_time, ValueType.ASSETS] - df.loc[last_time, ValueType.LIABILITIES]
             assert book_value != 0.0, "Total Assets {} - Total Liabilities {} = {} (book value should not be 0)".format(
                 df.loc[last_time, ValueType.ASSETS], df.loc[last_time, ValueType.LIABILITIES], book_value)
-            report.log("  Current    : ${:.2f} (on {})".format(book_value, last_time.strftime("%Y-%m-%d")))
+            report.log("  Current    :  {} (on {})".format(to_dollars(book_value), last_time.strftime("%Y-%m-%d")))
             predicted_book_value = predictions[ValueType.ASSETS] - predictions[ValueType.LIABILITIES]
             report.log(
-                "  Prediction : ${:.2f} (on {})".format(predicted_book_value, future_time.strftime("%Y-%m-%d")))
+                "  Prediction :  {} (on {})".format(to_dollars(predicted_book_value), future_time.strftime("%Y-%m-%d")))
 
             report.log("  - Book Yield")
             # NOTE: we could do this math on the dataframe instead of scalar, but we don't currently need it
@@ -486,7 +489,7 @@ class IntrinsicValueRunner(Runner):
                                      avg_price, max_price, median_price, min_price)
             report.log(
                 "    Annual Rate of Return (IRR) - {} on {}".format(irr_current, final_date.strftime("%Y-%m-%d")))
-            report.log('-- End report for {}'.format(symbol))
+            report.log('-- End report for {}'.format(self.symbol))
 
     # @staticmethod
     # def get_data(adapter: Adapter) -> pandas.DataFrame:  # , value_types):
@@ -501,9 +504,9 @@ class IntrinsicValueRunner(Runner):
     @staticmethod
     def predict_future_value_linear(symbol: str, future_time: datetime, collection: AdapterCollection,
                                     value_type: ValueType):
-        adapter = collection.get_adapter(symbol, value_type)
-        start_time = adapter.get_common_start_time()
-        end_time = adapter.get_common_end_time()
+        adapter: Adapter = collection.get_adapter(symbol, value_type)
+        start_time = get_common_start_time(adapter.data)
+        end_time = get_common_end_time(adapter.data)
         column: pandas.Series = adapter.get_column_between(start_time, end_time, value_type)
         column = column.sort_index(ascending=True)
         y = column.values
@@ -515,12 +518,13 @@ class IntrinsicValueRunner(Runner):
         # logging.info(df)
         return predictions[0]
 
-    def plot_collections(self, collections, interval):
-        visual_date_dir = get_and_clean_timestamp_dir()
+    def plot_collections(self, locations: Locations, collections, interval):
+        visual_date_dir = get_and_clean_timestamp_dir(locations.get_output_dir('visuals'))
         # executor = SequentialExecutor(visual_date_dir)
         executor = ParallelExecutor(visual_date_dir)
         for name, collection in collections.items():
-            title = "{} {}".format(list(set([adapter.symbol for adapter in collection.adapters])), self.get_title_string(interval, name))
+            title = "{} {}".format(list(set([adapter.symbol for adapter in collection.adapters])),
+                                   self.get_title_string(interval, name))
             visualizer: Visualizer = Visualizer(str(title), collection)
             # visualizer.annotate_canceled_orders = True
             # visualizer.annotate_opened_orders = True

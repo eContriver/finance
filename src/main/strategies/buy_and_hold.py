@@ -15,5 +15,21 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 
-class FileSystem:
-    pass
+from datetime import datetime
+
+from main.portfolio.order import MarketOrder, OrderSide
+from main.portfolio.portfolio import Portfolio
+from main.strategies.single_symbol_strategy import SingleSymbolStrategy
+
+
+class BuyAndHold(SingleSymbolStrategy):
+
+    def __init__(self, symbol: str, portfolio: Portfolio):
+        super().__init__("Buy and Hold", symbol, portfolio)
+        self.build_price_collection()
+
+    def next_step(self, current_time: datetime) -> None:
+        cash = self.portfolio.quantities[self.collection.get_base_symbol()]
+        if cash > 0.0:
+            order = MarketOrder(self.symbol, OrderSide.BUY, cash, current_time)
+            self.portfolio.open_order(order)

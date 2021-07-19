@@ -18,24 +18,22 @@ import copy
 import logging
 import os.path
 from datetime import datetime
-
 from typing import List, Dict
 
-from main.common.file_system import FileSystem
-from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
 from main.adapters.adapter import TimeInterval, AssetType
+from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
 from main.adapters.value_type import ValueType
-from main.executors.parallelExecutor import ParallelExecutor
-from main.executors.sequentialStrategyExecutor import SequentialStrategyExecutor
+from main.common.locations import get_and_clean_timestamp_dir
+from main.executors.parallel_executor import ParallelExecutor
+from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
 from main.portfolio.portfolio import Portfolio
 from main.runners.runner import Runner
-from main.strategies.buyAndHold import BuyAndHold
-from main.strategies.buyDownSellUpTrailing import BuyDownSellUpTrailing
-from main.strategies.buyUpSellDownTrailing import BuyUpSellDownTrailing
-from main.strategies.lastBounce import LastBounce
-from main.strategies.soldiersAndCrows import SoldiersAndCrows
+from main.strategies.buy_and_hold import BuyAndHold
+from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
+from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
+from main.strategies.last_bounce import LastBounce
+from main.strategies.soldiers_and_crows import SoldiersAndCrows
 from main.strategies.strategy import Strategy
-from main.executors.parallelStrategyExecutor import ParallelStrategyExecutor
 from main.visual.visualizer import Visualizer
 
 
@@ -103,6 +101,7 @@ class MatrixRunner(Runner):
             'MSFT',  # Software / Infrastructure
             'NVDA', 'INTC', 'AVGO',
             'AMD', 'XLNX', 'TSM',  # Semiconductors
+            'GHVI',  # MatterPort
             # Communication Services
             'GOOG', 'FB',  # Internet Information
             'VZ', 'T',  # Telecommunications
@@ -142,6 +141,21 @@ class MatrixRunner(Runner):
             'CMPS', 'MNMD',
             # Digital Currencies
             'BTC', 'ETH', 'LTC', 'DOGE',
+            # Whole Market
+            'VTI',
+            # Sectors
+            'XLF',  # Financial
+            'XLK',  # Technology
+            'XLI',  # Industrial
+            'XLB',  # Materials
+            'XLV',  # Health Care
+            'XLU',  # Utilities
+            'XLE',  # Energy
+            'XLP',  # Consumer Staples
+            'XLY',  # Consumer Discretionary
+            # World
+            'EWT',  # Taiwan
+            'VT',  # Whole world
         ]
 
         script_dir = os.path.dirname(os.path.realpath(__file__))

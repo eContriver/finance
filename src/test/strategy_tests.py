@@ -15,13 +15,13 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 from main.portfolio.portfolio import Portfolio
-from main.strategies.buyAndHold import BuyAndHold
-from main.strategies.buyDownSellUp import BuyDownSellUp
-from main.strategies.buyDownSellUpTrailing import BuyDownSellUpTrailing
-from main.strategies.buyUpSellDownTrailing import BuyUpSellDownTrailing
-from main.strategies.lastBounce import LastBounce
+from main.strategies.buy_and_hold import BuyAndHold
+from main.strategies.buy_down_sell_up import BuyDownSellUp
+from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
+from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
+from main.strategies.last_bounce import LastBounce
 from main.strategies.strategy import Strategy
-from test.executor_test import is_test
+from test.runner_test import is_test
 from test.utils_test import MockDataAdapter
 
 

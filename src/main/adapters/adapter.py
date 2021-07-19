@@ -16,7 +16,6 @@
 
 
 import csv
-# from binance.client import Client
 import inspect
 import json
 import logging
@@ -35,30 +34,60 @@ import requests
 from main.adapters.argument import Argument, ArgumentType
 from main.adapters.converter import Converter
 from main.adapters.value_type import ValueType
-from main.common.file_system import FileSystem
+from main.common.locations import file_link_format
 
 
-class MissingCacheKeyException(RuntimeError):
-    pass
+# class MissingCacheKeyException(RuntimeError):
+#     pass
 
 
 class DuplicateRawIndexesException(RuntimeError):
+    """
+    When data is added
+    """
     pass
 
 
 class AssetType(Enum):
+    """
+    The AssetType class is used to differentiate the different asset types. For instance if the symbol BTC is used, then
+    we expect DIGITAL_CURRENCY, if USD is used we expect PHYSICAL_CURRENCY, and for the symbol AAPL it should be EQUITY.
+
+    There are cases like ETH where it is ambiguous (it could be an EQUITY or a DIGITAL_CURRENCY).
+
+    When an asset type is not specified (i.e. it is None), then the system will attempt to auto-calculate the value by
+    looking up the symbol in lists provided to the adapters. In ambiguous cases there is generate an asset_type_override
+    available where specific asset types can be set for different symbols.
+    """
     EQUITY = 'equity'
     DIGITAL_CURRENCY = 'digital currency'
     PHYSICAL_CURRENCY = 'physical currency'
 
 
 class DataType(Enum):
+    """
+    The DataType class is used to define the type of data that is returned from an API. This is used for both rest API
+    calls and module API calls (i.e. which go into other libraries)
+    """
     JSON = 1
     CSV = 2
     DATAFRAME = 3
 
 
 class TimeInterval(Enum):
+    """
+    The TimeInterval enumeration is intended to represent the time intervals between data. It is generally used when
+    querying an adapter for data as most APIs require an interval.
+
+    The TimeInterval class is also used when saving and reading configuration information from configuration files.
+
+    The string value can be used for messages, but it's purpose is for human readable files such as configuration files
+    etc. The timedelta value is intended to be used for calculations and comparisons between the time intervals.
+
+    Retrieve the values as:
+      TimeValue.SEC15.value -> '15sec'
+      TimeValue.SEC15.timedelta -> timedelta(seconds=15)
+    """
     SEC15 = '15sec', timedelta(seconds=15)
     MIN1 = '1min', timedelta(minutes=1)
     MIN5 = '5min', timedelta(minutes=5)
@@ -81,97 +110,81 @@ class TimeInterval(Enum):
         member.timedelta = delta
         return member
 
-    # @staticmethod
-    # def get(delta: timedelta):
-    #     for value in TimeInterval:
-    #         if value.timevalue == delta:
-    #             return value
-    #     return None
 
-    # def __int__(self):
-    #     return int(self.timedelta)
+def get_common_start_time(data: pandas.DataFrame) -> Optional[datetime]:
+    """
+    Collects the first valid (non nan/None) index (datetime) for each column and selects the max of those.
+    D1  1    None
+    D2  1    1     <- Returns D2 assuming sorted indices D1 is less than D2 in datetime (epoch)
+    D3  1    1
+    D4  None 1
 
+    NOTE: This will also return a seemingly incorrect index when there is no overlap
+    D1  1    None
+    D2  1    None
+    D3  None 1     <- Returns D3
+    D4  None 1
 
-# class ValueType(Enum):
-#     ORDERING = 0
-#     SERIES = 1
-#     RSI = 2
-#     SMA = 3
-#     MACD = 4
-#     BOOK = 5
-#     EARNINGS = 6
-#     INCOME = 7
-#     BALANCE_SHEET = 8
-#     CASH_FLOW = 9
-#
-
-# class QueryArgument(Enum):
-#     SERIES_INTERVAL = 0, ValueType.SERIES
-#     INCOME_INTERVAL = 1, ValueType.INCOME
-#     EARNINGS_INTERVAL = 2, ValueType.EARNINGS
-#     BALANCE_SHEET_INTERVAL = 3, ValueType.BALANCE_SHEET
-#     CASH_FLOW_INTERVAL = 4, ValueType.CASH_FLOW
-#
-#     def __new__(cls, value, value_type):
-#         member = object.__new__(cls)
-#         member._value_ = value
-#         member.value_type = value_type
-#         return member
-#
+    :param data: DataFrame with datetime index and one or more columns
+    :return: The common start time across all columns with valid data
+    """
+    valid_start_times = []
+    data = data.sort_index(ascending=True)
+    for column in data:
+        valid_start_times.append(data[column].first_valid_index())
+    return None if len(valid_start_times) == 0 else max(valid_start_times)
 
 
-# class ValueTypeOld(Enum):
-#     """
-#     Adapters have a member variable called value_type_map and it can be used to override the defaults listed below e.g.
-#     self.value_type_map[ValueType.DIVIDEND_PAYOUT] = "dividendsPaid"
-#     """
-#     ADJUSTED_CLOSE = 'adjusted close', ValueType.SERIES
-#     CLOSE = 'close', ValueType.SERIES
-#     OPEN = 'open', ValueType.SERIES
-#     HIGH = 'high', ValueType.SERIES
-#     LOW = 'low', ValueType.SERIES
-#     VOLUME = 'volume', ValueType.SERIES
-#     MACD = 'macd', ValueType.MACD
-#     MACD_HIST = 'macd_hist', ValueType.MACD
-#     MACD_SIGNAL = 'macd_signal', ValueType.MACD
-#     RSI = 'rsi', ValueType.RSI
-#     SMA = 'sma', ValueType.SMA
-#     BOOK = 'book', ValueType.BOOK
-#     REPORTED_EPS = 'reportedEPS', ValueType.EARNINGS
-#     ESTIMATED_EPS = 'estimatedEPS', ValueType.EARNINGS
-#     SURPRISE_EPS = 'surprise', ValueType.EARNINGS
-#     SURPRISE_PERCENTAGE_EPS = 'surprisePercentage', ValueType.EARNINGS
-#     GROSS_PROFIT = 'grossProfit', ValueType.INCOME
-#     TOTAL_REVENUE = 'totalRevenue', ValueType.INCOME
-#     OPERATING_CASH_FLOW = 'operatingCashflow', ValueType.CASH_FLOW
-#     DIVIDEND_PAYOUT = 'dividendPayout', ValueType.CASH_FLOW
-#     NET_INCOME = 'netIncome', ValueType.CASH_FLOW
-#     TOTAL_ASSETS = 'totalAssets', ValueType.BALANCE_SHEET
-#     TOTAL_LIABILITIES = 'totalLiabilities', ValueType.BALANCE_SHEET
-#     OUTSTANDING_SHARES = 'commonStockSharesOutstanding', ValueType.BALANCE_SHEET
-#     DILUTED_SHARES = 'dilutedStockShares', ValueType.BALANCE_SHEET
-#     TOTAL_SHAREHOLDER_EQUITY = 'totalShareholderEquity', ValueType.BALANCE_SHEET
-#
-#     def __new__(cls, value, value_type):
-#         member = object.__new__(cls)
-#         member._value_ = value
-#         member.value_type = value_type
-#         return member
-#
-#     def __str__(self):
-#         return self.as_title()
-#
-#     def as_title(self):
-#         return self.name.replace('_', ' ').lower().title()
-#
-#     @staticmethod
-#     def filter(value_type):
-#         value_types = list(filter(lambda it: it.value_type is value_type, ValueType))
-#         return value_types
-#
+def get_common_end_time(data: pandas.DataFrame) -> Optional[datetime]:
+    """
+    Collects the last valid (non nan/None) index (datetime) for each column and selects the max of those.
+    D1  1    None
+    D2  1    1
+    D3  1    1     <- Returns D3 assuming sorted indices D1 is less than D2 in datetime (epoch)
+    D4  None 1
+
+    NOTE: This will also return a seemingly incorrect index when there is no overlap
+    D1  1    None
+    D2  1    None  <- Returns D2
+    D3  None 1
+    D4  None 1
+
+    :param data: DataFrame with datetime index and one or more columns
+    :return: The common start time across all columns with valid data
+    """
+    valid_end_times = []
+    data = data.sort_index(ascending=True)
+    for column in data:
+        valid_end_times.append(data[column].last_valid_index())
+    return None if len(valid_end_times) == 0 else min(valid_end_times)
+
+
+def get_default_cache_key_date() -> datetime:
+    """
+    Get the default cache key date using a central function in case we decide to change this, it is in one place.
+    :return: The current datetime
+    """
+    return datetime.now()
 
 
 class Adapter:
+    """
+    Adapters are used to interface with 3rd party websites.
+
+    The expectation is that a client can ask for any of the supported ValueTypes from the Adapter and it will figure out
+    how to get that data and return a pandas DataFrame that has the index of datetimes with a column containing that
+    data.
+
+    This data retrieval is generally done using a REST API or a module API. The results are expected to be cached. This
+    prevents clients from being charged for multiple calls to retrieve the same data.
+
+    The data is generally cached using a high-level directory which has a date stamp and is normally available for a
+    24-hour period. This means that every 24-hours new data will be requested even if the same API is called with the
+    same inputs. Then the caches are determined using the arguments to retrieve data.
+
+    There is an option to not use the cache for things that must be retrieved every time like order status or real-time
+    data.
+    """
     symbol: str
     asset_type = Optional[AssetType]
     base_symbol: str
@@ -198,10 +211,6 @@ class Adapter:
         self.asset_type = asset_type
         self.arguments = []
         self.data = pandas.DataFrame()
-        # self.interval = None
-        # self.span = None  # timedelta(weeks=52) if cache_key_date is None else cache_key_date
-        # self.start_at = None
-        # self.end_at = None
 
         self.value_types = []
         self.query_args = {}
@@ -209,10 +218,10 @@ class Adapter:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache', self.__class__.__name__)
         self.cache_root_dir = os.path.realpath(cache_dir)
-        # self.cache_root_dir = None
 
     def __str__(self):
-        return f"{self.__class__.__name__} adapter with {self.symbol} ({self.base_symbol}) {self.asset_type} (cache key:{self.cache_key_date})"
+        return f"{self.__class__.__name__} adapter with {self.symbol} ({self.base_symbol}) {self.asset_type} (cache " \
+               f"key:{self.cache_key_date})"
 
     def add_value_type(self, value_type: ValueType):
         if value_type not in self.value_types:
@@ -222,12 +231,9 @@ class Adapter:
         for value_type in self.value_types:
             self.add_column(value_type)
 
-    def get_default_cache_key_date(self) -> datetime:
-        return datetime.now()
-
     def add_column(self, value_type: ValueType) -> None:
         if self.cache_key_date is None:
-            self.cache_key_date = self.get_default_cache_key_date()
+            self.cache_key_date = get_default_cache_key_date()
         # self.cache_key_date = datetime(year=2021, month=6, day=29)
             # raise MissingCacheKeyException("The cache key should be set on each Adapter or on the Collection so that "
             #                                "the default makes since for the adapter type, but should also allow the "
@@ -308,9 +314,9 @@ class Adapter:
                 if delay:
                     self.delay_requests(data_file)
                 self.write_url_response_to_file(data_file, query, url)
-                logging.debug('Data saved to: {}'.format(file_link_format()))
+                logging.debug('Data saved to: {}'.format(file_link_format(data_file)))
             else:
-                logging.debug('Using cached file: {}'.format(file_link_format()))
+                logging.debug('Using cached file: {}'.format(file_link_format(data_file)))
         except Exception:
             raise
         finally:
@@ -342,11 +348,11 @@ class Adapter:
     def read_cache_file(self, data_file, data_type, cache: bool = True):
         content_cache_key = "{}-{}".format(data_file, data_type)
         if cache and content_cache_key in self.content_cache:  # read files only once per process, else get from memory
-            logging.debug('Using cached content for: {} (type: {})'.format(file_link_format(),
+            logging.debug('Using cached content for: {} (type: {})'.format(file_link_format(data_file),
                                                                            data_type))
             data = self.content_cache[content_cache_key]
         else:
-            logging.debug('Reading data from cache file: {} (type: {})'.format(file_link_format(),
+            logging.debug('Reading data from cache file: {} (type: {})'.format(file_link_format(data_file),
                                                                                data_type))
             if data_type == DataType.JSON:
                 with open(data_file, 'r') as fd:
@@ -567,22 +573,9 @@ class Adapter:
     def get_column(self, value_type: ValueType) -> pandas.Series:
         return self.data[value_type]
 
-    def get_common_start_time(self) -> Optional[datetime]:
-        valid_start_times = []
-        self.data = self.data.sort_index(ascending=True)
-        for column in self.data:
-            valid_start_times.append(self.data[column].first_valid_index())
-        return None if len(valid_start_times) == 0 else max(valid_start_times)
-
     def get_start_time(self) -> Optional[datetime]:
         times = self.get_all_times()
         return None if times.empty else times[0]
-
-    def get_common_end_time(self) -> Optional[datetime]:
-        valid_end_times = []
-        for column in self.data:
-            valid_end_times.append(self.data[column].last_valid_index())
-        return None if len(valid_end_times) == 0 else min(valid_end_times)
 
     def get_end_time(self) -> Optional[datetime]:
         times = self.get_all_times()

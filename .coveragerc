@@ -1,0 +1,11 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+# Using NFS storage which messes with file system locking so putting this in /tmp
+data_file = /tmp/eCotnriver.finance.coverage
+source =
+    src/main
+
+[report]
+omit =
+    */__init__.py

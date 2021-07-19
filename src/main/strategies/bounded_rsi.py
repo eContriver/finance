@@ -15,31 +15,41 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import logging
+from datetime import datetime
+
 from main.adapters.value_type import ValueType
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.strategies.singleSymbolStrategy import SingleSymbolStrategy
+from main.strategies.single_symbol_strategy import SingleSymbolStrategy
 
 
-class BookDepth(SingleSymbolStrategy):
+class BoundedRsi(SingleSymbolStrategy):
+    upper: float
+    lower: float
     period: float
 
-    def __init__(self, symbol: str, portfolio: Portfolio, period: float):
-        super().__init__("Book depth period {:0.2f}".format(period), symbol, portfolio)
+    def __init__(self, symbol: str, portfolio: Portfolio, period: float, upper: float, lower: float):
+        super().__init__("Bounded RSI upper {:0.2f} lower {:0.2f} period {:0.2f}".format(upper, lower, period), symbol,
+                         portfolio)
+        self.upper = upper
+        self.lower = lower
         self.period = period
-        self.build_book_collection(symbol, self.period)
+        self.build_price_collection()
+        self.build_rsi_collection(symbol, self.period)
 
     def next_step(self, current_time):
         last_time = self.portfolio.get_last_completed_time()
         if last_time is not None:
-            cash = self.portfolio.quantities[self.collection.base_symbol]
+            cash = self.portfolio.quantities[self.collection.get_base_symbol()]
             quantity: float = self.portfolio.quantities[self.symbol]
-            book = self.collection.get_value(self.symbol, last_time, ValueType.BOOK)
-            if (quantity > 0.0) and (book >= self.upper):
+            closest_time = self.collection.get_adapter(self.symbol, ValueType.RSI).find_closest_before_else_after(last_time)
+            rsi = self.collection.get_value(self.symbol, closest_time, ValueType.RSI)
+            if (quantity > 0.0) and (rsi >= self.upper):
                 order = MarketOrder(self.symbol, OrderSide.SELL, quantity, current_time)
-                order.message = "book ({:0.1f}) crossed above {:0.1f}".format(book, self.upper)
+                order.message = "rsi ({:0.1f}) crossed above {:0.1f}".format(rsi, self.upper)
                 self.portfolio.open_order(order)
-            elif (cash > 0.0) and (book <= self.lower):
+            elif (cash > 0.0) and (rsi <= self.lower):
                 order = MarketOrder(self.symbol, OrderSide.BUY, cash, current_time)
-                order.message = "book ({:0.1f}) crossed below {:0.1f}".format(book, self.lower)
+                order.message = "rsi ({:0.1f}) crossed below {:0.1f}".format(rsi, self.lower)
                 self.portfolio.open_order(order)

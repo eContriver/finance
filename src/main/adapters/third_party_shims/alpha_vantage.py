@@ -54,6 +54,7 @@ class AlphaVantage(Adapter):
             Converter(ValueType.MACD, self.get_macd_response, ['MACD']),
             Converter(ValueType.MACD_HIST, self.get_macd_response, ['MACD_Hist']),
             Converter(ValueType.MACD_SIGNAL, self.get_macd_response, ['MACD_Signal']),
+            Converter(ValueType.SMA, self.get_sma_response, ['SMA']),
             # SMA = auto()
             # BOOK = auto()
             Converter(ValueType.EPS, self.get_earnings_response, ['reportedEPS']),
@@ -232,14 +233,13 @@ class AlphaVantage(Adapter):
             "apikey": self.api_key,
             "symbol": indicator_key,
             "function": "SMA",
-            "interval": self.sma_interval.value,
-            "time_period": self.sma_period,
-            "series_type": self.sma_series_type,
+            "interval": self.get_argument_value(ArgumentType.INTERVAL).value,
+            "time_period": int(self.get_argument_value(ArgumentType.SMA_PERIOD)),
+            "series_type": "close",
         }
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
-        key = 'Technical Analysis: SMA'
-        self.translate(raw_response, value_type, key)
+        self.translate(raw_response, value_type, 'Technical Analysis: SMA')
 
     def get_rsi_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD

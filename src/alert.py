@@ -18,8 +18,8 @@
 import argparse
 
 from main.common.launchers import Launcher
-from main.runners.alertRunner import AlertRunner
-from main.runners.matrixRunner import MatrixRunner
+from main.runners.alert_runner import AlertRunner
+from main.runners.matrix_runner import MatrixRunner
 
 
 def parse_args():

@@ -22,27 +22,30 @@ from typing import Dict, List
 from main.adapters.value_type import ValueType
 from main.portfolio.order import StopOrder, OrderSide, MarketOrder
 from main.portfolio.portfolio import Portfolio
-from main.strategies.multiSymbolStrategy import MultiSymbolStrategy
+from main.strategies.multi_symbol_strategy import MultiSymbolStrategy
 
-"""
-For each symbol divide the current_time SMA (@ period) by the SMA from look_back intervals.
 
-This gives a relative factor if the SMA is tending up or down. A way of calculating price momentum.
-
-Then we go through and compare all symbols 1 to 1 by dividing each relative factor by the other
-and if this ratio of relative factors is greater than delta then we know that one symbol is
-outpacing the other and if this is the case then we sell 100% of the under-performer and buy the other.
-"""
 class MultiRelativeSmaSwapUp(MultiSymbolStrategy):
+    """
+    For each symbol divide the current_time SMA (@ period) by the SMA from look_back intervals.
+
+    This gives a relative factor if the SMA is tending up or down. A way of calculating price momentum.
+
+    Then we go through and compare all symbols 1 to 1 by dividing each relative factor by the other
+    and if this ratio of relative factors is greater than delta then we know that one symbol is
+    outpacing the other and if this is the case then we sell 100% of the under-performer and buy the other.
+    """
     period: float
     delta: float
     look_back: int
 
     def __init__(self, symbols: List[str], portfolio: Portfolio, period: float, delta: float, look_back: int):
-        super().__init__("SMA swap up {} looking back {} with period {}".format(delta, look_back, period), symbols, portfolio)
+        super().__init__("SMA swap up {} looking back {} with period {}".format(delta, look_back, period), symbols,
+                         portfolio)
         self.period = period
         self.delta = delta
         self.look_back = look_back
+        self.build_price_collection()
         self.build_sma_collection(self.period)
 
     def next_step(self, current_time: datetime) -> None:
@@ -55,14 +58,14 @@ class MultiRelativeSmaSwapUp(MultiSymbolStrategy):
         relative_smas: Dict[str, float] = {}
         for symbol in self.symbols:
             sma = self.collection.get_value(symbol, last_time, ValueType.SMA)
-            all_before = self.collection.get_symbol_handle(symbol).get_column_on_or_before(symbol, last_time,
-                                                                                           ValueType.SMA)
-            all_before = sorted(all_before)
+            sma_df = self.collection.get_all_items_on_or_before(symbol, last_time, ValueType.SMA)
+            all_before = sorted(sma_df.index)
             look_back_time = all_before[0] if len(all_before) < self.look_back else all_before[-self.look_back]
             look_back_sma = self.collection.get_value(symbol, look_back_time, ValueType.SMA)
             relative_smas[symbol] = sma / look_back_sma
             if symbol not in self.portfolio.indicator_data:
-                self.portfolio.indicator_data[symbol] = {}
+                self.portfolio.indicator_data[symbol] = sma_df
+            # What was this for?
             self.portfolio.indicator_data[symbol][current_time] = relative_smas[symbol]
         cash: float = self.portfolio.quantities[self.portfolio.base_symbol]
         for relative_symbol, relative_sma in relative_smas.items():

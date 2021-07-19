@@ -24,6 +24,8 @@ class ArgumentType(Enum):
     END_TIME = auto()
     # RSI_INTERVAL = auto()
     RSI_PERIOD = auto()
+    # SMA_INTERVAL = auto()
+    SMA_PERIOD = auto()
     MACD_SLOW = auto()
     MACD_FAST = auto()
     MACD_SIGNAL = auto()

@@ -1,6 +1,7 @@
 # Ignore our caches and outputs
 .cache/
 output/
+coverage/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

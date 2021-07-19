@@ -14,19 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from unittest import TestCase
 
-from main.common.launchers import Launcher
-from test.executor_test import is_test
-
+from main.common.locations import Locations
 
 
-@is_test
-# @only_test
-def check_copyright_year():
-    now = datetime.now()
-    copyright_year = Launcher.get_current_copyright_year()
-    assert now.year == copyright_year, f"Current year is '{now.year}' and copyright year is '{copyright_year}'. When " \
-                                       f"tests run, it is assumed that code will be changing and as such copyright " \
-                                       f"notices should also be updated, but they currently are out-of-date."
-    return True
+class Test(TestCase):
+    def test_file_link_format(self):
+        locations: Locations()
+        # self.fail()

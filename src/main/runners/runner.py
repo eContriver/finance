@@ -17,32 +17,30 @@ import inspect
 from abc import ABCMeta, abstractmethod
 from typing import Dict
 
+from main.common.locations import Locations
+
 
 class Runner(metaclass=ABCMeta):
-    run_name: str
 
     def __init__(self):
-        self.run_name = "not_started"
+        pass
 
-    def start(self) -> bool:
-        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+    @abstractmethod
+    def start(self, locations: Locations) -> bool:
+        pass
 
+    @abstractmethod
     def get_run_name(self) -> str:
-        return self.run_name
+        pass
 
+    @abstractmethod
     def get_config(self) -> Dict:
-        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+        pass
 
-    # @staticmethod
-    # def calculate_start_and_end_times(strategies: list[Strategy]):
-    #     start_time: Optional[datetime] = None
-    #     end_time: Optional[datetime] = None
-    #     for strategy in strategies:
-    #         current_start = strategy.get_last_start_time()
-    #         start_time = current_start if start_time is None or current_start > start_time else start_time
-    #         current_end = strategy.get_end_time()
-    #         end_time = current_end if end_time is None or current_end < end_time else end_time
-    #     return end_time, start_time
     @abstractmethod
     def set_from_config(self, config, config_path):
         pass
+
+
+class NoSymbolsSpecifiedException(RuntimeError):
+    pass

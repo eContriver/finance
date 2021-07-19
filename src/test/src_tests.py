@@ -14,22 +14,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-
 from datetime import datetime
 
-from main.portfolio.order import MarketOrder, OrderSide
-from main.portfolio.portfolio import Portfolio
-from main.strategies.singleSymbolStrategy import SingleSymbolStrategy
+from main.common.launchers import Launcher
+from test.runner_test import is_test
 
 
-class BuyAndHold(SingleSymbolStrategy):
-
-    def __init__(self, symbol: str, portfolio: Portfolio):
-        super().__init__("Buy and Hold", symbol, portfolio)
-        self.build_price_collection()
-
-    def next_step(self, current_time: datetime) -> None:
-        cash = self.portfolio.quantities[self.collection.get_base_symbol()]
-        if cash > 0.0:
-            order = MarketOrder(self.symbol, OrderSide.BUY, cash, current_time)
-            self.portfolio.open_order(order)
+@is_test
+# @only_test
+def check_copyright_year():
+    now = datetime.now()
+    copyright_year = Launcher.get_current_copyright_year()
+    assert now.year == copyright_year, f"Current year is '{now.year}' and copyright year is '{copyright_year}'. When " \
+                                       f"tests run, it is assumed that code will be changing and as such copyright " \
+                                       f"notices should also be updated, but they currently are out-of-date."
+    return True

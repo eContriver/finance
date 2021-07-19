@@ -25,7 +25,7 @@ from main.adapters.third_party_shims.robinhood import Robinhood
 from main.portfolio.order import OrderSide
 from main.portfolio.portfolio import Portfolio
 from main.runners.runner import Runner
-from main.strategies.buyUpSellDownTrailing import BuyUpSellDownTrailing
+from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.visual.visualizer import Visualizer
 
 

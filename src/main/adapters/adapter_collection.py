@@ -20,7 +20,7 @@ from typing import Optional, List, Dict, Set
 
 import pandas
 
-from main.adapters.adapter import Adapter, AssetType
+from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time
 from main.adapters.value_type import ValueType
 
 
@@ -161,7 +161,7 @@ class AdapterCollection:
     def get_common_start_time(self) -> Optional[datetime]:
         start_times = []
         for adapter in self.adapters:
-            start_times.append(adapter.get_common_start_time())
+            start_times.append(get_common_start_time(adapter.data))
         return None if len(start_times) == 0 else max(start_times)
 
     def get_start_time(self, symbol: str, value_type: ValueType) -> Optional[datetime]:
@@ -171,7 +171,7 @@ class AdapterCollection:
     def get_common_end_time(self) -> Optional[datetime]:
         end_times = []
         for adapter in self.adapters:
-            end_times.append(adapter.get_common_end_time())
+            end_times.append(get_common_end_time(adapter.data))
         return None if len(end_times) == 0 else min(end_times)
 
     def get_end_time(self, symbol: str, value_type: ValueType) -> Optional[datetime]:

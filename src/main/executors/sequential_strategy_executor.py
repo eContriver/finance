@@ -15,15 +15,13 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import multiprocessing
 import os
-import traceback
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict
+from typing import List, Dict
 
-from main.common.file_system import FileSystem
-from main.executors.sequentialExecutor import SequentialExecutor
+from main.common.locations import file_link_format
 from main.executors.job import Job, JobState
+from main.executors.sequential_executor import SequentialExecutor
 from main.strategies.strategy import Strategy
 
 
@@ -72,7 +70,7 @@ class SequentialStrategyExecutor(SequentialExecutor):
     def start(self):
         success = super().start()
         log_file = self.get_log_file()
-        logging.info('-- Strategies Complete - results follow... {}'.format(file_link_format()))
+        logging.info('-- Strategies Complete - results follow... {}'.format(file_link_format(log_file)))
         (passed, failed) = self.get_results()
         passed_count = len(passed)
         failed_count = len(failed)

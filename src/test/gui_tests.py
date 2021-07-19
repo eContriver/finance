@@ -17,10 +17,10 @@
 from main.adapters.adapter_collection import AdapterCollection
 from main.adapters.value_type import ValueType
 from main.portfolio.portfolio import Portfolio
-from main.strategies.boundedRsi import BoundedRsi
+from main.strategies.bounded_rsi import BoundedRsi
 from main.strategies.strategy import Strategy
 from main.visual.visualizer import Visualizer
-from test.executor_test import is_test, TestRunner
+from test.runner_test import TestRunner, is_test
 from test.utils_test import setup_collection, MockDataAdapter
 
 

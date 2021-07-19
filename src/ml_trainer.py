@@ -18,7 +18,7 @@
 import argparse
 
 from main.common.launchers import Launcher
-from main.runners.mlTrainingRunner import MLTrainingRunner
+from main.runners.ml_training_runner import MLTrainingRunner
 
 
 def parse_args():

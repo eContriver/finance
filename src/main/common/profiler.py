@@ -16,15 +16,14 @@
 
 import cProfile
 import logging
-import os
 import pstats
 
-from main.common.file_system import FileSystem
+from main.common.locations import file_link_format
 
 
 class Profiler:
     """
-    Is static so we can do the following anywhere in the code base...
+    Is singleton so we can do the following anywhere in the code base...
 
         for i in a_list:
             Profiler.enable()
@@ -35,35 +34,34 @@ class Profiler:
     """
     instance = None
     c_profiler = None
-    profile_log = ""
 
     def __init__(self):
-        raise RuntimeError('USe get_instance() instead')
+        raise RuntimeError('Use get_instance() instead')
 
     @classmethod
     def get_instance(cls):
         if cls.instance is None:
             cls.instance = cls.__new__(cls)
             cls.instance.c_profiler = cProfile.Profile()
-            cache_dir = get_and_clean_timestamp_dir()
-            cls.instance.profile_log = os.path.join(cache_dir, 'profile.log')
         return cls.instance
 
-    def enable(self):
+    def enable(self, echo: bool = True):
+        if echo:
+            logging.info(">> Profiling enabled")
         self.c_profiler.enable()
-        # logging.info(">> Profiling enabled")
 
-    def disable_and_report(self):
+    def disable_and_report(self, profile_log: str):
         self.disable()
-        self.report()
+        self.report(profile_log)
 
-    def disable(self):
+    def disable(self, echo: bool = True):
         self.c_profiler.disable()
-        # logging.info(">> Profiling disabled")
+        if echo:
+            logging.info(">> Profiling disabled")
 
-    def report(self):
-        logging.info(">> Profiling finished, see: {}".format(file_link_format()))
-        with open(self.profile_log, 'w') as stream:
+    def report(self, profile_log: str):
+        logging.info(">> Profiling finished, see: {}".format(file_link_format(profile_log)))
+        with open(profile_log, 'w') as stream:
             stats = pstats.Stats(self.c_profiler, stream=stream).sort_stats('cumtime')
             stats.print_stats()
 

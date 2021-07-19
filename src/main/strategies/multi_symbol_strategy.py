@@ -39,7 +39,7 @@ class MultiSymbolStrategy(Strategy):
 
     def build_sma_collection(self, period, cache_key_date: Optional[datetime] = None):
         for symbol in self.symbols:
-            self.add_rsi_collection(symbol, period, cache_key_date)
+            self.add_sma_collection(symbol, period, cache_key_date)
 
     def build_macd_collection(self, slow, fast, signal, cache_key_date: Optional[datetime] = None):
         for symbol in self.symbols:
