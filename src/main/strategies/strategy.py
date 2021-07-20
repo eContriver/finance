@@ -98,7 +98,7 @@ class Strategy:
         for symbol_adapter in self.collection.symbol_handles.values():
             order_adapter: Order = symbol_adapter.adapters[QueryType.ORDERING]
             holdings = order_adapter.get_holdings()
-            self.portfolio.quantities = Adapter.merge(holdings, self.portfolio.quantities)
+            self.portfolio.quantities = merge(self.portfolio.quantities)
             self.portfolio.data = order_adapter.get_historic_value(symbol_adapter.adapters[QueryType.SERIES])
 
     def get_adapter(self, symbol: str, adapter_class: type, value_type: ValueType, asset_type: AssetType,

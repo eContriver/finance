@@ -106,7 +106,7 @@ class Yahoo(Adapter):
         for instance, values in to_translate.items():
             translated[instance] = {}
             for value_type in ValueType:
-                value = self.get_response_value_or_none(values, value_type)
+                value = get_response_value_or_none(values, value_type)
                 if value is not None:
                     ratio = self.get_adjusted_ratio(values)
                     value = value * ratio
@@ -133,8 +133,8 @@ class Yahoo(Adapter):
 
     def get_holdings(self):
         data = self.get_stock_positions()
-        data = self.merge(data, self.get_crypto_positions())
-        data = self.merge(data, self.get_account_info())
+        data = merge(data, self.get_crypto_positions())
+        data = merge(data, self.get_account_info())
         return data
 
     def get_historic_value(self) -> Dict[datetime, float]:

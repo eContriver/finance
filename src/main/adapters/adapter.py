@@ -37,10 +37,6 @@ from main.adapters.value_type import ValueType
 from main.common.locations import file_link_format
 
 
-# class MissingCacheKeyException(RuntimeError):
-#     pass
-
-
 class DuplicateRawIndexesException(RuntimeError):
     """
     When data is added
@@ -167,6 +163,156 @@ def get_default_cache_key_date() -> datetime:
     return datetime.now()
 
 
+def find_closest_before_else_after(data: pandas.DataFrame, instance: datetime) -> Optional[datetime]:
+    """
+    Get the closest time (index) after the instance time, if none exist before then get closest after, else return None
+    :param data: The data to get the instance (index) time from
+    :param instance: The instance to look for, if an exact match (equal to) is found then it is returned
+    :return: The closest datetime, else None
+    """
+    closest = find_closest_instance_before(data, instance)
+    closest = get_start_time(data) if closest is None else closest
+    return closest
+
+
+def find_closest_instance_after(data: pandas.DataFrame, instance: datetime) -> Optional[datetime]:
+    """
+    Get the closest time (index) after the instance time, if none exist return None
+    :param data: The data to get the instance (index) time from
+    :param instance: The instance to look for, if an exact match (equal to) is found then it is returned
+    :return: The closest datetime, else None
+    """
+    indexes: numpy.ndarray = data.index.to_numpy()
+    all_after = indexes[numpy.where(indexes >= instance)]
+    all_after = sorted(all_after, reverse=False)
+    closest: Optional[datetime] = all_after[0] if len(all_after) > 0 else None
+    return closest
+
+
+def find_closest_instance_before(data, instance: datetime) -> Optional[datetime]:
+    """
+    Get the closest time (index) before the instance time, if none exist return None
+    :param data: The data to get the instance (index) time from
+    :param instance: The instance to look for, if an exact match (equal to) is found then it is returned
+    :return: The closest datetime, else None
+    """
+    indexes: numpy.ndarray = data.index.to_numpy()
+    all_before = indexes[numpy.where(indexes <= instance)]
+    all_before = sorted(all_before, reverse=True)
+    closest: Optional[datetime] = all_before[0] if len(all_before) > 0 else None
+    return closest
+
+
+def get_all_times(data) -> pandas.Index:
+    return data.index
+
+
+def get_start_time(data) -> Optional[datetime]:
+    times = get_all_times(data)
+    return None if times.empty else times[0]
+
+
+def get_end_time(data) -> Optional[datetime]:
+    times = get_all_times(data)
+    return None if times.empty else times[-1]
+
+
+def get_column(data: pandas.DataFrame, value_type: ValueType) -> pandas.Series:
+    return data[value_type]
+
+
+# def has_time(data, instance) -> bool:
+#     return instance in data
+
+
+# def get_all_data_flat(data) -> (Dict[datetime, List[float]], List[ValueType]):
+#     data = {}
+#     columns = []
+#     for date, row in data.items():
+#         data[date] = []
+#         for key, value in row.items():
+#             data[date].append(value)
+#             if key not in columns:
+#                 columns.append(key)
+#     return data, columns
+
+
+def get_key_for_api_request(function, args):
+    args_string = "" if len(args) == 0 else "." + "_".join(
+        [str(arg).replace(':', '_').replace('/', '_').replace('.', '_') for arg in args.values()])
+    cls = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
+    key = '{}{}{}'.format(cls, function.__name__, args_string)
+    return key
+
+
+# def merge(a, b, path=None):
+#     if path is None:
+#         path = []
+#     for key in b:
+#         if key in a:
+#             if isinstance(a[key], dict) and isinstance(b[key], dict):
+#                 merge(a[key], b[key], path + [str(key)])
+#             elif a[key] == b[key]:
+#                 pass  # same leaf value
+#             else:
+#                 raise Exception('Multiple data sets contain the same key, conflict at %s' %
+#                                 '.'.join(path + [str(key)]))
+#         else:
+#             a[key] = b[key]
+#     return a
+
+
+def write_api_response_to_file(data_file, api, args, data_type):
+    logging.debug('Requesting data from: {}({})'.format(api, args))
+    response = api(**args)
+    logging.debug('Received response: {}'.format(response))
+    if data_type == DataType.JSON:
+        with open(data_file, 'w') as fd:
+            json.dump(response, fd, indent=4)
+    elif data_type == DataType.DATAFRAME:
+        response.to_pickle(data_file)
+    elif data_type == DataType.CSV:
+        with open(data_file, 'w') as fd:
+            fd.write(response)
+    else:
+        raise RuntimeError("Unrecognized data type: {}".format(data_type))
+
+
+def write_url_response_to_file(data_file, query, url):
+    url_query = '' if not query else '?' + '&'.join(['%s=%s' % (key, value) for (key, value) in query.items()])
+    url = '{}{}'.format(url, url_query)
+    logging.debug('Requesting data from: {}'.format(url))
+    response = requests.get(url)
+    logging.debug('Received response: {}'.format(response))
+    response.raise_for_status()
+    with open(data_file, 'w') as fd:
+        fd.write(response.text)
+
+
+def lock(data_file, lock_dir):
+    wait = os.path.exists(lock_dir) or not os.path.exists(data_file)
+    acquired_lock = False
+    while wait:
+        if os.path.exists(lock_dir):
+            logging.debug("Waiting on lock: {}".format(lock_dir))
+            time.sleep(1)  # wait for other process to finish their query
+        else:
+            try:
+                logging.debug("Attempting to lock: {}".format(lock_dir))
+                os.makedirs(lock_dir)
+                logging.debug("Acquired lock: {}".format(lock_dir))
+                acquired_lock = True
+                break
+            except OSError:
+                pass
+    return acquired_lock
+
+
+def get_response_value_or_none(time_data: Dict[str, str], key: str) -> Optional[float]:
+    value = float(time_data[key]) if key in time_data else None
+    return value
+
+
 class Adapter:
     """
     Adapters are used to interface with 3rd party websites.
@@ -194,7 +340,7 @@ class Adapter:
     arguments: List[Argument]
     data: pandas.DataFrame
     converters: List[Converter]
-    value_types: List[ValueType]
+    get_value_types: List[ValueType]
     query_args: Dict[str, str]  # for things like macd_fast, macd_slow, macd_signal, etc.
     cache_root_dir: Optional[str]
 
@@ -212,7 +358,7 @@ class Adapter:
         self.arguments = []
         self.data = pandas.DataFrame()
 
-        self.value_types = []
+        self.get_value_types = []
         self.query_args = {}
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -224,11 +370,11 @@ class Adapter:
                f"key:{self.cache_key_date})"
 
     def add_value_type(self, value_type: ValueType):
-        if value_type not in self.value_types:
-            self.value_types.append(value_type)
+        if value_type not in self.get_value_types:
+            self.get_value_types.append(value_type)
 
     def add_all_columns(self):
-        for value_type in self.value_types:
+        for value_type in self.get_value_types:
             self.add_column(value_type)
 
     def add_column(self, value_type: ValueType) -> None:
@@ -257,33 +403,16 @@ class Adapter:
         converter = converters[0]
         return converter
 
-    @staticmethod
-    def merge(a, b, path=None):
-        if path is None:
-            path = []
-        for key in b:
-            if key in a:
-                if isinstance(a[key], dict) and isinstance(b[key], dict):
-                    Adapter.merge(a[key], b[key], path + [str(key)])
-                elif a[key] == b[key]:
-                    pass  # same leaf value
-                else:
-                    raise Exception('Multiple data sets contain the same key, conflict at %s' %
-                                    '.'.join(path + [str(key)]))
-            else:
-                a[key] = b[key]
-        return a
-
     def get_api_response(self, api, args, cache: bool = True, data_type: DataType = DataType.JSON):
-        data_id = self.get_key_for_api_request(api, args)
+        data_id = get_key_for_api_request(api, args)
         add_timestamp = not cache
         data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
         acquired_lock = False
         try:
-            acquired_lock = self.lock(data_file, lock_dir)
+            acquired_lock = lock(data_file, lock_dir)
             if not os.path.exists(data_file):  # only download files once per data_id - includes cache_key (e.g.daily)
                 self.delay_requests(data_file)
-                self.write_api_response_to_file(data_file, api, args, data_type)
+                write_api_response_to_file(data_file, api, args, data_type)
                 logging.debug('Data saved to: {}'.format(file_link_format()))
             else:
                 logging.debug('Using cached file: {}'.format(file_link_format()))
@@ -309,11 +438,11 @@ class Adapter:
         data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
         acquired_lock = False
         try:
-            acquired_lock = self.lock(data_file, lock_dir)
+            acquired_lock = lock(data_file, lock_dir)
             if not os.path.exists(data_file):  # only download files once per data_id - includes cache_key (e.g.daily)
                 if delay:
                     self.delay_requests(data_file)
-                self.write_url_response_to_file(data_file, query, url)
+                write_url_response_to_file(data_file, query, url)
                 logging.debug('Data saved to: {}'.format(file_link_format(data_file)))
             else:
                 logging.debug('Using cached file: {}'.format(file_link_format(data_file)))
@@ -325,14 +454,6 @@ class Adapter:
         data = self.read_cache_file(data_file, data_type, cache)
         self.validate_data(data)
         return data, data_file
-
-    @staticmethod
-    def get_key_for_api_request(function, args):
-        args_string = "" if len(args) == 0 else "." + "_".join(
-            [str(arg).replace(':', '_').replace('/', '_').replace('.', '_') for arg in args.values()])
-        cls = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
-        key = '{}{}{}'.format(cls, function.__name__, args_string)
-        return key
 
     def get_key_for_url_request(self, query, url):
         lower_values = []
@@ -370,32 +491,40 @@ class Adapter:
             self.content_cache[content_cache_key] = data
         return data
 
-    @staticmethod
-    def write_api_response_to_file(data_file, api, args, data_type):
-        logging.debug('Requesting data from: {}({})'.format(api, args))
-        response = api(**args)
-        logging.debug('Received response: {}'.format(response))
-        if data_type == DataType.JSON:
-            with open(data_file, 'w') as fd:
-                json.dump(response, fd, indent=4)
-        elif data_type == DataType.DATAFRAME:
-            response.to_pickle(data_file)
-        elif data_type == DataType.CSV:
-            with open(data_file, 'w') as fd:
-                fd.write(response)
-        else:
-            raise RuntimeError("Unrecognized data type: {}".format(data_type))
-
-    @staticmethod
-    def write_url_response_to_file(data_file, query, url):
-        url_query = '' if not query else '?' + '&'.join(['%s=%s' % (key, value) for (key, value) in query.items()])
-        url = '{}{}'.format(url, url_query)
-        logging.debug('Requesting data from: {}'.format(url))
-        response = requests.get(url)
-        logging.debug('Received response: {}'.format(response))
-        response.raise_for_status()
-        with open(data_file, 'w') as fd:
-            fd.write(response.text)
+    def insert_data_column(self, value_type: ValueType, indexes: List[datetime], values: List[float]) -> None:
+        """
+        Inserts a new column of data into the underlying DataFrame
+        :param value_type: The column name
+        :param indexes: The indices of the data, these do not have to match with the existing indexes
+        :param values: The value of the new column, these are expected to be index aligned with the indexes
+        :return:
+        """
+        duplicates = [x for x in indexes if indexes.count(x) > 1]
+        if len(duplicates) > 0:
+            raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: {duplicates}")
+        add_indices = pandas.Index(indexes).difference(self.data.index)
+        add_df = pandas.DataFrame(index=add_indices, columns=self.data.columns)  # .fillna(None)
+        new_df = pandas.concat([self.data, add_df])
+        column = pandas.Series(values, index=indexes)
+        merge_df = column.to_frame(value_type)
+        # merge_df = merge_df.sort_index(ascending=True)
+        self.data = new_df.join(merge_df)
+        self.data = self.data.sort_index(ascending=True)
+        # reindexed_df = merge_df.reindex(new_df.index)  # leave Nones
+        # reindexed_df = merge_df.reindex(new_df.index, method="nearest")  # fill Nones with closest
+        # if len(values) > 0:
+        #     if self.data.shape[0] == 0:
+        #         self.data = pandas.Series(values, index=indexes).to_frame(value_type)
+        #     else:
+        #         column = pandas.Series(values, index=indexes)
+        #         merge_df = column.to_frame(value_type)
+        #         merge_df = merge_df.sort_index(ascending=True)
+        #         reindexed_df = merge_df.reindex(self.data.index, method="nearest")
+        #         oldest_time_before_reindexing = merge_df.index[0]
+        #         newest_time_before_reindexing = merge_df.index[-1]
+        #         reindexed_df = reindexed_df[reindexed_df.index <= newest_time_before_reindexing]
+        #         self.data[value_type] = reindexed_df[reindexed_df.index >= oldest_time_before_reindexing]
+        #     self.data = self.data.sort_index(ascending=True)
 
     def get_lock_dir_and_data_file(self, data_id, timestamp: bool, data_type: DataType):
         self.cache_root_dir = os.path.realpath(self.cache_root_dir)
@@ -434,25 +563,6 @@ class Adapter:
             path = os.path.join(self.cache_root_dir, filename)
             shutil.rmtree(path, ignore_errors=True)
 
-    @staticmethod
-    def lock(data_file, lock_dir):
-        wait = os.path.exists(lock_dir) or not os.path.exists(data_file)
-        acquired_lock = False
-        while wait:
-            if os.path.exists(lock_dir):
-                logging.debug("Waiting on lock: {}".format(lock_dir))
-                time.sleep(1)  # wait for other process to finish their query
-            else:
-                try:
-                    logging.debug("Attempting to lock: {}".format(lock_dir))
-                    os.makedirs(lock_dir)
-                    logging.debug("Acquired lock: {}".format(lock_dir))
-                    acquired_lock = True
-                    break
-                except OSError:
-                    pass
-        return acquired_lock
-
     def get_adjusted_ratio(self, time_data: Dict[str, str]) -> float:
         """
         Some data sources provide the stock values as they were and an adjusted close value. This is generally to
@@ -466,15 +576,10 @@ class Adapter:
         return 1.0  # default is to not adjust
 
     def get_response_value(self, time_data: Dict[str, str], key: str) -> float:
-        price = self.get_response_value_or_none(time_data, key)
+        price = get_response_value_or_none(time_data, key)
         if price is None:
             raise RuntimeError('Failed to find response value matching key \'{}\' in \'{}\''.format(key, time_data))
         return price
-
-    @staticmethod
-    def get_response_value_or_none(time_data: Dict[str, str], key: str) -> Optional[float]:
-        value = float(time_data[key]) if key in time_data else None
-        return value
 
     def validate_data(self, data_file: str):
         pass
@@ -533,9 +638,6 @@ class Adapter:
             value_type, instance)
         return self.data.loc[instance, value_type]
 
-    def get_all_times(self) -> pandas.Index:
-        return self.data.index
-
     def get_all_values(self, value_type: ValueType) -> pandas.Series:
         return self.data[value_type]
 
@@ -555,96 +657,9 @@ class Adapter:
         filtered = filtered[filtered.index <= before]
         return filtered[value_type] if value_type in filtered.columns else pandas.Series()
 
-    def get_all_data_flat(self) -> (Dict[datetime, List[float]], List[ValueType]):
-        data = {}
-        columns = []
-        for date, row in self.data.items():
-            data[date] = []
-            for key, value in row.items():
-                data[date].append(value)
-                if key not in columns:
-                    columns.append(key)
-        return data, columns
-
     def retrieve(self, value_type: ValueType) -> None:
         converter: Converter = self.get_converter(value_type)
         converter.get_response_callback()
-
-    def get_column(self, value_type: ValueType) -> pandas.Series:
-        return self.data[value_type]
-
-    def get_start_time(self) -> Optional[datetime]:
-        times = self.get_all_times()
-        return None if times.empty else times[0]
-
-    def get_end_time(self) -> Optional[datetime]:
-        times = self.get_all_times()
-        return None if times.empty else times[-1]
-
-    def find_closest_instance_before(self, instance: datetime) -> Optional[datetime]:
-        #### PERFORMANT
-        ## Attempt 3
-        # self.data.index.sub(instance).abs().idxmin()
-        ## Attempt 2
-        # closest = self.data[self.data.index <= instance].index.max()
-        # if closest is None:
-        #     closest = self.data.index.min()
-        ## Attempt 1
-        indexes: numpy.ndarray = self.data.index.to_numpy()
-        all_before = indexes[numpy.where(indexes <= instance)]
-        all_before = sorted(all_before, reverse=True)
-        closest: Optional[datetime] = all_before[0] if len(all_before) > 0 else None
-        # for current in indexes:
-        #     if (current < instance) and ((closest is None) or (current > closest)):
-        #         closest = current
-        #### NEW
-        # closest: Optional[datetime] = None
-        # closest = self.data[self.data.index <= instance].index.max()
-        # if closest is None:
-        #     closest = self.data.index.min()
-        #### OLD
-        # closest: Optional[datetime] = None
-        # for current in self.data.index:
-        #     if (current < instance) and ((closest is None) or (current > closest)):
-        #         closest = current
-        return closest
-
-    def find_closest_instance_after(self, instance: datetime) -> Optional[datetime]:
-        #### From before (above)
-        indexes: numpy.ndarray = self.data.index.to_numpy()
-        all_after = indexes[numpy.where(indexes >= instance)]
-        all_after = sorted(all_after, reverse=False)
-        closest: Optional[datetime] = all_after[0] if len(all_after) > 0 else None
-        #### OLD
-        # closest: Optional[datetime] = None
-        # for current in self.data.index:
-        #     if (current > instance) and ((closest is None) or (current < closest)):
-        #         closest = current
-        return closest
-
-    def has_time(self, instance) -> bool:
-        return instance in self.data
-
-    def find_closest_before_else_after(self, instance: datetime) -> datetime:
-        closest = self.find_closest_instance_before(instance)
-        closest = self.get_start_time() if closest is None else closest
-        return closest
-
-    # def get_highs(self) -> List[float]:
-    #     values = self.get_all_values(ValueType.HIGH)
-    #     return values
-    #
-    # def get_lows(self) -> List[float]:
-    #     values = self.get_all_values(ValueType.LOW)
-    #     return values
-    #
-    # def get_closes(self) -> List[float]:
-    #     values = self.get_all_values(ValueType.CLOSE)
-    #     return values
-    #
-    # def get_opens(self) -> List[float]:
-    #     values = self.get_all_values(ValueType.OPEN)
-    #     return values
 
     def add_argument(self, argument: Argument) -> None:
         value = self.get_argument_value(argument.argument_type)
@@ -656,21 +671,3 @@ class Adapter:
     def get_argument_value(self, arg_type: ArgumentType) -> Optional[Any]:
         values = list(set([argument.value for argument in self.arguments if argument.argument_type == arg_type]))
         return values[0] if len(values) == 1 else None
-
-    def insert_data_column(self, value_type, indexes, values):
-        duplicates = [x for x in indexes if indexes.count(x) > 1]
-        if len(duplicates) > 0:
-            raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: {duplicates}")
-        if len(values) > 0:
-            if self.data.shape[0] == 0:
-                self.data = pandas.Series(values, index=indexes).to_frame(value_type)
-            else:
-                column = pandas.Series(values, index=indexes)
-                merge_df = column.to_frame(value_type)
-                merge_df = merge_df.sort_index(ascending=True)
-                reindexed_df = merge_df.reindex(self.data.index, method="nearest")
-                oldest_time_before_reindexing = merge_df.index[0]
-                newest_time_before_reindexing = merge_df.index[-1]
-                reindexed_df = reindexed_df[reindexed_df.index <= newest_time_before_reindexing]
-                self.data[value_type] = reindexed_df[reindexed_df.index >= oldest_time_before_reindexing]
-            self.data = self.data.sort_index(ascending=True)

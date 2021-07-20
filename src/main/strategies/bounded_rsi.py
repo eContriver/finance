@@ -15,9 +15,6 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import logging
-from datetime import datetime
-
 from main.adapters.value_type import ValueType
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
@@ -43,7 +40,8 @@ class BoundedRsi(SingleSymbolStrategy):
         if last_time is not None:
             cash = self.portfolio.quantities[self.collection.get_base_symbol()]
             quantity: float = self.portfolio.quantities[self.symbol]
-            closest_time = self.collection.get_adapter(self.symbol, ValueType.RSI).find_closest_before_else_after(last_time)
+            closest_time = self.collection.find_closest_before_else_after(
+                adapter.data, last_time)
             rsi = self.collection.get_value(self.symbol, closest_time, ValueType.RSI)
             if (quantity > 0.0) and (rsi >= self.upper):
                 order = MarketOrder(self.symbol, OrderSide.SELL, quantity, current_time)

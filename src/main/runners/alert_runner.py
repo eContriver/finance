@@ -146,7 +146,7 @@ class AlertRunner(Runner):
             adapter.add_argument(Argument(ArgumentType.START_TIME, end_time - timedelta(days=1)))
             adapter.add_argument(Argument(ArgumentType.END_TIME, end_time))
             adapter.add_argument(Argument(ArgumentType.INTERVAL, TimeInterval.DAY))
-            adapter.value_types = [ValueType.CLOSE]
+            adapter.get_value_types = [ValueType.CLOSE]
             collection.add(adapter)
         collection.set_all_cache_key_dates(datetime.now())
         collection.retrieve_all_data()

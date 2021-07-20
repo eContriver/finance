@@ -22,10 +22,11 @@ from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
 
-from main.adapters.adapter import DataType, TimeInterval, AssetType, Adapter
+from main.adapters.adapter import DataType, TimeInterval, AssetType, Adapter, get_response_value_or_none
 from main.adapters.value_type import ValueType
 from main.adapters.converter import Converter
 from main.adapters.argument import ArgumentType
+
 
 
 class AlphaVantage(Adapter):
@@ -88,9 +89,9 @@ class AlphaVantage(Adapter):
         ]
 
     def get_adjusted_ratio(self, time_data: Dict[str, str]) -> float:
-        adjusted_close = self.get_response_value_or_none(time_data, '5. adjusted close')
+        adjusted_close = get_response_value_or_none(time_data, '5. adjusted close')
         # adjusted_close = self.get_value_or_none(time_data, ValueType.ADJUSTED_CLOSE)
-        close = self.get_response_value_or_none(time_data, '4. close')
+        close = get_response_value_or_none(time_data, '4. close')
         ratio = 1.0 if (adjusted_close is None) or (close is None) else adjusted_close / close
         return float(ratio)
 
@@ -331,7 +332,7 @@ class AlphaVantage(Adapter):
             dt = datetime.strptime(entry['fiscalDateEnding'], data_date_format)
             translated[dt] = {}
             for value_type in ValueType:
-                value = self.get_response_value_or_none(entry, value_type)
+                value = get_response_value_or_none(entry, value_type)
                 if value is not None:
                     ratio = self.get_adjusted_ratio(entry)
                     value = value * ratio
@@ -368,7 +369,7 @@ class AlphaVantage(Adapter):
             dt = datetime.strptime(entry['fiscalDateEnding'], data_date_format)
             translated[dt] = {}
             for value_type in ValueType:
-                value = self.get_response_value_or_none(entry, value_type)
+                value = get_response_value_or_none(entry, value_type)
                 if value is not None:
                     ratio = self.get_adjusted_ratio(entry)
                     value = value * ratio
@@ -405,7 +406,7 @@ class AlphaVantage(Adapter):
             dt = datetime.strptime(entry['fiscalDateEnding'], data_date_format)
             translated[dt] = {}
             for value_type in ValueType:
-                value = self.get_response_value_or_none(entry, value_type)
+                value = get_response_value_or_none(entry, value_type)
                 if value is not None:
                     ratio = self.get_adjusted_ratio(entry)
                     value = value * ratio

@@ -177,7 +177,7 @@ class IntrinsicValueRunner(Runner):
 
     def create_price_adapter(self, symbol: str):
         adapter = self.new_adapter(symbol)
-        adapter.value_types = [
+        adapter.get_value_types = [
             ValueType.HIGH,
             ValueType.OPEN,
             ValueType.CLOSE,
@@ -188,7 +188,7 @@ class IntrinsicValueRunner(Runner):
 
     def create_fundamentals_adapter(self, symbol):
         adapter = self.new_adapter(symbol)
-        adapter.value_types = [
+        adapter.get_value_types = [
             ValueType.EPS,
             ValueType.DIVIDENDS,
             ValueType.NET_INCOME,
@@ -201,7 +201,12 @@ class IntrinsicValueRunner(Runner):
         adapter.add_argument(Argument(ArgumentType.INTERVAL, self.fundamentals_interval))
         return adapter
 
-    def new_adapter(self, symbol):
+    def new_adapter(self, symbol) -> Adapter:
+        """
+        Creates a new adapter with common configuration for the different IV use cases
+        :param symbol: The symbol to create the adapter for
+        :return: The created adapter
+        """
         adapter = self.adapter_class(symbol, asset_type=None)
         adapter.base_symbol = self.base_symbol
         # end_date = datetime(year=2021, month=7, day=3)

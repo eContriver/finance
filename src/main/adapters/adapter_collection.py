@@ -20,8 +20,13 @@ from typing import Optional, List, Dict, Set
 
 import pandas
 
-from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time
+from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, get_end_time, \
+    get_start_time, get_column
 from main.adapters.value_type import ValueType
+
+
+class NotExactlyOneAdapterException(RuntimeError):
+    pass
 
 
 class AdapterCollection:
@@ -58,7 +63,7 @@ class AdapterCollection:
     #         adapter.add_arg(argument)
 
     def get_adapters_with_value_type(self, value_type: ValueType) -> List[Adapter]:
-        return [adapter for adapter in self.adapters if value_type in adapter.value_types]
+        return [adapter for adapter in self.adapters if value_type in adapter.get_value_types]
 
     def get_adapters(self, symbol: str, value_type: ValueType) -> List[Adapter]:
         adapters_with_type: List[Adapter] = self.get_adapters_with_value_type(value_type)
@@ -73,9 +78,17 @@ class AdapterCollection:
         return adapters[0] if len(adapters) == 1 else None
 
     def get_adapter(self, symbol: str, value_type: ValueType) -> Adapter:
+        """
+        Return the adapter for the provided symbol and value type.
+        :raise NotExactlyOneAdapterException if no matching adapters are found
+        :param symbol: The symbol to get the adapter for
+        :param value_type: The value type to get the adapter for
+        :return: The adapter
+        """
         adapters: List[Adapter] = self.get_adapters(symbol, value_type)
-        assert len(adapters) == 1, "Found {} adapters for symbol {} with value type {}, exactly one is " \
-                                   "expected.".format(len(adapters), symbol, value_type)
+        if len(adapters) != 1:
+            raise NotExactlyOneAdapterException("Found {} adapters for symbol {} with value type {}, exactly one is " \
+                                                "expected.".format(len(adapters), symbol, value_type))
         return adapters[0]
 
     def has_value(self, symbol: str, instance: datetime, value_type: ValueType) -> bool:
@@ -92,11 +105,11 @@ class AdapterCollection:
         return price
 
     def get_value_closest_before_else_after(self, symbol: str, instance: datetime, value_type: ValueType) -> float:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = self
         # if adapter.has_time(instance):
         #     price = adapter.get_value(instance, value_type)
         # else:
-        last: datetime = adapter.find_closest_before_else_after(instance)
+        last: datetime = adapter.find_closest_before_else_after(adapter.data, instance)
         price = adapter.get_value(last, value_type)
         return price
 
@@ -139,14 +152,14 @@ class AdapterCollection:
         for value_type in value_types:
             adapter: Adapter = self.get_adapter(symbol, value_type)
             if all_items is None:
-                all_items = adapter.get_column(value_type).to_frame()
+                all_items = get_column(adapter.data, value_type).to_frame()
             else:
-                all_items = all_items.join(adapter.get_column(value_type))
+                all_items = all_items.join(get_column(adapter.data, value_type))
         return all_items
 
     def get_column(self, symbol: str, value_type: ValueType) -> pandas.Series:
         adapter: Adapter = self.get_adapter(symbol, value_type)
-        all_items = adapter.get_column(value_type)
+        all_items = get_column(adapter.data, value_type)
         return all_items
 
     def get_all_values(self, symbol: str, value_type: ValueType) -> pandas.Series:
@@ -154,9 +167,19 @@ class AdapterCollection:
         values = adapter.get_all_values(value_type)
         return values
 
-    def get_instance_values(self, symbol: str, instance: datetime, value_type: ValueType) -> pandas.Series:
-        adapter = self.get_adapter(symbol, value_type)
-        return adapter.get_row(instance)
+    # Disabling: We aren't using it and it returns a row from one adapter. This could be
+    # confusing for callers as for a given symbol we may have multiple adapters (different
+    # ones for different value [data] types)
+    # def get_row(self, symbol: str, instance: datetime, value_type: ValueType) -> pandas.Series:
+    #     """
+    #
+    #     :param symbol:
+    #     :param instance:
+    #     :param value_type:
+    #     :return:
+    #     """
+    #     adapter = self.get_adapter(symbol, value_type)
+    #     return adapter.get_row(instance)
 
     def get_common_start_time(self) -> Optional[datetime]:
         start_times = []
@@ -166,7 +189,7 @@ class AdapterCollection:
 
     def get_start_time(self, symbol: str, value_type: ValueType) -> Optional[datetime]:
         adapter: Adapter = self.get_adapter(symbol, value_type)
-        return adapter.get_start_time()
+        return get_start_time(adapter.data)
 
     def get_common_end_time(self) -> Optional[datetime]:
         end_times = []
@@ -175,13 +198,19 @@ class AdapterCollection:
         return None if len(end_times) == 0 else min(end_times)
 
     def get_end_time(self, symbol: str, value_type: ValueType) -> Optional[datetime]:
+        """
+        Get the end time for a specific adapter from a collection
+        :param symbol: The symbol of the adapter
+        :param value_type: The value type of the adapter
+        :return: The end time of the found adapter
+        """
         adapter: Adapter = self.get_adapter(symbol, value_type)
-        return adapter.get_end_time()
+        return get_end_time(adapter.data)
 
     def get_all_times(self, before: Optional[datetime] = None) -> List[datetime]:
         times: List[datetime] = []
         for adapter in self.adapters:
-            times += adapter.get_all_times()
+            times += adapter.get_all_times(adapter.data)
         return sorted(list(set(times)))
         # times: List[datetime] = []
         # start_times = []

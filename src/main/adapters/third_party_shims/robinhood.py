@@ -207,7 +207,7 @@ class Robinhood(Order):
             dt = datetime.strptime(item['begins_at'], data_date_format)
             translated[dt] = {}
             for value_type in ValueType:
-                value = self.get_response_value_or_none(item, value_type)
+                value = get_response_value_or_none(item, value_type)
                 if value is not None:
                     ratio = self.get_adjusted_ratio(item)
                     value = value * ratio
@@ -234,8 +234,8 @@ class Robinhood(Order):
 
     def get_holdings(self):
         data = self.get_stock_positions()
-        data = self.merge(data, self.get_crypto_positions())
-        data = self.merge(data, self.get_account_info())
+        data = merge(data, self.get_crypto_positions())
+        data = merge(data, self.get_account_info())
         return data
 
     def get_historic_value(self) -> Dict[datetime, float]:

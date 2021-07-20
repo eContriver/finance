@@ -3,7 +3,8 @@ Copyright 2021 eContriver LLC
 # Overview
 
 The python scripts provided in this project facilitates trying different buy and sell strategies for stock and crypto
-currencies.
+currencies. There are also scripts that provide different types of security analysis. Both technical analysis and
+fundamental analysis are considered.
 
 This software is intended for educational purposes only and nothing it produces should be taken as investment advice.
 It's accuracy is not guaranteed, the software may have bugs, or the data that it receives from 3rd parties may be
@@ -11,13 +12,11 @@ inaccurate. You are responsible for verifying the results that are produced.
 
 # Features
 
-The Finance from eContriver toolkit provides basic functionality for technical analysis and value investing.
-
 Some of these features are:
 
 * Back-Testing Investment Strategies
 * Machine Learning Predictors
-* Investment Strategy Comparitors
+* Investment Strategy Comparators
 * Intrinsic Value Calculations
 * Alerts
 * Automated Order Placement

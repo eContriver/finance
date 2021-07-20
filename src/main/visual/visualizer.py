@@ -99,7 +99,7 @@ class Visualizer:
         for adapter in self.collection.adapters:
             assert adapter.symbol in self.price_plots, 'The symbol {} has no data'.format(adapter.symbol)
             row_titles.append(self.price_plots[adapter.symbol].label)
-            for value_type in adapter.value_types:
+            for value_type in adapter.get_value_types:
                 value_type_filter = [
                     ValueType.HIGH,
                     ValueType.OPEN,
@@ -340,8 +340,8 @@ class Visualizer:
         return plotted_labels[label]
 
     def add_series_data(self, adapter: Adapter, portfolio):
-        start: datetime = adapter.get_start_time()
-        for value_type in adapter.value_types:
+        start: datetime = adapter.get_start_time(adapter.data)
+        for value_type in adapter.get_value_types:
             # Time-series data...
             if value_type not in adapter.data:
                 continue
@@ -433,7 +433,7 @@ class Visualizer:
         for portfolio in self.portfolios:
             for adapter in self.collection.adapters:
                 # self.extras.clear()  # default is to add High and Low
-                high_data = adapter.get_column(ValueType.HIGH)
+                high_data = adapter.get_column(adapter.data, ValueType.HIGH)
                 high = Extra('{} High'.format(adapter.symbol), high_data, '#aaf')
                 high.label = "Price per Unit"
                 self.extras.append(high)
@@ -441,7 +441,7 @@ class Visualizer:
                 # self.extras.append(Extra('{} Close'.format(adapter.symbol), close_data, '#fad'))
                 # open_data = adapter.dataAdapter.getSeriesData(adapter.symbol).getAllPrices(SeriesType.OPEN)
                 # self.extras.append(Extra('{} Open'.format(adapter.symbol), open_data, '#afa'))
-                low_data = adapter.get_column(ValueType.LOW)
+                low_data = adapter.get_column(adapter.data, ValueType.LOW)
                 low = Extra('{} Low'.format(adapter.symbol), low_data, '#daf')
                 low.label = "Price per Unit"
                 self.extras.append(low)
