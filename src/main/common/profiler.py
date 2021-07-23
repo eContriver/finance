@@ -16,6 +16,7 @@
 
 import cProfile
 import logging
+import os
 import pstats
 
 from main.common.locations import file_link_format
@@ -33,7 +34,7 @@ class Profiler:
         Profiler.report()
     """
     instance = None
-    c_profiler = None
+    c_profiler: cProfile.Profile = None
 
     def __init__(self):
         raise RuntimeError('Use get_instance() instead')
@@ -50,18 +51,22 @@ class Profiler:
             logging.info(">> Profiling enabled")
         self.c_profiler.enable()
 
-    def disable_and_report(self, profile_log: str):
+    def disable_and_report(self, profile_log: str = '/tmp/profile.log', sort_by: str = 'cumtime'):
         self.disable()
-        self.report(profile_log)
+        self.report(profile_log, sort_by)
 
     def disable(self, echo: bool = True):
         self.c_profiler.disable()
         if echo:
             logging.info(">> Profiling disabled")
 
-    def report(self, profile_log: str):
+    def report(self, profile_log: str = '/tmp/profile.log', sort_by: str = 'cumtime'):
         logging.info(">> Profiling finished, see: {}".format(file_link_format(profile_log)))
         with open(profile_log, 'w') as stream:
-            stats = pstats.Stats(self.c_profiler, stream=stream).sort_stats('cumtime')
+            stats = pstats.Stats(self.c_profiler, stream=stream).sort_stats(sort_by)
             stats.print_stats()
+
+    def dump_stats(self, filename: str = '/tmp/profile.prof'):
+        logging.info(">> Profiling stats dumped to: {}".format(file_link_format(filename)))
+        self.c_profiler.dump_stats(filename)
 

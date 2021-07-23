@@ -15,6 +15,7 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 from cmath import nan
 from datetime import datetime, timedelta
+from timeit import timeit
 from unittest import TestCase
 
 import numpy
@@ -23,6 +24,25 @@ import pandas
 from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
     DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before
 from main.adapters.value_type import ValueType
+
+
+def generate_data(data_height: int = 1000, start_time: datetime = datetime(year=3000, month=2, day=1)):
+    data = pandas.DataFrame()
+    for it in range(data_height):
+        data.loc[start_time + (it * timedelta(weeks=1)), ValueType.CLOSE] = it
+    mid_time = start_time + ((data_height / 2) * timedelta(weeks=1))
+    return data, mid_time
+
+
+def get_average_runtime(function, args, run_count: int = 1000) -> timedelta:
+    total_run_time = timedelta()
+    for it in range(run_count):
+        run_start = datetime.now()
+        function(*args)
+        run_end = datetime.now()
+        total_run_time += run_end - run_start
+    average_run_time = total_run_time / run_count
+    return average_run_time
 
 
 class TestAdapter(TestCase):
@@ -159,6 +179,16 @@ class TestAdapter(TestCase):
                          f"received {get_common_end_time(adapter.data)}")
         return True
 
+    def test_find_closest_instance_after_performance(self):
+        """
+        Verify that the closest instance after a mismatched time is returned
+        :return:
+        """
+        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter.data, mid_time = generate_data()
+        average_runtime = get_average_runtime(find_closest_instance_after, (adapter.data, mid_time))
+        self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=40))
+
     def test_find_closest_instance_before_mismatch(self):
         """
         Verify that the closest instance before a mismatched time is returned
@@ -174,6 +204,23 @@ class TestAdapter(TestCase):
         self.assertEqual(find_closest_instance_before(adapter.data, mismatch_time), common_time,
                          f"Did not get the correct common end time, expected {common_time}, "
                          f"received {get_common_end_time(adapter.data)}")
+
+    def test_find_closest_instance_before_performance(self):
+        """
+        Verify that the closest instance before a mismatched time is returned
+        :return:
+        """
+        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter.data, mid_time = generate_data()
+        average_runtime = get_average_runtime(find_closest_instance_before, (adapter.data, mid_time))
+        self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=40))
+
+    def assert_performant_runtime(self, average_runtime: timedelta, expected_runtime: timedelta,
+                                  allowed_multiple: int = 2):
+        allowed_runtime = allowed_multiple * expected_runtime
+        self.assertLess(average_runtime, allowed_runtime,
+                        f"The runtime was {average_runtime} and was more than {allowed_multiple} times the expected "
+                        f"runtime {expected_runtime} (i.e. max allowed {allowed_runtime})")
 
     def test_get_all_values(self):
         """
@@ -221,4 +268,3 @@ class TestAdapter(TestCase):
         self.assertEqual(adapter.get_value(common_time + timedelta(weeks=2), ValueType.CLOSE), 3.0)
         adapter.data.loc[common_time - timedelta(weeks=4), ValueType.CLOSE] = 0.5
         self.assertEqual(adapter.get_value(common_time - timedelta(weeks=4), ValueType.CLOSE), 0.5)
-

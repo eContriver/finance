@@ -266,7 +266,7 @@ def setup_collection(symbols: List[str],
 def setup_symbol_adapter(symbol, interval: TimeInterval, asset_type: AssetType, base_symbol: str,
                          value_types: List[ValueType]):
     data_adapter: MockDataAdapter = MockDataAdapter(symbol, asset_type)
-    data_adapter.get_value_types = value_types
+    data_adapter.request_value_types = value_types
     data_adapter.base_symbol = base_symbol
     data_adapter.add_argument(Argument(ArgumentType.END_TIME, datetime.now()))
     data_adapter.add_argument(Argument(ArgumentType.INTERVAL, interval))

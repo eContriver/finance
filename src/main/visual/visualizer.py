@@ -99,7 +99,7 @@ class Visualizer:
         for adapter in self.collection.adapters:
             assert adapter.symbol in self.price_plots, 'The symbol {} has no data'.format(adapter.symbol)
             row_titles.append(self.price_plots[adapter.symbol].label)
-            for value_type in adapter.get_value_types:
+            for value_type in adapter.request_value_types:
                 value_type_filter = [
                     ValueType.HIGH,
                     ValueType.OPEN,
@@ -341,7 +341,7 @@ class Visualizer:
 
     def add_series_data(self, adapter: Adapter, portfolio):
         start: datetime = adapter.get_start_time(adapter.data)
-        for value_type in adapter.get_value_types:
+        for value_type in adapter.request_value_types:
             # Time-series data...
             if value_type not in adapter.data:
                 continue

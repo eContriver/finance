@@ -21,95 +21,100 @@ from typing import Optional, List, Dict, Set
 import pandas
 
 from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, get_end_time, \
-    get_start_time, get_column
+    get_start_time, get_column, get_all_times, find_closest_before_else_after
 from main.adapters.value_type import ValueType
 
 
 class NotExactlyOneAdapterException(RuntimeError):
+    """
+    This exception is thrown when an adapter is requested and there isn't exactly one adapter matching.
+    """
     pass
 
 
+def filter_adapters(adapters: List[Adapter], symbol: str, value_type: ValueType) -> Adapter:
+    """
+    Return the adapter for the provided symbol and value type.
+    :raise NotExactlyOneAdapterException if no matching adapters are found
+    :param adapters: The list of adapters to filter
+    :param symbol: The symbol to get the adapter for
+    :param value_type: The value type to get the adapter for
+    :return: The adapter matching the search criteria
+    """
+    adapters_with_type: List[Adapter] = [adapter for adapter in adapters if value_type in adapter.request_value_types]
+    adapters_with_symbol: List[Adapter] = [adapter for adapter in adapters_with_type if adapter.symbol == symbol]
+    if len(adapters_with_symbol) != 1:
+        raise NotExactlyOneAdapterException("Found {} adapters for symbol {} with value type {}, exactly one is " \
+                                            "expected.".format(len(adapters_with_symbol), symbol, value_type))
+    return adapters_with_symbol[0]
+
+
+def set_all_cache_key_dates(adapters: List[Adapter], cache_key_date: datetime) -> None:
+    """
+    Sets the cache key date on each of the provided adapters.
+    :param adapters: A list of adapters to set the cache key dates on
+    :param cache_key_date: The date to set the cache key date values to
+    :return:
+    """
+    for adapter in adapters:
+        adapter.cache_key_date = cache_key_date
+
+
+def get_all_cache_key_dates(adapters) -> Set[datetime]:
+    """
+    Get unique list of all of the cache key dates from the list of adapters.
+    :return:
+    """
+    return set([adapter.cache_key_date for adapter in adapters])
+
+
 class AdapterCollection:
+    """
+    This class holds on to a collection (list) of adapters. The methods of this class facilitate clients asking for data
+    from all of the adapters, so that clients don't have to keep track of what data lives in which adapter.
+
+    A single adapter is capable of holding all different types of data in columns; However, where things breakdown is
+    that sometimes a user wants Price (Open, Close, High, Low) to be on a Daily basis, and we want Earnings data on a
+    Quarterly basis. For this case we use two adapters for the same symbol. Both adapters should be stored in an
+    AdapterCollection, but each adapter would be using a different configuration.
+    """
     adapters: List[Adapter]
-    group_adapters: bool
     asset_type_overrides: Dict[str, AssetType]
-    cache_key_date_override: Optional[datetime]
 
     def __init__(self):
         self.adapters = []
-        self.group_adapters = True
         self.asset_type_overrides = {
             'ETH': AssetType.DIGITAL_CURRENCY,
             'LTC': AssetType.DIGITAL_CURRENCY
         }
-        self.cache_key_date_override = None
 
     def retrieve_all_data(self):
-        if self.cache_key_date_override is not None:
-            self.set_all_cache_key_dates(self.cache_key_date_override)
+        """
+        Retrieve the data for all of the columns (the requested value types set on the adapter) for each of the adapters
+        :return:
+        """
         for adapter in self.adapters:
             adapter.add_all_columns()
-            # adapter.calculate_asset_type()  add columns already does this... perhaps there were some that didn't?
-
-    def set_all_cache_key_dates(self, cache_key_date: datetime) -> None:
-        for adapter in self.adapters:
-            adapter.cache_key_date = cache_key_date
-
-    def get_all_cache_key_dates(self) -> Set[datetime]:
-        return set([adapter.cache_key_date for adapter in self.adapters])
-
-    # def add_arg(self, argument: Argument):
-    #     for adapter in self.adapters:
-    #         adapter.add_arg(argument)
-
-    def get_adapters_with_value_type(self, value_type: ValueType) -> List[Adapter]:
-        return [adapter for adapter in self.adapters if value_type in adapter.get_value_types]
-
-    def get_adapters(self, symbol: str, value_type: ValueType) -> List[Adapter]:
-        adapters_with_type: List[Adapter] = self.get_adapters_with_value_type(value_type)
-        adapters_with_symbol: List[Adapter] = [adapter for adapter in adapters_with_type if adapter.symbol == symbol]
-        assert len(adapters_with_symbol) <= 1, "Found {} adapters for symbol {} with value type {}, up to one is " \
-                                               "expected.".format(len(adapters_with_symbol), symbol, value_type)
-        # we don't support more than one adapter per symbol per value type - it would be ambiguous where to get data
-        return adapters_with_symbol
-
-    def get_adapter_or_none(self, symbol: str, value_type: ValueType) -> Optional[Adapter]:
-        adapters: List[Adapter] = self.get_adapters(symbol, value_type)
-        return adapters[0] if len(adapters) == 1 else None
-
-    def get_adapter(self, symbol: str, value_type: ValueType) -> Adapter:
-        """
-        Return the adapter for the provided symbol and value type.
-        :raise NotExactlyOneAdapterException if no matching adapters are found
-        :param symbol: The symbol to get the adapter for
-        :param value_type: The value type to get the adapter for
-        :return: The adapter
-        """
-        adapters: List[Adapter] = self.get_adapters(symbol, value_type)
-        if len(adapters) != 1:
-            raise NotExactlyOneAdapterException("Found {} adapters for symbol {} with value type {}, exactly one is " \
-                                                "expected.".format(len(adapters), symbol, value_type))
-        return adapters[0]
 
     def has_value(self, symbol: str, instance: datetime, value_type: ValueType) -> bool:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         exists = instance in adapter.data.index
         return exists
 
     def get_value(self, symbol: str, instance: datetime, value_type: ValueType) -> float:
         # Profiler.get_instance().enable()
         # price: float = self.get_value_closest_before_else_after(symbol, instance, value_type)
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         price = adapter.get_value(instance, value_type)  # it's an error condition if the times don't match.. callers
         # Profiler.get_instance().disable()
         return price
 
     def get_value_closest_before_else_after(self, symbol: str, instance: datetime, value_type: ValueType) -> float:
-        adapter: Adapter = self
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         # if adapter.has_time(instance):
         #     price = adapter.get_value(instance, value_type)
         # else:
-        last: datetime = adapter.find_closest_before_else_after(adapter.data, instance)
+        last: datetime = find_closest_before_else_after(adapter.data, instance)
         price = adapter.get_value(last, value_type)
         return price
 
@@ -130,17 +135,17 @@ class AdapterCollection:
         #                                           adapter.symbol, report))
 
     def get_all_items_on_or_before(self, symbol: str, before: datetime, value_type: ValueType) -> pandas.DataFrame:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         all_items = adapter.get_column_on_or_before(before, value_type)
         return all_items.to_frame()
 
     def get_all_items_on_or_after(self, symbol, after: datetime, value_type: ValueType) -> pandas.DataFrame:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         all_items = adapter.get_column_on_or_after(after, value_type)
         return all_items.to_frame()
 
     def get_all_items_between(self, symbol, after: datetime, before: datetime, value_type: ValueType) -> pandas.Series:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         all_items = adapter.get_column_between(after, before, value_type)
         return all_items
 
@@ -150,7 +155,7 @@ class AdapterCollection:
     def get_columns(self, symbol: str, value_types: List[ValueType]) -> pandas.DataFrame:
         all_items = None
         for value_type in value_types:
-            adapter: Adapter = self.get_adapter(symbol, value_type)
+            adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
             if all_items is None:
                 all_items = get_column(adapter.data, value_type).to_frame()
             else:
@@ -158,12 +163,12 @@ class AdapterCollection:
         return all_items
 
     def get_column(self, symbol: str, value_type: ValueType) -> pandas.Series:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         all_items = get_column(adapter.data, value_type)
         return all_items
 
     def get_all_values(self, symbol: str, value_type: ValueType) -> pandas.Series:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         values = adapter.get_all_values(value_type)
         return values
 
@@ -188,7 +193,7 @@ class AdapterCollection:
         return None if len(start_times) == 0 else max(start_times)
 
     def get_start_time(self, symbol: str, value_type: ValueType) -> Optional[datetime]:
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         return get_start_time(adapter.data)
 
     def get_common_end_time(self) -> Optional[datetime]:
@@ -204,13 +209,13 @@ class AdapterCollection:
         :param value_type: The value type of the adapter
         :return: The end time of the found adapter
         """
-        adapter: Adapter = self.get_adapter(symbol, value_type)
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
         return get_end_time(adapter.data)
 
     def get_all_times(self, before: Optional[datetime] = None) -> List[datetime]:
         times: List[datetime] = []
         for adapter in self.adapters:
-            times += adapter.get_all_times(adapter.data)
+            times += get_all_times(adapter.data)
         return sorted(list(set(times)))
         # times: List[datetime] = []
         # start_times = []

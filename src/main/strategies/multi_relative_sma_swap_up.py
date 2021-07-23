@@ -50,7 +50,12 @@ class MultiRelativeSmaSwapUp(MultiSymbolStrategy):
 
     def next_step(self, current_time: datetime) -> None:
         """
-        :param current_time: this incremental steps time
+        Here we are setting up a sell for the future... tomorrow which would sell 100% of our symbol
+        and then we have to calculate the purchase from that selling value price the next buying
+        amount of cash available, however, the price will be different tomorrow, so we can either look
+        into the future or just sell one day, and wait for the next day to purchase here we choose
+        to do the latter...
+        :param current_time: this incremental steps current time
         :return:
         """
         last_time = self.portfolio.get_last_completed_time()
@@ -59,7 +64,8 @@ class MultiRelativeSmaSwapUp(MultiSymbolStrategy):
         for symbol in self.symbols:
             sma = self.collection.get_value(symbol, last_time, ValueType.SMA)
             sma_df = self.collection.get_all_items_on_or_before(symbol, last_time, ValueType.SMA)
-            all_before = sorted(sma_df.index)
+            assert sma_df.index.is_monotonic_increasing
+            all_before = sma_df.index
             look_back_time = all_before[0] if len(all_before) < self.look_back else all_before[-self.look_back]
             look_back_sma = self.collection.get_value(symbol, look_back_time, ValueType.SMA)
             relative_smas[symbol] = sma / look_back_sma
@@ -85,14 +91,6 @@ class MultiRelativeSmaSwapUp(MultiSymbolStrategy):
                             self.open_buy(compare_symbol, current_time, buying, value_type)
                         elif selling > 0.0:
                             self.open_sell(relative_symbol, current_time, selling, value_type)
-                            # Here we are setting up a sell for the future... tomorrow which would sell 100% of our symbol
-                            # and then we have to calculate the purchase from that selling value price the next buying
-                            # amount of cash available, however, the price will be different tomorrow, so we can either look
-                            # into the future or just sell one day, and wait for the next day to purchase here we choose
-                            # to do tha latter...
-                            # price = self.collection.get_value(relative_symbol, current_time, value_type)
-                            # cash_from_sale = price * quantity
-                            # self.open_buy(compare_symbol, current_time, cash_from_sale, value_type)
 
     def open_sell(self, symbol: str, current_time: datetime, quantity: float, value_type: ValueType):
         order = MarketOrder(symbol, OrderSide.SELL, quantity, current_time, value_type)

@@ -22,7 +22,7 @@ from typing import List
 
 from main.adapters.adapter import AssetType, TimeInterval, Adapter
 from main.adapters.adapter_collection import AdapterCollection
-from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
+from main.adapters.third_party_adapters.alpha_vantage import AlphaVantage
 from main.adapters.value_type import ValueType
 
 

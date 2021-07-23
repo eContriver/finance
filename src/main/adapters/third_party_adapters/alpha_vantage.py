@@ -178,9 +178,9 @@ class AlphaVantage(Adapter):
 
     def translate(self, response_data, value_type: ValueType, key, data_date_format='%Y-%m-%d') -> None:
         """
-
-        :param value_type:
+        This method converts the raw data returned from rest API calls into
         :param response_data: Data from an API or URL request (raw data generally JSON, CSV, etc.)
+        :param value_type: The value type we will be converting and the column we will be inserting
         :param key: The root key where we will pull the dictionary out of
         :param data_date_format: The incoming data time format, used to convert to datetime objects
         :return: None
@@ -208,7 +208,7 @@ class AlphaVantage(Adapter):
                 if converter.adjust_values:
                     ratio = self.get_adjusted_ratio(response_entry)
                     value = value * ratio
-                indexes.append(datetime.strptime(entry_datetime, data_date_format))
+                indexes.append(datetime.fromisoformat(entry_datetime))
                 values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
 
@@ -295,7 +295,7 @@ class AlphaVantage(Adapter):
                         value = 0.0 if response_value == 'None' else float(response_value)
                         break
                 if value is not None:
-                    indexes.append(datetime.strptime(entry['fiscalDateEnding'], data_date_format))
+                    indexes.append(datetime.fromisoformat(entry['fiscalDateEnding'], data_date_format))
                     values.append(value)
             self.insert_data_column(converter.value_type, indexes, values)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
@@ -329,7 +329,7 @@ class AlphaVantage(Adapter):
                 "There is no data (length is 0) for key: {} (maybe try a different time interval)".format(key))
         translated = {}
         for entry in response_data[key]:
-            dt = datetime.strptime(entry['fiscalDateEnding'], data_date_format)
+            dt = datetime.fromisoformat(entry['fiscalDateEnding'])
             translated[dt] = {}
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
@@ -366,7 +366,7 @@ class AlphaVantage(Adapter):
                 "There is no data (length is 0) for key: {} (maybe try a different time interval)".format(key))
         translated = {}
         for entry in response_data[key]:
-            dt = datetime.strptime(entry['fiscalDateEnding'], data_date_format)
+            dt = datetime.fromisoformat(entry['fiscalDateEnding'])
             translated[dt] = {}
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
@@ -403,7 +403,7 @@ class AlphaVantage(Adapter):
                 "There is no data (length is 0) for key: {} (maybe try a different time interval)".format(key))
         translated = {}
         for entry in response_data[key]:
-            dt = datetime.strptime(entry['fiscalDateEnding'], data_date_format)
+            dt = datetime.fromisoformat(entry['fiscalDateEnding'])
             translated[dt] = {}
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)

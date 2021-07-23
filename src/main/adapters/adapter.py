@@ -17,6 +17,7 @@
 
 import csv
 import inspect
+import itertools
 import json
 import logging
 import os.path
@@ -39,7 +40,16 @@ from main.common.locations import file_link_format
 
 class DuplicateRawIndexesException(RuntimeError):
     """
-    When data is added
+    When data is added with duplicate indices to an adapters data table this exception will be thrown.
+    """
+    pass
+
+
+class DataNotSortedException(RuntimeError):
+    """
+    Several of the functions in the adapters package work on pandas DataFrames. Because sorting is costly and because
+    presorting has huge performance implications, it is required for several functions that the data be presorted. If
+    the index is not monotonically increasings, then this exception will be thrown.
     """
     pass
 
@@ -182,37 +192,46 @@ def find_closest_instance_after(data: pandas.DataFrame, instance: datetime) -> O
     :param instance: The instance to look for, if an exact match (equal to) is found then it is returned
     :return: The closest datetime, else None
     """
+    if not data.index.is_monotonic_increasing:
+        raise DataNotSortedException("Adapter find methods (working on DataFrames) expects data to be sorted, "
+                                     "but it was not.")
     indexes: numpy.ndarray = data.index.to_numpy()
     all_after = indexes[numpy.where(indexes >= instance)]
-    all_after = sorted(all_after, reverse=False)
     closest: Optional[datetime] = all_after[0] if len(all_after) > 0 else None
     return closest
 
 
-def find_closest_instance_before(data, instance: datetime) -> Optional[datetime]:
+def find_closest_instance_before(data: pandas.DataFrame, instance: datetime) -> Optional[datetime]:
     """
     Get the closest time (index) before the instance time, if none exist return None
     :param data: The data to get the instance (index) time from
     :param instance: The instance to look for, if an exact match (equal to) is found then it is returned
     :return: The closest datetime, else None
     """
+    if not data.index.is_monotonic_increasing:
+        raise DataNotSortedException("Adapter find methods (working on DataFrames) expects data to be sorted, "
+                                     "but it was not.")
     indexes: numpy.ndarray = data.index.to_numpy()
     all_before = indexes[numpy.where(indexes <= instance)]
-    all_before = sorted(all_before, reverse=True)
-    closest: Optional[datetime] = all_before[0] if len(all_before) > 0 else None
+    closest: Optional[datetime] = all_before[-1] if len(all_before) > 0 else None
     return closest
 
 
-def get_all_times(data) -> pandas.Index:
+def get_all_times(data: pandas.DataFrame) -> pandas.Index:
+    """
+    Get the time (indexes) from the table (data frame)
+    :param data: The DataFrame to retrieve the indexes from
+    :return:
+    """
     return data.index
 
 
-def get_start_time(data) -> Optional[datetime]:
+def get_start_time(data: pandas.DataFrame) -> Optional[datetime]:
     times = get_all_times(data)
     return None if times.empty else times[0]
 
 
-def get_end_time(data) -> Optional[datetime]:
+def get_end_time(data: pandas.DataFrame) -> Optional[datetime]:
     times = get_all_times(data)
     return None if times.empty else times[-1]
 
@@ -289,10 +308,15 @@ def write_url_response_to_file(data_file, query, url):
         fd.write(response.text)
 
 
-def lock(data_file, lock_dir):
-    wait = os.path.exists(lock_dir) or not os.path.exists(data_file)
+def acquire_lock(lock_dir: str) -> bool:
+    """
+    Attempts to acquire a lock via a semaphore directory else waits until it does acquire that lock.
+    This is how query collisions across multiple processes are prevented.
+    :param lock_dir: The lock directory that will be used to synchronize request across the multiple processes running.
+    :return:
+    """
     acquired_lock = False
-    while wait:
+    while True:
         if os.path.exists(lock_dir):
             logging.debug("Waiting on lock: {}".format(lock_dir))
             time.sleep(1)  # wait for other process to finish their query
@@ -303,7 +327,7 @@ def lock(data_file, lock_dir):
                 logging.debug("Acquired lock: {}".format(lock_dir))
                 acquired_lock = True
                 break
-            except OSError:
+            except OSError:  # The OSError indicates that the directory already exists, so we ignore that and try again
                 pass
     return acquired_lock
 
@@ -311,6 +335,18 @@ def lock(data_file, lock_dir):
 def get_response_value_or_none(time_data: Dict[str, str], key: str) -> Optional[float]:
     value = float(time_data[key]) if key in time_data else None
     return value
+
+
+def get_dupes(c):
+    '''sort/tee/izip'''
+    a, b = itertools.tee(sorted(c))
+    next(b, None)
+    r = None
+    for k, g in itertools.izip(a, b):
+        if k != g: continue
+        if k != r:
+            yield k
+            r = k
 
 
 class Adapter:
@@ -340,7 +376,7 @@ class Adapter:
     arguments: List[Argument]
     data: pandas.DataFrame
     converters: List[Converter]
-    get_value_types: List[ValueType]
+    request_value_types: List[ValueType]
     query_args: Dict[str, str]  # for things like macd_fast, macd_slow, macd_signal, etc.
     cache_root_dir: Optional[str]
 
@@ -358,7 +394,7 @@ class Adapter:
         self.arguments = []
         self.data = pandas.DataFrame()
 
-        self.get_value_types = []
+        self.request_value_types = []
         self.query_args = {}
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -370,16 +406,17 @@ class Adapter:
                f"key:{self.cache_key_date})"
 
     def add_value_type(self, value_type: ValueType):
-        if value_type not in self.get_value_types:
-            self.get_value_types.append(value_type)
+        if value_type not in self.request_value_types:
+            self.request_value_types.append(value_type)
 
     def add_all_columns(self):
-        for value_type in self.get_value_types:
+        for value_type in self.request_value_types:
             self.add_column(value_type)
 
     def add_column(self, value_type: ValueType) -> None:
         if self.cache_key_date is None:
             self.cache_key_date = get_default_cache_key_date()
+        logging.debug(f"Adding data for '{value_type}' using cache key date: '{self.cache_key_date}'")
         # self.cache_key_date = datetime(year=2021, month=6, day=29)
             # raise MissingCacheKeyException("The cache key should be set on each Adapter or on the Collection so that "
             #                                "the default makes since for the adapter type, but should also allow the "
@@ -404,26 +441,39 @@ class Adapter:
         return converter
 
     def get_api_response(self, api, args, cache: bool = True, data_type: DataType = DataType.JSON):
+        """
+        The data file will be generated by the current query. If the lock directory doesn't exist, then a check is
+        performed to see if the data file exists. If the data file does exist, then we have a cache hit and we don't
+        need to wait nor do we need to acquire the lock. However, if the data file does not exist, then we need to
+        wait and try to acquire the lock. By trying to acquire the lock the current process will either be: 1. The
+        process that gets the lock and will create the cache the file 2. A process that waits on the lock directory
+        and after it is acquired finds out the cache file was already created
+        :param api:
+        :param args:
+        :param cache:
+        :param data_type:
+        :return:
+        """
         data_id = get_key_for_api_request(api, args)
         add_timestamp = not cache
-        data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
+        cache_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
         acquired_lock = False
         try:
-            acquired_lock = lock(data_file, lock_dir)
-            if not os.path.exists(data_file):  # only download files once per data_id - includes cache_key (e.g.daily)
-                self.delay_requests(data_file)
-                write_api_response_to_file(data_file, api, args, data_type)
-                logging.debug('Data saved to: {}'.format(file_link_format()))
+            acquired_lock = False if os.path.exists(cache_file) else acquire_lock(lock_dir)
+            if not os.path.exists(cache_file):  # only download files once per data_id - includes cache_key (e.g.daily)
+                self.delay_requests(cache_file)
+                write_api_response_to_file(cache_file, api, args, data_type)
+                logging.debug('Data saved to: {}'.format(file_link_format(cache_file)))
             else:
-                logging.debug('Using cached file: {}'.format(file_link_format()))
+                logging.debug('Using cached file: {}'.format(file_link_format(cache_file)))
         except Exception:
             raise
         finally:
             if acquired_lock and os.path.exists(lock_dir):
                 os.rmdir(lock_dir)
-        data = self.read_cache_file(data_file, data_type, cache)
+        data = self.read_cache_file(cache_file, data_type, cache)
         self.validate_data(data)
-        return data, data_file
+        return data, cache_file
 
     def get_indicator_key(self):
         self.calculate_asset_type()
@@ -435,25 +485,25 @@ class Adapter:
     def get_url_response(self, url, query, cache: bool = True, data_type: DataType = DataType.JSON, delay: bool = True):
         data_id = self.get_key_for_url_request(query, url)
         add_timestamp = not cache
-        data_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
+        cache_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
         acquired_lock = False
         try:
-            acquired_lock = lock(data_file, lock_dir)
-            if not os.path.exists(data_file):  # only download files once per data_id - includes cache_key (e.g.daily)
+            acquired_lock = False if os.path.exists(cache_file) else acquire_lock(lock_dir)
+            if not os.path.exists(cache_file):  # only download files once per data_id - includes cache_key (e.g.daily)
                 if delay:
-                    self.delay_requests(data_file)
-                write_url_response_to_file(data_file, query, url)
-                logging.debug('Data saved to: {}'.format(file_link_format(data_file)))
+                    self.delay_requests(cache_file)
+                write_url_response_to_file(cache_file, query, url)
+                logging.debug('Data saved to: {}'.format(file_link_format(cache_file)))
             else:
-                logging.debug('Using cached file: {}'.format(file_link_format(data_file)))
+                logging.debug('Using cached file: {}'.format(file_link_format(cache_file)))
         except Exception:
             raise
         finally:
             if acquired_lock and os.path.exists(lock_dir):
                 os.rmdir(lock_dir)
-        data = self.read_cache_file(data_file, data_type, cache)
+        data = self.read_cache_file(cache_file, data_type, cache)
         self.validate_data(data)
-        return data, data_file
+        return data, cache_file
 
     def get_key_for_url_request(self, query, url):
         lower_values = []
@@ -499,9 +549,10 @@ class Adapter:
         :param values: The value of the new column, these are expected to be index aligned with the indexes
         :return:
         """
-        duplicates = [x for x in indexes if indexes.count(x) > 1]
-        if len(duplicates) > 0:
-            raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: {duplicates}")
+        # duplicates = [x for x in indexes if indexes.count(x) > 1]
+        # duplicate_indexes = list(get_dupes(indexes))
+        # if len(duplicate_indexes) > 0:
+        #     raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: {duplicate_indexes}")
         add_indices = pandas.Index(indexes).difference(self.data.index)
         add_df = pandas.DataFrame(index=add_indices, columns=self.data.columns)  # .fillna(None)
         new_df = pandas.concat([self.data, add_df])
@@ -510,6 +561,9 @@ class Adapter:
         # merge_df = merge_df.sort_index(ascending=True)
         self.data = new_df.join(merge_df)
         self.data = self.data.sort_index(ascending=True)
+        if True in self.data.index.duplicated():
+            raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: "
+                                               f"{self.data[self.data.index.duplicated(keep=False)]}")
         # reindexed_df = merge_df.reindex(new_df.index)  # leave Nones
         # reindexed_df = merge_df.reindex(new_df.index, method="nearest")  # fill Nones with closest
         # if len(values) > 0:

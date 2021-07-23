@@ -18,6 +18,8 @@
 #   docker volume create --name financial_static_site --opt type=none --opt device=$PWD --opt o=bind
 #  Persistent settings storage
 #   docker volume create root_home
+#  Access Persistent root_home on Windows with:
+#   \\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\root_home\_data
 # Test volumes
 #   docker volume rm financial_static_site && docker volume create --driver local --opt type=cifs --opt device=//192.168.2.235/private/projects/financial_static_site --opt o=username=user,password=pw financial_static_site
 #   docker run --rm -it -v financial_static_site:/financial_static_site/ py_deps bash -c "ls -la /financial_static_site && touch /financial_static_site/test-`date +%s` && ls -la /financial_static_site"

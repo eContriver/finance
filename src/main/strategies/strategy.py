@@ -21,12 +21,17 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 
 from main.adapters.adapter import Adapter, AssetType
-from main.adapters.adapter_collection import AdapterCollection
+from main.adapters.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.adapters.argument import Argument, ArgumentType
 from main.adapters.orders.order import Order
 from main.adapters.value_type import ValueType
+from main.common.profiler import Profiler
 from main.common.time_zones import TimeZones
 from main.portfolio.portfolio import Portfolio
+
+
+class MultipleMatchingAdaptersException(RuntimeError):
+    pass
 
 
 class Strategy:
@@ -54,7 +59,8 @@ class Strategy:
         return string
 
     def run(self):
-        self.collection.set_all_cache_key_dates(self.portfolio.end_time if self.portfolio.end_time is not None else datetime.now(TimeZones.get_tz()))
+        key_date = self.portfolio.end_time if self.portfolio.end_time is not None else datetime.now(TimeZones.get_tz())
+        set_all_cache_key_dates(self.collection.adapters, key_date)
         self.collection.retrieve_all_data()
         self.portfolio.set_remaining_times(self.collection)
         logging.info("-- Starting strategy: {}".format(self))
@@ -66,7 +72,6 @@ class Strategy:
             current_time = remaining_times[0]
             self.portfolio.run_to(self.collection, current_time)
             self.next_step(current_time)
-        # Profiler.get_instance().report()
         self.portfolio.summarize()
         return self
 
@@ -103,12 +108,9 @@ class Strategy:
 
     def get_adapter(self, symbol: str, adapter_class: type, value_type: ValueType, asset_type: AssetType,
                     cache_key_date: Optional[datetime] = None) -> Adapter:
+        group_adapters = True  # We can remove this, but leaving for now as we may want to make this configurable
         matching_adapters = [adapter for adapter in self.collection.adapters if (adapter.symbol == symbol) and
-                             # this logic groups the adapters so there is only one per adapter_type
-                             # if multiple adapters are needed, then set group_adapters to false
-                             # TODO: Consider if group_adapters should belong to the strategy class, or move to collection
-                             (not self.collection.group_adapters or (adapter_class == type(adapter)))]
-                            # value_type in adapter.value_types] #
+                             (not group_adapters or (adapter_class == type(adapter)))]
         if len(matching_adapters) == 1:
             adapter: Adapter = matching_adapters[0]
             # adapter.add_value_type(value_type)
@@ -119,11 +121,12 @@ class Strategy:
                 adapter.cache_key_date = cache_key_date
             self.collection.adapters.append(adapter)
         else:
-            raise RuntimeError("Only one adapter is allowed to be defined given a symbol and a value type. For symbol "
-                               "{} found {} adapters that support value type {}: {}".format(symbol,
-                                                                                            len(matching_adapters),
-                                                                                            value_type,
-                                                                                            matching_adapters))
+            raise MultipleMatchingAdaptersException("Only one adapter is allowed to be defined given a symbol and a "
+                                                    "value type. For symbol {} found {} adapters that support value "
+                                                    "type {}: {}".format(symbol,
+                                                                         len(matching_adapters),
+                                                                         value_type,
+                                                                         matching_adapters))
         return adapter
 
     def add_price_collection(self, symbol: str, cache_key_date: Optional[datetime] = None) -> None:

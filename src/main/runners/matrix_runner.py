@@ -21,7 +21,7 @@ from datetime import datetime
 from typing import List, Dict
 
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
+from main.adapters.third_party_adapters.alpha_vantage import AlphaVantage
 from main.adapters.value_type import ValueType
 from main.common.locations import get_and_clean_timestamp_dir
 from main.executors.parallel_executor import ParallelExecutor

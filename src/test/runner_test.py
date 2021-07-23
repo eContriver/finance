@@ -21,8 +21,7 @@ from main.common.report import Report
 from main.executors.job import Job
 from main.executors.parallel_executor import ParallelExecutor
 from main.executors.sequential_executor import SequentialExecutor
-from main.runners.intrinsic_value_runner import validate_type
-from main.runners.runner import Runner
+from main.runners.runner import Runner, validate_type
 from test.executor_test import TestExecutor
 
 

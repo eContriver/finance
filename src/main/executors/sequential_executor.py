@@ -23,6 +23,7 @@ from datetime import timedelta, datetime
 from typing import Any, Dict
 
 from main.common.locations import file_link_format
+from main.common.profiler import Profiler
 from main.executors.executor import Executor
 from main.executors.job import Job, JobState
 
@@ -91,7 +92,10 @@ class SequentialExecutor(Executor):
                 "Starting job - process: {} - thread: {} was: {}".format(multiprocessing.current_process().name,
                                                                          threading.current_thread().name, old_name))
             job.state = JobState.RUNNING
+            # Profiler.get_instance().enable()
             returned = job.function(*job.args)
+            # Profiler.get_instance().disable_and_report('/tmp/profile.log')
+            # Profiler.get_instance().dump_stats()
             logging.debug("Job returned: {}".format(returned))
         except Exception as exception:
             logging.error("Caught exception while getting result - the job should've handled reporting of this "

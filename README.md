@@ -136,6 +136,36 @@ Working flow is to run this as you work and make sure you are maintaining covera
 
     unittest-parallel -t ./src/ -s ./src/test/ --coverage --coverage-rcfile .coveragerc --coverage-html ./coverage
 
+# Profiling
+
+## cProfile from argument
+
+The Launcher class which is used to start most of the command-line tools has an option '-p' or '--profile' which allows
+you to profile the entire session. This will just generate a profile report at the end.
+
+The Profile class can also be used to profile a small section of code, but it does require that you edit the code.
+
+    Profiler.get_instance().enable()
+    <code to profile>
+    Profiler.get_instance().disable_and_report('/tmp/profile.log', 'cumtime')
+    Profiler.get_instance().dump_stats('/tmp/profile.prof')
+
+## cProfile from command-line
+
+    pip install CProfileV
+    /usr/local/bin/python -m cProfile /app/src/main.py
+
+    pip install CProfileV
+    /usr/local/bin/python -m cProfile -o /app/profile /app/src/main.py
+    cprofilev -f /app/profile
+
+## cProfile from command-line with KCacheGrind (a visualization tool)
+
+    python -m cProfile -o multi_symbol.prof multi_symbol.py
+    pip install pyprof2calltree
+    apt-get install kcachegrind
+    pyprof2calltree -k -i multi_symbol.prof
+
 # Example output
 
 ## STDOUT - Symbol Runner
@@ -567,15 +597,6 @@ Construction:
     collection.baseSymbol = 'USD'  # propagate to all data adapters on set?
     collection.add_symbol_adapter(symbol_adapter)
 
-
-# Profiling
-
-    pip install CProfileV
-    /usr/local/bin/python -m cProfile /app/src/main.py
-
-    pip install CProfileV
-    /usr/local/bin/python -m cProfile -o /app/profile /app/src/main.py
-    cprofilev -f /app/profile
 
 # References
 

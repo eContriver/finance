@@ -21,6 +21,7 @@ import sys
 from typing import List, Optional, Dict
 
 from main.adapters.adapter import TimeInterval, AssetType
+from main.common.profiler import Profiler
 from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir
 from main.executors.parallel_executor import ParallelExecutor
@@ -30,6 +31,7 @@ from main.executors.sequential_strategy_executor import SequentialStrategyExecut
 from main.portfolio.portfolio import Portfolio
 from main.runners.runner import Runner, NoSymbolsSpecifiedException
 from main.strategies.buy_and_hold import BuyAndHold
+from main.strategies.multi_delta_swap import MultiDeltaSwap
 from main.strategies.multi_relative_sma_swap_down import MultiRelativeSmaSwapDown
 from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
 from main.strategies.strategy import Strategy
@@ -84,7 +86,7 @@ class MultiSymbolRunner(Runner):
             raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
         class_name = config['adapter_class']
         self.adapter_class = getattr(
-            sys.modules[f'main.adapters.third_party_shims.{Report.camel_to_snake(class_name)}'], f'{class_name}')
+            sys.modules[f'main.adapters.third_party_adapters.{Report.camel_to_snake(class_name)}'], f'{class_name}')
         self.base_symbol = config['base_symbol']
         self.price_interval = TimeInterval(config['price_interval'])
         self.graph = config['graph']
@@ -119,7 +121,7 @@ class MultiSymbolRunner(Runner):
         # quantities['ETH'] = 10.0
         quantities[self.base_symbol] = 10000.0
         template: Portfolio = Portfolio('Cross Symbol Portfolio Value', quantities, start_time, end_time)
-        template.start_time = datetime.datetime(year=2021, month=1, day=1)
+        # template.start_time = datetime.datetime(year=2021, month=1, day=1)
         template.interval = self.price_interval
         template.add_adapter_class(self.adapter_class)
         template.asset_type_overrides = {
@@ -141,8 +143,8 @@ class MultiSymbolRunner(Runner):
 
         deltas = [
             1.1,
-            1.05,
-            1.025,
+            # 1.05,
+            # 1.025,
         ]
         for delta in deltas:
             # strategies.append(MultiDeltaSwap(self.symbols, copy.deepcopy(template), delta=delta))

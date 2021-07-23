@@ -17,10 +17,12 @@
 import copy
 import logging
 import os.path
+from abc import ABC
 from typing import List
 
 from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.third_party_shims.iex_cloud import IexCloud
+from main.adapters.third_party_adapters.iex_cloud import IexCloud
+from main.common.locations import get_and_clean_timestamp_dir, Locations
 from main.executors.parallel_executor import ParallelExecutor
 from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
@@ -40,7 +42,7 @@ class StrategyResultsAreEmptyException(RuntimeError):
     pass
 
 
-class SymbolRunner(Runner):
+class SymbolRunner(Runner, ABC):
     def __init__(self):
         super().__init__()
 
@@ -53,7 +55,7 @@ class SymbolRunner(Runner):
                                                           strategy.portfolio.start_time,
                                                           strategy.portfolio.end_time))
 
-    def start(self):
+    def start(self, locations: Locations):
         logging.info("#### Starting symbol runner...")
 
         # SymbolCollection

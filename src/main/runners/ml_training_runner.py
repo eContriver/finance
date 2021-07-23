@@ -24,7 +24,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import LSTM, Dense
 
-from main.adapters.third_party_shims.alpha_vantage import AlphaVantage
+from main.adapters.third_party_adapters.alpha_vantage import AlphaVantage
 from main.adapters.adapter import AssetType, TimeInterval, Adapter
 from main.adapters.value_type import ValueType
 from main.common.time_zones import TimeZones
