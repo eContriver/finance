@@ -16,13 +16,22 @@
 from time import sleep
 from unittest import TestCase
 
-from main.visual.pane import Pane
+import pandas
 
+from main.adapters.value_type import ValueType
+from main.visual.pane import Pane
+from test.adapters.test_adapter_collection import get_test_start_time, get_test_end_time, get_test_common_time
+import matplotlib.pyplot as plt
 
 class TestGraph(TestCase):
-    def test_to_json_1(self):
-        # sleep(10)
-        pane = Pane()
+    def test_dataframe_plot(self):
+        # df = pandas.DataFrame()
+        # df.loc[get_test_start_time(), ValueType.CLOSE] = 100.0
+        # df.loc[get_test_common_time(), ValueType.CLOSE] = 200.0
+        # df.loc[get_test_end_time(), ValueType.CLOSE] = 300.0
+        # df.plot()
+        # plt.show(block=True)
+        pass
 
     def test_to_json(self):
         # sleep(10)

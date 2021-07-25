@@ -63,6 +63,7 @@ class Portfolio:
         self.base_symbol = 'USD'
         self.interval = TimeInterval.DAY
         self.adapter_classes = {}
+        # TODO: Replace this with {} after all initialization is moved to YAML
         self.asset_type_overrides = {
             'ETH': AssetType.DIGITAL_CURRENCY,
             'LTC': AssetType.DIGITAL_CURRENCY,
@@ -106,11 +107,11 @@ class Portfolio:
                 held_for_trade += order.amount
         return self.quantities[symbol] - held_for_trade
 
-    def calculate_span(self) -> timedelta:
-        start = self.start_time if self.start_time is not None else datetime.now() - timedelta(weeks=52 * 15)
-        end = self.end_time if self.end_time is not None else datetime.now()
-        span = end - start
-        return span
+    # def calculate_span(self) -> timedelta:
+    #     start = self.start_time if self.start_time is not None else datetime.now() - timedelta(weeks=52 * 15)
+    #     end = self.end_time if self.end_time is not None else datetime.now()
+    #     span = end - start
+    #     return span
 
     def get_positions(self) -> str:
         return " ".join(
@@ -130,8 +131,8 @@ class Portfolio:
         """
         IMPORTANT: The aim is to let strategies open up orders, but they should not try to process them!
         By opening orders and calling next step we prevent a lot of mis-use of current-frame-of-reference knowledge.
-        The caller (i.e. strategy designer) should find it difficult to access the infomration from the future, but
-        find easy to use APIs when accessing current time or past times to make decisions about this time-frame.
+        The caller (i.e. strategy designer) should find it difficult to access the information from the future, but
+        find it easy to use APIs when accessing current time or past times to make decisions about this time-frame.
         :param order: The order to open
         :return:
         """

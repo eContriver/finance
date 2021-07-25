@@ -29,6 +29,7 @@ from typing import Optional, Dict, List, Any
 from urllib.parse import urlparse
 
 import numpy
+import numpy as np
 import pandas
 import requests
 
@@ -50,6 +51,21 @@ class DataNotSortedException(RuntimeError):
     Several of the functions in the adapters package work on pandas DataFrames. Because sorting is costly and because
     presorting has huge performance implications, it is required for several functions that the data be presorted. If
     the index is not monotonically increasings, then this exception will be thrown.
+    """
+    pass
+
+
+class UnknownDataTypeException(RuntimeError):
+    """
+    This exception should be used when attempting to read or write a DataType and the specified type is unknown.
+    """
+    pass
+
+
+class IntervalNotSupportedException(RuntimeError):
+    """
+    Adapters don't always have APIs that support all of the different intervals, and when a user specifies a time
+    interval that an adapter doesn't or cannot support, then this exception should be thrown.
     """
     pass
 
@@ -100,7 +116,7 @@ class TimeInterval(Enum):
     MIN10 = '10min', timedelta(minutes=10)
     MIN15 = '15min', timedelta(minutes=15)
     MIN30 = '30min', timedelta(minutes=30)
-    HOUR = '60min', timedelta(hours=1)
+    HOUR = 'hourly', timedelta(hours=1)
     HOUR6 = '6hour', timedelta(hours=6)
     DAY = 'daily', timedelta(days=1)
     WEEK = 'weekly', timedelta(weeks=1)
@@ -227,21 +243,33 @@ def get_all_times(data: pandas.DataFrame) -> pandas.Index:
 
 
 def get_start_time(data: pandas.DataFrame) -> Optional[datetime]:
+    """
+    Get the start time (Index) from the table (DataFrome)
+    :param data: The DataFrame to retrieve the start time from
+    :return: The start time (datetime) else None
+    """
     times = get_all_times(data)
     return None if times.empty else times[0]
 
 
 def get_end_time(data: pandas.DataFrame) -> Optional[datetime]:
+    """
+    Get the end time (Index) from the table (DataFrame)
+    :param data: The DataFrame to retrieve the end time from
+    :return: The end time (datetime) else None
+    """
     times = get_all_times(data)
     return None if times.empty else times[-1]
 
 
 def get_column(data: pandas.DataFrame, value_type: ValueType) -> pandas.Series:
+    """
+    Get the column (Series) from the table (DataFrame) given it's column label (ValueType)
+    :param data: The DataFrame to get the column (Series) from
+    :param value_type: The ValueType that is the column label to retrieve as a Series
+    :return: The Series that represents the column of data given the column label (ValueType)
+    """
     return data[value_type]
-
-
-# def has_time(data, instance) -> bool:
-#     return instance in data
 
 
 # def get_all_data_flat(data) -> (Dict[datetime, List[float]], List[ValueType]):
@@ -256,11 +284,17 @@ def get_column(data: pandas.DataFrame, value_type: ValueType) -> pandas.Series:
 #     return data, columns
 
 
-def get_key_for_api_request(function, args):
+def get_key_for_api_request(function, args) -> str:
+    """
+    Converts a function and it's arguments into a key that can be used as a unique identifier for the function call.
+    :param function: The function which would be called
+    :param args: The arguments that will be added into the key
+    :return: The key (string) representing the function and arguments
+    """
     args_string = "" if len(args) == 0 else "." + "_".join(
         [str(arg).replace(':', '_').replace('/', '_').replace('.', '_') for arg in args.values()])
-    cls = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
-    key = '{}{}{}'.format(cls, function.__name__, args_string)
+    cls: str = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
+    key: str = '{}{}{}'.format(cls, function.__name__, args_string)
     return key
 
 
@@ -282,6 +316,15 @@ def get_key_for_api_request(function, args):
 
 
 def write_api_response_to_file(data_file, api, args, data_type):
+    """
+    Writes an API request (normally a call into another Python package) to a file. This is the method that does the
+    action of getting the data, all caching mechanisms are expected to be handled by the callers.
+    :param data_file: The file to write the reponse into
+    :param api: The API that will be called to get the data
+    :param args: The API arguments
+    :param data_type: The type of data (DataType), this will determine the format of the data
+    :return:
+    """
     logging.debug('Requesting data from: {}({})'.format(api, args))
     response = api(**args)
     logging.debug('Received response: {}'.format(response))
@@ -294,7 +337,7 @@ def write_api_response_to_file(data_file, api, args, data_type):
         with open(data_file, 'w') as fd:
             fd.write(response)
     else:
-        raise RuntimeError("Unrecognized data type: {}".format(data_type))
+        raise UnknownDataTypeException("Unrecognized data type: {}".format(data_type))
 
 
 def write_url_response_to_file(data_file, query, url):
@@ -333,20 +376,36 @@ def acquire_lock(lock_dir: str) -> bool:
 
 
 def get_response_value_or_none(time_data: Dict[str, str], key: str) -> Optional[float]:
+    """
+    Checks if the key exists in the time_data and if so the value is converted to a float from a string and the returned
+    for that key, else None is returned.
+    :param time_data: The data to search for the value in
+    :param key: The key to search for
+    :return: The value as a float, else None
+    """
     value = float(time_data[key]) if key in time_data else None
     return value
 
 
-def get_dupes(c):
-    '''sort/tee/izip'''
-    a, b = itertools.tee(sorted(c))
-    next(b, None)
-    r = None
-    for k, g in itertools.izip(a, b):
-        if k != g: continue
-        if k != r:
-            yield k
-            r = k
+def insert_data_column(data: pandas.DataFrame, value_type: ValueType,
+                       indexes: List[datetime], values: List[float]) -> None:
+    """
+    Inserts a new column of data into the underlying DataFrame
+    :param data: The DataFrame that will have the column inserted into it
+    :param value_type: The column will be insert under this ValueType label (i.e. column name)
+    :param indexes: The indices of the data, these do not have to match with the existing indexes
+    :param values: The value of the new column, these are expected to be index aligned with the indexes
+    :return:
+    """
+    column = pandas.Series(values, index=indexes)
+    add_indices = pandas.Index(indexes).difference(data.index)
+    data.insert(0, value_type, column)
+    for index in add_indices:
+        data.loc[index, value_type] = column[index] if index in column else np.NaN
+    data.sort_index(ascending=True, inplace=True)
+    if True in data.index.duplicated():
+        raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: "
+                                           f"{data[data.index.duplicated(keep=False)]}")
 
 
 class Adapter:
@@ -418,10 +477,10 @@ class Adapter:
             self.cache_key_date = get_default_cache_key_date()
         logging.debug(f"Adding data for '{value_type}' using cache key date: '{self.cache_key_date}'")
         # self.cache_key_date = datetime(year=2021, month=6, day=29)
-            # raise MissingCacheKeyException("The cache key should be set on each Adapter or on the Collection so that "
-            #                                "the default makes since for the adapter type, but should also allow the "
-            #                                "user to pin a cache key date so that they can work without downloading "
-            #                                "more data if they are working on a large dataset.")
+        # raise MissingCacheKeyException("The cache key should be set on each Adapter or on the Collection so that "
+        #                                "the default makes since for the adapter type, but should also allow the "
+        #                                "user to pin a cache key date so that they can work without downloading "
+        #                                "more data if they are working on a large dataset.")
         self.calculate_asset_type()  # we chose to delay the asset calculation, until we are already talking to the
         # server, can this just be set on the adapter, directly?
         converter = self.get_converter(value_type)
@@ -454,9 +513,9 @@ class Adapter:
         :param data_type:
         :return:
         """
-        data_id = get_key_for_api_request(api, args)
+        data_key = get_key_for_api_request(api, args)
         add_timestamp = not cache
-        cache_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
+        cache_file, lock_dir = self.get_lock_dir_and_data_file(data_key, add_timestamp, data_type)
         acquired_lock = False
         try:
             acquired_lock = False if os.path.exists(cache_file) else acquire_lock(lock_dir)
@@ -483,9 +542,9 @@ class Adapter:
         return indicator_key
 
     def get_url_response(self, url, query, cache: bool = True, data_type: DataType = DataType.JSON, delay: bool = True):
-        data_id = self.get_key_for_url_request(query, url)
+        data_key = self.get_key_for_url_request(query, url)
         add_timestamp = not cache
-        cache_file, lock_dir = self.get_lock_dir_and_data_file(data_id, add_timestamp, data_type)
+        cache_file, lock_dir = self.get_lock_dir_and_data_file(data_key, add_timestamp, data_type)
         acquired_lock = False
         try:
             acquired_lock = False if os.path.exists(cache_file) else acquire_lock(lock_dir)
@@ -541,46 +600,14 @@ class Adapter:
             self.content_cache[content_cache_key] = data
         return data
 
-    def insert_data_column(self, value_type: ValueType, indexes: List[datetime], values: List[float]) -> None:
+    def get_lock_dir_and_data_file(self, data_key: str, timestamp: bool, data_type: DataType) -> (str, str):
         """
-        Inserts a new column of data into the underlying DataFrame
-        :param value_type: The column name
-        :param indexes: The indices of the data, these do not have to match with the existing indexes
-        :param values: The value of the new column, these are expected to be index aligned with the indexes
-        :return:
+        Get the lock directory and data file given the data key, time stamp, and data type.
+        :param data_key: The data key (string) to get the lock directory and data file for
+        :param timestamp: The timestamp to get the lock directory and data file for
+        :param data_type: The DataType to get the lock directory and data file for
+        :return: The (data_file, lock_dir) as calculated from the inputs
         """
-        # duplicates = [x for x in indexes if indexes.count(x) > 1]
-        # duplicate_indexes = list(get_dupes(indexes))
-        # if len(duplicate_indexes) > 0:
-        #     raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: {duplicate_indexes}")
-        add_indices = pandas.Index(indexes).difference(self.data.index)
-        add_df = pandas.DataFrame(index=add_indices, columns=self.data.columns)  # .fillna(None)
-        new_df = pandas.concat([self.data, add_df])
-        column = pandas.Series(values, index=indexes)
-        merge_df = column.to_frame(value_type)
-        # merge_df = merge_df.sort_index(ascending=True)
-        self.data = new_df.join(merge_df)
-        self.data = self.data.sort_index(ascending=True)
-        if True in self.data.index.duplicated():
-            raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: "
-                                               f"{self.data[self.data.index.duplicated(keep=False)]}")
-        # reindexed_df = merge_df.reindex(new_df.index)  # leave Nones
-        # reindexed_df = merge_df.reindex(new_df.index, method="nearest")  # fill Nones with closest
-        # if len(values) > 0:
-        #     if self.data.shape[0] == 0:
-        #         self.data = pandas.Series(values, index=indexes).to_frame(value_type)
-        #     else:
-        #         column = pandas.Series(values, index=indexes)
-        #         merge_df = column.to_frame(value_type)
-        #         merge_df = merge_df.sort_index(ascending=True)
-        #         reindexed_df = merge_df.reindex(self.data.index, method="nearest")
-        #         oldest_time_before_reindexing = merge_df.index[0]
-        #         newest_time_before_reindexing = merge_df.index[-1]
-        #         reindexed_df = reindexed_df[reindexed_df.index <= newest_time_before_reindexing]
-        #         self.data[value_type] = reindexed_df[reindexed_df.index >= oldest_time_before_reindexing]
-        #     self.data = self.data.sort_index(ascending=True)
-
-    def get_lock_dir_and_data_file(self, data_id, timestamp: bool, data_type: DataType):
         self.cache_root_dir = os.path.realpath(self.cache_root_dir)
         self.clean_cache_dirs()
         # only letting one query run at a time makes the file timestamps work, and doesn't hammer the servers
@@ -588,8 +615,7 @@ class Adapter:
         # can be used to lock per request, but then race conditions exist with file timestamps
         #       see AlphaVantageAdapter.delay_requests
         # lock_dir = os.path.join(date_dir, '.lock_{}'.format(id))
-        file_id = "{}.{}".format(data_id, datetime.now().strftime("%Y%m%d_%H%M%S_%f")) if timestamp else data_id
-        # file_id = "{}.{}".format(data_id, round(datetime.utcnow().timestamp() * 1000)) if timestamp else data_id
+        file_id = "{}.{}".format(data_key, datetime.now().strftime("%Y%m%d_%H%M%S_%f")) if timestamp else data_key
         if data_type == DataType.JSON:
             ext = 'json'
         elif data_type == DataType.DATAFRAME:
@@ -638,8 +664,12 @@ class Adapter:
     def validate_data(self, data_file: str):
         pass
 
-    def delay_requests(self, data_file: str):
-        # some APIs limit number of requests, this enables client requests for specific providers to match those limtis
+    def delay_requests(self, data_file: str) -> None:
+        """
+        Some APIs limit number of requests, this enables client requests for specific providers to match those limits.
+        :param data_file:
+        :return:
+        """
         pass
 
     # def get_sma_data(self, symbol, time_period, series_type):

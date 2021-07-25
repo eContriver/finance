@@ -185,8 +185,9 @@ class Launcher:
         run_end = datetime.now()
         logging.info(">> Running took: {}s".format(run_end - run_start))
         if args.profile:
-            profile_log = os.path.join(cache_dir, 'profile.log')
-            Profiler.get_instance().disable_and_report(profile_log)
+            # profile_log = os.path.join(cache_dir, 'profile.log')
+            Profiler.get_instance().disable_and_report()
+            Profiler.get_instance().dump_stats()
         return success
 
     @classmethod

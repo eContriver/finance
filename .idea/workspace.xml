@@ -6,51 +6,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/test/runners/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/runners/test_intrinsic_value_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/runners/trend_runner.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trend.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/alert.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/alert.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/adapter_collection.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/adapter_collection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/alpha_vantage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/binance.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/binance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/coinbase_pro.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/coinbase_pro.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/financial_modeling_prep.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/financial_modeling_prep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/iex_cloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/iex_cloud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/kraken.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/kraken.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/quandl.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/quandl.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/robinhood.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/robinhood.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/sec.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/sec.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/td_ameritrade.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/td_ameritrade.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_shims/yahoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/yahoo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/third_party_adapters/alpha_vantage.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/common/launchers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/launchers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/common/profiler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/profiler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/executors/sequential_executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/executors/sequential_executor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/alert_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/alert_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/matrix_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/matrix_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/ml_training_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/ml_training_runner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/multi_symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/multi_symbol_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/order_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/order_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbol_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/multiDeltaSwap.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/multi_delta_swap.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/multi_relative_sma_swap_up.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/multi_relative_sma_swap_up.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/strategies/strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/strategy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/visual/visualizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/visual/visualizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/symbol.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/symbol.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/adapter_tests.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/adapters/test_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/adapters/test_adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/adapters/test_adapter_collection.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/adapters/test_adapter_collection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/add_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/add_adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/runner_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/runner_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/src_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/src_tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/test_intrinsic_value_runner.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/utils_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/utils_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/runners/test_intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/runners/test_intrinsic_value_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/test_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/test_graph.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +73,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$/.eContriver/alert.yaml" />
+    <property name="last_opened_file_path" value="$USER_HOME$/.eContriver/trend.yaml" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -121,10 +90,10 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$USER_HOME$/.eContriver" />
+      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/src/main/runners" />
       <recent name="$PROJECT_DIR$/src/test/adapters" />
       <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
-      <recent name="$PROJECT_DIR$/src" />
-      <recent name="$USER_HOME$/.eContriver/" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
@@ -134,7 +103,7 @@
       <recent name="$PROJECT_DIR$/doc/images" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.multi_symbol">
+  <component name="RunManager" selected="Python.unittest-parallel">
     <configuration name="alert" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -178,6 +147,9 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="/usr/local/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -202,7 +174,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/multi_symbol.py" />
-      <option name="PARAMETERS" value="-d -p" />
+      <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -214,6 +186,9 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="/usr/local/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -241,6 +216,24 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="trend" type="PythonConfigurationType" factoryName="Python">
+      <module name="app" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="/usr/local/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trend.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -333,7 +326,7 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Unittests for test_adapter.TestAdapter.test_insert_data_column_duplicates_fail" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
+    <configuration name="Unittests for test_adapter.TestAdapter.test_insert_data_column" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -343,21 +336,21 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_adapter.TestAdapter.test_insert_data_column_duplicates_fail&quot;" />
+      <option name="_new_target" value="&quot;test_adapter.TestAdapter.test_insert_data_column&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Unittests for test_intrinsic_value_runner.Test.test_predict_future_value_linear_handles_na" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
+    <configuration name="Unittests for test_graph.TestGraph.test_dataframe_plot" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/test/runners" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/test" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_intrinsic_value_runner.Test.test_predict_future_value_linear_handles_na&quot;" />
+      <option name="_new_target" value="&quot;test_graph.TestGraph.test_dataframe_plot&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -369,20 +362,21 @@
       <item itemvalue="Python.intrinsic_value" />
       <item itemvalue="Python.symbol" />
       <item itemvalue="Python.alert" />
+      <item itemvalue="Python.trend" />
       <item itemvalue="Python.multi_symbol" />
-      <item itemvalue="Python tests.Unittests for test_intrinsic_value_runner.Test.test_predict_future_value_linear_handles_na" />
       <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_find_closest_instance_before_performance" />
       <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter" />
-      <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_insert_data_column_duplicates_fail" />
       <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_find_closest_instance_after_performance" />
+      <item itemvalue="Python tests.Unittests for test_graph.TestGraph.test_dataframe_plot" />
+      <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_insert_data_column" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter" />
+        <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_insert_data_column" />
+        <item itemvalue="Python tests.Unittests for test_graph.TestGraph.test_dataframe_plot" />
         <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_find_closest_instance_after_performance" />
         <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_find_closest_instance_before_performance" />
-        <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_insert_data_column_duplicates_fail" />
-        <item itemvalue="Python tests.Unittests for test_intrinsic_value_runner.Test.test_predict_future_value_linear_handles_na" />
       </list>
     </recent_temporary>
   </component>
@@ -428,11 +422,6 @@
           <option name="timeStamp" value="26" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/test/adapters/test_adapter.py</url>
-          <line>161</line>
-          <option name="timeStamp" value="29" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
           <line>86</line>
           <option name="timeStamp" value="33" />
@@ -448,9 +437,9 @@
           <option name="timeStamp" value="40" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/adapters/adapter.py</url>
-          <line>562</line>
-          <option name="timeStamp" value="46" />
+          <url>file://$PROJECT_DIR$/src/main/runners/trend_runner.py</url>
+          <line>71</line>
+          <option name="timeStamp" value="48" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

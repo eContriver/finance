@@ -24,7 +24,7 @@ import pandas
 from matplotlib import dates
 from mplfinance.original_flavor import candlestick_ochl
 
-from main.adapters.adapter import Adapter
+from main.adapters.adapter import Adapter, get_start_time
 from main.adapters.value_type import ValueType
 from main.adapters.adapter_collection import AdapterCollection
 from main.portfolio.portfolio import Portfolio
@@ -340,7 +340,7 @@ class Visualizer:
         return plotted_labels[label]
 
     def add_series_data(self, adapter: Adapter, portfolio):
-        start: datetime = adapter.get_start_time(adapter.data)
+        start: datetime = get_start_time(adapter.data)
         for value_type in adapter.request_value_types:
             # Time-series data...
             if value_type not in adapter.data:

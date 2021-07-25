@@ -57,106 +57,16 @@ class AlertRunner(Runner):
 
     def start(self, locations: Locations) -> bool:
         logging.info("#### Starting alert runner...")
-
         success = True
-
-        # GDP to Stimulus: 46% of GDP is stimulus?
-        # Buffet indicator
-        # Gold Silver Uranium
-
-        # Short and or low available stocks...
-        # Wendy's
-        # Work horse
-        # Archemodo
-        # Go EV
-        # Clover
-        # FRX FSKR
-        # Cheesecake factory
-
-        # 'BYND',  # 'IMPM',  # Buy impossible at 120
-
-        # Symbol, buy heavy, buy nibble,
-        #  price within 5 years, 5 year return cagr, 5 year return under heavy cagr
-        # self.close_boundaries = {
-        #     'AAPL': [105.00, 120.00],
-        #     # 200.00, 10.76 %, 13.75 %,
-        #     'AMZN': [2700.00, 2800.00],
-        #     #  5000.00, 12.30 %, 13.12 %,
-        #     'GOOG': [2000.00, 2200.00],
-        #     #  3000.00, 6.40 %, 8.45 %,
-        #     'DIS': [150.00, 190.00],
-        #     # 300.00, 9.57 %, 14.87 %,
-        #     'PYPL': [260.00, 300.00],
-        #     # 500.00, 10.76 %, 13.97 %,
-        #     'TSLA': [600.00, 700.00],
-        #     #  1750.00, 20.11 %, 23.87 %, 100
-        #     'ETSY': [150.00, 200.00],
-        #     # 'ETSY': [175.00, 200.00],
-        #     # 500.00, 20.11 %, 23.36 %, 70
-        #     'ENPH': [150.00, 170.00],
-        #     # 'ENPH': [135.00, 170.00],
-        #     # 400.00, 18.66 %, 24.26 %,
-        #     'RDFN': [60.00, 70.00],
-        #     # 200.00, 23.36 %, 27.23 %,
-        #     'ABNB': [150.00, 170.00],
-        #     #  (In Prog),, ,
-        #     'PLTR': [22.00, 23.00],
-        #     # 60.00, 21.14 %, 22.22 %,
-        #     'EXPI': [30.00, 35.00],
-        #     # 150.00, 33.78 %, 37.97 %,
-        #     'SQ': [200.00, 220.00],
-        #     # 380.00, 11.55 %, 13.70 %, 125
-        #     'PINS': [60.00, 70.00],
-        #     # 162.00, 18.27 %, 21.98 %,
-        #     'W': [250.00, 265.00],
-        #     # 625.00, 18.72 %, 20.11 %, 70
-        #     'NIO': [34.00, 36.00],
-        #     # 133.00, 29.87 %, 31.36 %, 100
-        #     'CCIV': [17.00, 19.00],
-        #     # 80.00, 33.31 %, 36.31 %,
-        #     'LMND': [60.00, 80.00],
-        #     # 'LMND': [70.00, 80.00],
-        #     # 275.00, 28.01 %, 31.48 %,
-        #     'PTON': [80.00, 100.00],
-        #     # 290.00, 23.73 %, 29.38 %,
-        #     'SFT': [7.25, 8.00],
-        #     # 40.00, 37.97 %, 40.72 %, 40
-        #     'GHVI': [11.50, 12.00],
-        #     # 40.00, 27.23 %, 28.31 %,
-        #     'API': [30.00, 40.00],
-        #     # 110.00, 22.42 %, 29.67 %,
-        #     # 'VYGVF': [16.00, 18.00],
-        #     # 50.00, 22.67 %, 25.59 %,
-        #     'RKT': [18.00, 20.00],
-        #     # 30.00, 8.45 %, 10.76 %,
-        #     'TTCF': [15.00, 17.00],
-        #     # 30.00, 12.03 %, 14.87 %, 40
-        #     # 'VRYYF': [4.50, 5.25],
-        #     # 15.00, 23.36 %, 27.23 %,
-        #     'BTC': [30000.00, 35000.00],
-        #     #  105000.00, 19.00 %, 24.57 %,
-        #     # 'ETH - USD': [2000.00, 2200.00],
-        #     #  15000.00, 46.80 %, 49.63 %,
-        #     # CASINO
-        #     # BELOW, AKA
-        #     # Lottery,, , , , 0.00 %, 0.00 %,
-        #     # QS, 10,27.68,30.00,40.00,80.00, 14.87 %, 21.67 %,
-        #     # NNDM, 10,6.31,, , , 0.00 %,,
-        #     # MVIS, 10,15.19, Too
-        #     # high
-        #     # now,, , 0.00 %,,
-        #     # GOEV, 10,7.55,9.00,11.00,30.00, 22.22 %, 27.23 %,
-        #     'SOFI': [13.0, 15.0],
-        # }
-
-        # data_adapter_class = Yahoo
         collection: AdapterCollection = AdapterCollection()
         for symbol in self.close_boundaries.keys():
-            asset_type: Optional[AssetType] = None  # means to auto select based off symbol
+            asset_type: Optional[AssetType] = self.asset_type_overrides[symbol] if symbol in self.asset_type_overrides \
+                else None
+            # means to auto select based off symbol
             adapter: Adapter = self.adapter_class(symbol, asset_type)
             adapter.base_symbol = 'USD'
             end_time = datetime.now()
-            adapter.asset_type = self.asset_type_overrides[symbol] if symbol in self.asset_type_overrides else None
+            adapter.asset_type = asset_type
             adapter.add_argument(Argument(ArgumentType.START_TIME, end_time - timedelta(days=1)))
             adapter.add_argument(Argument(ArgumentType.END_TIME, end_time))
             adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))

@@ -53,6 +53,7 @@ class Strategy:
 
     def get_title_with_times(self) -> str:
         string = self.title
+        date_format: str = '%Y-%m-%d'
         string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
         string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
         string += "" if self.portfolio.interval is None else " {}".format(self.portfolio.interval)

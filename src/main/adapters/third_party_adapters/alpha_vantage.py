@@ -22,11 +22,11 @@ from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
 
-from main.adapters.adapter import DataType, TimeInterval, AssetType, Adapter, get_response_value_or_none
+from main.adapters.adapter import DataType, TimeInterval, AssetType, Adapter, get_response_value_or_none, \
+    IntervalNotSupportedException, insert_data_column
 from main.adapters.value_type import ValueType
 from main.adapters.converter import Converter
 from main.adapters.argument import ArgumentType
-
 
 
 class AlphaVantage(Adapter):
@@ -56,8 +56,6 @@ class AlphaVantage(Adapter):
             Converter(ValueType.MACD_HIST, self.get_macd_response, ['MACD_Hist']),
             Converter(ValueType.MACD_SIGNAL, self.get_macd_response, ['MACD_Signal']),
             Converter(ValueType.SMA, self.get_sma_response, ['SMA']),
-            # SMA = auto()
-            # BOOK = auto()
             Converter(ValueType.EPS, self.get_earnings_response, ['reportedEPS']),
             # ESTIMATED_EPS = auto()
             # SURPRISE_EPS = auto()
@@ -120,26 +118,25 @@ class AlphaVantage(Adapter):
             self.get_stock_prices_response(value_type)
 
     def get_stock_prices_response(self, value_type: ValueType) -> None:
-        query = {}
-        query["apikey"] = self.api_key
-        query["symbol"] = self.symbol
-        # data_date_format = '%Y-%m-%d'
+        query = {
+            "apikey": self.api_key,
+            "symbol": self.symbol
+        }
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
-        # For now we use full for everything, but we could use...
-        # start_time: datetime = self.get_argument_value(ArgumentType.START_TIME)
-        # end_time: datetime = self.get_argument_value(ArgumentType.END_TIME)
-        # record_count = (end_time - start_time) / interval.timedelta
-        # output_size = "compact" if record_count < 100 else "full"
+        start_time: datetime = self.get_argument_value(ArgumentType.START_TIME)
+        end_time: datetime = self.get_argument_value(ArgumentType.END_TIME)
+        end_time = datetime.now() if end_time is None else end_time
+        record_count = (end_time - start_time) / interval.timedelta
+        output_size = "compact" if record_count < 100 else "full"
         if interval == TimeInterval.HOUR:
             query["function"] = "TIME_SERIES_INTRADAY"
-            query["interval"] = TimeInterval.HOUR.value
+            query["interval"] = '60min'
             query["adjusted"] = True
-            query["outputsize"] = "full"
+            query["outputsize"] = output_size
             key = 'Time Series (60min)'
-            # data_date_format = '%Y-%m-%d %H:%M:%S'
         elif interval == TimeInterval.DAY:
             query["function"] = "TIME_SERIES_DAILY_ADJUSTED"
-            query["outputsize"] = "full"
+            query["outputsize"] = output_size
             key = 'Time Series (Daily)'
         elif interval == TimeInterval.WEEK:
             query["function"] = "TIME_SERIES_WEEKLY_ADJUSTED"
@@ -148,17 +145,18 @@ class AlphaVantage(Adapter):
             query["function"] = "TIME_SERIES_MONTHLY_ADJUSTED"
             key = 'Monthly Adjusted Time Series'
         else:
-            raise RuntimeError(
-                'Specified interval is not supported: \'{}\' (for: {})'.format(interval, self.__class__.__name__))
+            raise IntervalNotSupportedException(f"Specified interval is not supported: '{interval}' "
+                                                f"(for: {self.__class__.__name__})")
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
         self.translate(raw_response, value_type, key)
 
     def get_digital_currency_response(self, value_type: ValueType) -> None:
-        query = {}
-        query["apikey"] = self.api_key
-        query["symbol"] = self.symbol
-        query["market"] = self.base_symbol
+        query = {
+            "apikey": self.api_key,
+            "symbol": self.symbol,
+            "market": self.base_symbol
+        }
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
         if interval == TimeInterval.DAY:
             query["function"] = "DIGITAL_CURRENCY_DAILY"
@@ -210,7 +208,7 @@ class AlphaVantage(Adapter):
                     value = value * ratio
                 indexes.append(datetime.fromisoformat(entry_datetime))
                 values.append(value)
-            self.insert_data_column(converter.value_type, indexes, values)
+            insert_data_column(self.data, converter.value_type, indexes, values)
 
     def get_macd_response(self, value_type: ValueType) -> None:
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
@@ -297,7 +295,7 @@ class AlphaVantage(Adapter):
                 if value is not None:
                     indexes.append(datetime.fromisoformat(entry['fiscalDateEnding'], data_date_format))
                     values.append(value)
-            self.insert_data_column(converter.value_type, indexes, values)
+            insert_data_column(self.data, converter.value_type, indexes, values)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)
@@ -433,7 +431,7 @@ class AlphaVantage(Adapter):
             indicator_key = self.symbol + self.base_symbol  # e.g. BTCUSD
         return indicator_key
 
-    def delay_requests(self, data_file):
+    def delay_requests(self, data_file: str) -> None:
         wait = True
         while wait:
             # NOTE: there is a race condition here if running multi-process...

@@ -22,7 +22,7 @@ import numpy
 import pandas
 
 from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
-    DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before
+    DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_data_column
 from main.adapters.value_type import ValueType
 
 
@@ -34,7 +34,7 @@ def generate_data(data_height: int = 1000, start_time: datetime = datetime(year=
     return data, mid_time
 
 
-def get_average_runtime(function, args, run_count: int = 1000) -> timedelta:
+def get_average_runtime(function, args, run_count: int = 10) -> timedelta:
     total_run_time = timedelta()
     for it in range(run_count):
         run_start = datetime.now()
@@ -138,7 +138,7 @@ class TestAdapter(TestCase):
         common_time = datetime(year=3000, month=2, day=1)
         indexes = [common_time, common_time]
         values = [1.0, 1.0]
-        self.assertRaises(DuplicateRawIndexesException, adapter.insert_data_column, ValueType.OPEN, indexes, values)
+        self.assertRaises(DuplicateRawIndexesException, insert_data_column, adapter.data, ValueType.OPEN, indexes, values)
 
     def test_insert_data_column(self):
         """
@@ -147,20 +147,29 @@ class TestAdapter(TestCase):
         """
         adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
         common_time = datetime(year=3000, month=2, day=1)
-        open_indexes = [common_time - timedelta(weeks=1), common_time]
+        start_time = common_time - timedelta(weeks=1)
+        open_indexes = [start_time, common_time]
         open_values = [1.0, 2.0]
-        adapter.insert_data_column(ValueType.OPEN, open_indexes, open_values)
-        self.assertEqual(open_values[0], adapter.data.loc[common_time - timedelta(weeks=1), ValueType.OPEN],
+        insert_data_column(adapter.data, ValueType.OPEN, open_indexes, open_values)
+        open_time_index = open_indexes.index(common_time)
+        self.assertEqual(open_values[open_time_index], adapter.data.loc[common_time, ValueType.OPEN],
                          "First open value was not as expected")
         self.assertEqual(adapter.data[ValueType.OPEN][0], open_values[0], "Open value order was not as expected")
-        # NOTICE: The time indexes are swapped... so should the values be
-        close_indexes = [common_time + timedelta(weeks=1), common_time]
-        close_values = [4.0, 3.0]
-        adapter.insert_data_column(ValueType.CLOSE, close_indexes, close_values)
-        self.assertEqual(close_values[1], adapter.data.loc[common_time, ValueType.CLOSE],  # ... swapped value
+        # NOTICE: The time indexes are swapped... so should the values be...
+        end_time = common_time + timedelta(weeks=1)
+        close_indexes = [end_time, common_time]  # ... swapped
+        close_values = [4.0, 3.0]  # ... swapped
+        insert_data_column(adapter.data, ValueType.CLOSE, close_indexes, close_values)
+        close_time_index = close_indexes.index(common_time)
+        self.assertEqual(close_values[close_time_index], adapter.data.loc[common_time, ValueType.CLOSE],
                          "First close value was not as expected")
-        self.assertTrue(numpy.isnan(adapter.data[ValueType.CLOSE][0]), "Close value order was not as expected")
-        self.assertEqual(adapter.data[ValueType.CLOSE][-1], close_values[0], "Close value order was not as expected")
+        self.assertTrue(numpy.isnan(adapter.data.loc[start_time, ValueType.CLOSE]),
+                        "Close value order was not as expected")
+        self.assertEqual(adapter.data.loc[common_time, ValueType.CLOSE], close_values[close_time_index],
+                         "Close value order was not as expected")
+        end_time_index = close_indexes.index(end_time)
+        self.assertEqual(adapter.data.loc[end_time, ValueType.CLOSE], close_values[end_time_index],
+                         "Close value order was not as expected")
 
     def test_find_closest_instance_after_mismatch(self):
         """
@@ -196,6 +205,8 @@ class TestAdapter(TestCase):
         """
         adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data = pandas.DataFrame()
+        # index=pd.date_range('1/1/2000', periods=1000)
+        # ts = pd.Series(np.random.randn(1000), index=pd.date_range('1/1/2000', periods=1000))
         common_time = datetime(year=3000, month=2, day=1)
         mismatch_time = common_time + timedelta(weeks=1)
         adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0

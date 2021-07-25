@@ -16,7 +16,7 @@
 from datetime import datetime
 from unittest import TestCase
 
-from main.adapters.adapter import Adapter
+from main.adapters.adapter import Adapter, insert_data_column
 from main.adapters.adapter_collection import AdapterCollection, filter_adapters
 from main.adapters.value_type import ValueType
 from main.runners.intrinsic_value_runner import predict_future_value_linear
@@ -50,8 +50,7 @@ class Test(TestCase):
         collection: AdapterCollection = create_test_collection_with_data()
         adapter: Adapter = filter_adapters(collection.adapters, 'TEST', ValueType.CLOSE)
         adapter.request_value_types.append(ValueType.OPEN)
-        adapter.insert_data_column(ValueType.OPEN,
-                                   [get_test_start_time(), get_test_end_time()],
+        insert_data_column(adapter.data, ValueType.OPEN, [get_test_start_time(), get_test_end_time()],
                                    [1.0, 2.0])
         future_time: datetime = get_test_end_time() + 2 * get_test_timedelta()
         next_value = predict_future_value_linear('TEST', future_time, collection, ValueType.OPEN)

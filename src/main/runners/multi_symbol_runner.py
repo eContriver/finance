@@ -15,9 +15,9 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 import copy
-import datetime
 import logging
 import sys
+from datetime import datetime
 from typing import List, Optional, Dict
 
 from main.adapters.adapter import TimeInterval, AssetType
@@ -44,6 +44,9 @@ class MultiSymbolRunner(Runner):
     base_symbol: str
     graph: bool
     price_interval: TimeInterval
+    start_time: Optional[datetime]
+    end_time: Optional[datetime]
+    asset_type_overrides: Dict[str, AssetType]
 
     def __init__(self):
         super().__init__()
@@ -52,6 +55,9 @@ class MultiSymbolRunner(Runner):
         self.base_symbol = 'USD'
         self.graph = True
         self.price_interval = TimeInterval.DAY
+        self.start_time = None
+        self.end_time = None
+        self.asset_type_overrides = {}
 
     @staticmethod
     def summarize(title, strategies: List[Strategy]):
@@ -63,12 +69,20 @@ class MultiSymbolRunner(Runner):
         logging.info('== {}'.format(title))
         for strategy in strategies:
             if strategy is None:
-                logging.info("{:>60}".format("Failed to retrieve strategy data, perhaps an error occurred."))
+                logging.info("{:>100}".format("Failed to retrieve strategy data, perhaps an error occurred."))
             else:
-                logging.info("{:>60}:  {}  ({} to {})".format(strategy.title,  # str(strategy)
-                                                              strategy.portfolio,
-                                                              strategy.portfolio.start_time,
-                                                              strategy.portfolio.end_time))
+                date_format: str = '%Y-%m-%d'
+                start_time: Optional[datetime] = strategy.portfolio.start_time
+                start_string = 'unset' if start_time is None else datetime.strftime(start_time, date_format)
+                end_time: Optional[datetime] = strategy.portfolio.start_time
+                end_string = 'unset' if end_time is None else datetime.strftime(end_time, date_format)
+                logging.info("{:>100}:  {}  ({} to {})".format(
+                    #strategy.title,
+                    #strategy.portfolio.title,
+                    str(strategy),
+                    strategy.portfolio,
+                    start_string,
+                    end_string))
 
     def get_config(self) -> Dict:
         config = {
@@ -77,6 +91,8 @@ class MultiSymbolRunner(Runner):
             'symbols': self.symbols,
             'graph': self.graph,
             'price_interval': self.price_interval.value,
+            'start_time': self.start_time,
+            'end_time': self.end_time,
         }
         return config
 
@@ -87,48 +103,30 @@ class MultiSymbolRunner(Runner):
         class_name = config['adapter_class']
         self.adapter_class = getattr(
             sys.modules[f'main.adapters.third_party_adapters.{Report.camel_to_snake(class_name)}'], f'{class_name}')
-        self.base_symbol = config['base_symbol']
-        self.price_interval = TimeInterval(config['price_interval'])
-        self.graph = config['graph']
+        if 'base_symbol' in config:
+            self.base_symbol = config['base_symbol']
+        if 'price_interval' in config:
+            self.price_interval = TimeInterval(config['price_interval'])
+        if 'graph' in config:
+            self.graph = config['graph']
+        if 'start_time' in config:
+            self.start_time = datetime.combine(config['start_time'], datetime.min.time())
+        if 'end_time' in config:
+            self.end_time = datetime.combine(config['end_time'], datetime.min.time())
 
     def get_run_name(self):
         return f"{'_'.join(sorted(self.symbols))}_{self.price_interval.value}_{self.adapter_class.__name__}"
 
     def start(self, locations: Locations):
         logging.info("#### Starting multi-symbol runner...")
-        # SymbolCollection
-        # self.symbols = ['ETH', 'BTC']
-        # Sector Analysis
-        # https://discord.com/channels/584088953788039174/780316832531873844/864730112104595467
-        # self.symbols = [
-        #     # 'XLF',
-        #     'XLK',
-        #     # 'XLI',
-        #     # 'XLB',
-        #     # 'XLV',
-        #     # 'XLU',
-        #     'XLE',
-        #     # 'XLP',
-        #     # 'XLY'
-        # ]
-        # Portfolio
-        start_time = None
-        end_time = None
-        # end_time = datetime(2010, 1, 1)
         quantities = {}
         for symbol in self.symbols:
             quantities[symbol] = 0.0
-        # quantities['ETH'] = 10.0
         quantities[self.base_symbol] = 10000.0
-        template: Portfolio = Portfolio('Cross Symbol Portfolio Value', quantities, start_time, end_time)
-        # template.start_time = datetime.datetime(year=2021, month=1, day=1)
+        template: Portfolio = Portfolio('Cross Symbol Portfolio Value', quantities, self.start_time, self.end_time)
         template.interval = self.price_interval
         template.add_adapter_class(self.adapter_class)
-        template.asset_type_overrides = {
-            'ETH': AssetType.DIGITAL_CURRENCY,
-            'LTC': AssetType.DIGITAL_CURRENCY
-        }
-
+        template.asset_type_overrides = self.asset_type_overrides
         strategy_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('strategy'))
 
         # Can always run direct if things get messy...
@@ -138,7 +136,7 @@ class MultiSymbolRunner(Runner):
         # Strategies
         strategies: List[Strategy] = []
         for symbol in self.symbols:
-            # strategies.append(BuyAndHold(symbol, copy.deepcopy(template)))
+            strategies.append(BuyAndHold(symbol, copy.deepcopy(template)))
             pass
 
         deltas = [
@@ -173,15 +171,14 @@ class MultiSymbolRunner(Runner):
                     pass
 
         key = "_".join(self.symbols)
-        executor = SequentialStrategyExecutor(strategy_date_dir)
-        # strategy_runner = ParallelStrategyExecutor(strategy_date_dir)
+        # executor = SequentialStrategyExecutor(strategy_date_dir)
+        executor = ParallelStrategyExecutor(strategy_date_dir)
         for strategy in strategies:
             executor.add_strategy(strategy.run, (), key, str(strategy).replace(' ', '_'))
         success = executor.start()
         report_on = executor.processed_strategies[key] if key in executor.processed_strategies else [None]
 
-        title = 'Multi-Symbol Runner - Strategy Comparison {}'.format(
-            self.symbols)  # - {} - {} to {}'.format(symbol, start_time, end_time)
+        title = f'Multi-Symbol Runner - Strategy Comparison {self.symbols}'
         self.summarize(title, report_on)
 
         if self.graph:
