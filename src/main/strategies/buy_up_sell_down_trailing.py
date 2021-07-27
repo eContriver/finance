@@ -20,7 +20,7 @@ from typing import List
 
 from main.portfolio.order import StopOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.strategies.single_symbol_strategy import SingleSymbolStrategy
+from main.application.single_symbol_strategy import SingleSymbolStrategy
 
 
 class BuyUpSellDownTrailing(SingleSymbolStrategy):

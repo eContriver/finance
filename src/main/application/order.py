@@ -15,10 +15,8 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 import inspect
-from datetime import datetime, timedelta
-from typing import Optional
 
-from main.adapters.adapter import Adapter
+from main.application.adapter import Adapter
 
 
 class Order(Adapter):

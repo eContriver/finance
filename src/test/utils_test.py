@@ -1,5 +1,3 @@
-#!/usr/local/bin/python
-
 #  Copyright 2021 eContriver LLC
 #  This file is part of Finance from eContriver.
 #
@@ -19,17 +17,26 @@
 import inspect
 import logging
 import math
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional, List, Dict
 
 import pandas
 
-from main.adapters.adapter import TimeInterval, AssetType, Adapter
-from main.adapters.converter import Converter
-from main.adapters.value_type import ValueType
-from main.adapters.adapter_collection import AdapterCollection
+from main.application.adapter import TimeInterval, AssetType, Adapter
+from main.application.converter import Converter
+from main.application.value_type import ValueType
+from main.application.adapter_collection import AdapterCollection
 
-from main.adapters.argument import ArgumentType, Argument
+from main.application.argument import ArgumentType, Argument
+
+
+def configure_test_logging(log_level = logging.DEBUG):
+    """
+    Configure logging so messages will show, from a test just call this method.
+    :param log_level: The level of messages to show.
+    :return:
+    """
+    logging.basicConfig(level=log_level)
 
 
 class DataGenerator:
@@ -279,3 +286,16 @@ def setup_symbol_adapter(symbol, interval: TimeInterval, asset_type: AssetType, 
 #     assert isinstance(portfolio, Portfolio)
 #     portfolio.quantities = quantities
 #     return portfolio
+class TestDigitalCurrencyAdapter(Adapter):
+
+    def delay_requests(self, data_file: str) -> None:
+        pass
+
+    def get_is_digital_currency(self) -> bool:
+        return True
+
+    def get_is_listed(self) -> bool:
+        return False
+
+    def get_is_physical_currency(self) -> bool:
+        return False

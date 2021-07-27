@@ -14,15 +14,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
+#
+#
+#
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Set
 
 import pandas
 
-from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, get_end_time, \
+from main.application.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, get_end_time, \
     get_start_time, get_column, get_all_times, find_closest_before_else_after
-from main.adapters.value_type import ValueType
+from main.application.value_type import ValueType
 
 
 class NotExactlyOneAdapterException(RuntimeError):
@@ -45,7 +48,7 @@ def filter_adapters(adapters: List[Adapter], symbol: str, value_type: ValueType)
     adapters_with_symbol: List[Adapter] = [adapter for adapter in adapters_with_type if adapter.symbol == symbol]
     if len(adapters_with_symbol) != 1:
         raise NotExactlyOneAdapterException("Found {} adapters for symbol {} with value type {}, exactly one is " \
-                                            "expected.".format(len(adapters_with_symbol), symbol, value_type))
+                                            "expected.".format(len(adapters_with_symbol), symbol, value_type.name))
     return adapters_with_symbol[0]
 
 
@@ -83,10 +86,7 @@ class AdapterCollection:
 
     def __init__(self):
         self.adapters = []
-        self.asset_type_overrides = {
-            'ETH': AssetType.DIGITAL_CURRENCY,
-            'LTC': AssetType.DIGITAL_CURRENCY
-        }
+        self.asset_type_overrides = {}
 
     def retrieve_all_data(self):
         """

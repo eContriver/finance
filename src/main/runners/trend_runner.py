@@ -18,19 +18,31 @@
 import logging
 import sys
 from datetime import datetime, timedelta
-from typing import Dict, overload, Optional, List
+from enum import Enum, auto
+from typing import Dict, Optional, List
 
 import matplotlib.pyplot as plt
 import pandas
 from pytrends.request import TrendReq
 
-from main.adapters.adapter import insert_data_column, AssetType, Adapter, TimeInterval
-from main.adapters.adapter_collection import AdapterCollection, set_all_cache_key_dates
-from main.adapters.argument import Argument, ArgumentType
-from main.adapters.value_type import ValueType
+from main.application.adapter import insert_data_column, AssetType, Adapter, TimeInterval
+from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
+from main.application.argument import Argument, ArgumentType
+from main.application.value_type import ValueType
 from main.common.locations import Locations
 from main.common.report import Report
-from main.runners.runner import Runner
+from main.application.runner import Runner, get_asset_type_overrides, get_adapter_class
+
+
+class TrendReportType(Enum):
+    INTEREST_OVER_TIME = auto()
+    HISTORICAL_INTEREST = auto()
+    REGION = auto()
+    TRENDING = auto()
+    TOP_CHARTS = auto()
+    KEYWORD_SUGGESTION = auto()
+    RELATED_QUERY = auto()
+    RELATED_TOPIC = auto()
 
 
 class TrendRunner(Runner):
@@ -40,6 +52,7 @@ class TrendRunner(Runner):
     base_symbol: str
     price_interval: TimeInterval
     asset_type_overrides: Dict[str, AssetType]
+    report_types: List[TrendReportType]
 
     def __init__(self):
         super().__init__()
@@ -49,6 +62,7 @@ class TrendRunner(Runner):
         self.base_symbol = 'USD'
         self.price_interval = TimeInterval.DAY
         self.asset_type_overrides = {}
+        self.report_types = []
 
     def start(self, locations: Locations) -> bool:
         logging.info("#### Starting trend runner...")
@@ -60,44 +74,52 @@ class TrendRunner(Runner):
         pytrend = TrendReq()
         pytrend.build_payload(kw_list=self.terms)
 
-        # Time
-        time_data = pytrend.interest_over_time()
-        close_column: pandas.Series = collection.get_column(self.symbol, ValueType.CLOSE)
-        max_price = close_column.max()
-        insert_data_column(time_data, ValueType.CLOSE, close_column.index.tolist(),
-                           ((close_column.values / max_price) * 100.0).tolist())
-        time_data.interpolate(method='time', inplace=True)
-        logging.info(f"Interest over time:\n{time_data}")
-        time_data.rename(columns={ValueType.CLOSE: f"Closing Price {self.symbol}"}, inplace=True)
-        time_data.drop(columns='isPartial').plot()
+        if TrendReportType.INTEREST_OVER_TIME in self.report_types:
+            time_data = pytrend.interest_over_time()
+            close_column: pandas.Series = collection.get_column(self.symbol, ValueType.CLOSE)
+            max_price = close_column.max()
+            insert_data_column(time_data, ValueType.CLOSE, close_column.index.tolist(),
+                               ((close_column.values / max_price) * 100.0).tolist())
+            time_data.interpolate(method='time', inplace=True)
+            logging.info(f"Interest over time:\n{time_data}")
+            time_data.rename(columns={ValueType.CLOSE: f"Closing Price {self.symbol}"}, inplace=True)
+            time_data.drop(columns='isPartial').plot()
 
-        # # Region
-        # region_data = pytrend.interest_by_region()
-        # logging.info(f"Interest by region:\n{region_data.head(10)}")
-        # # matplotlib.use('TkAgg')
-        # # plt.interactive(False)
-        # region_data.reset_index().plot(x='geoName', y=self.terms[0], figsize=(120, 10), kind='bar')
-        #
-        # # Trending
-        # trending_data = pytrend.trending_searches(pn='united_states')
-        # logging.info(f"Trending interest:\n{trending_data.head()}")
-        #
-        # # Top Charts
-        # top_data = pytrend.top_charts(2019, hl='en-US', tz=300, geo='GLOBAL')
-        # logging.info(f"Top charts:\n{top_data.head()}")
-        #
-        # # Keyword Suggestions
-        # keywords = pytrend.suggestions(keyword=self.terms[0])
-        # suggested_data = pandas.DataFrame(keywords)
-        # logging.info(f"Top charts:\n{suggested_data.drop(columns='mid')}")  # This column makes no sense
-        #
-        # # Related Queries, returns a dictionary of dataframes
-        # related_queries = pytrend.related_queries()
-        # logging.info(f"Related queries:\n{related_queries.values()}")
-        #
-        # # Related Topics, returns a dictionary of dataframes
-        # related_topic = pytrend.related_topics()
-        # logging.info(f"Related topics:\n{related_topic.values()}")
+        # Chart by hour - TODO: Ensure we are actually getting the data before the price changes, add caching
+        if TrendReportType.HISTORICAL_INTEREST in self.report_types:
+            pytrend.get_historical_interest(self.terms, year_start=2018, month_start=1, day_start=1, hour_start=0,
+                                            year_end=2018, month_end=2, day_end=1, hour_end=0, cat=0, geo='', gprop='',
+                                            sleep=0)
+
+        if TrendReportType.REGION in self.report_types:
+            region_data = pytrend.interest_by_region()
+            logging.info(f"Interest by region:\n{region_data.head(10)}")
+            region_data.reset_index().plot(x='geoName', y=self.terms[0], figsize=(120, 10), kind='bar')
+
+        if TrendReportType.TRENDING in self.report_types:
+            trending_data = pytrend.trending_searches(pn='united_states', )
+            logging.info(f"Trending real-time interest:\n{trending_data.to_string()}")
+
+        if TrendReportType.TOP_CHARTS in self.report_types:
+            top_data = pytrend.top_charts(2019, hl='en-US', tz=300, geo='GLOBAL')
+            logging.info(f"Top charts:\n{top_data.to_string()}")
+
+        if TrendReportType.KEYWORD_SUGGESTION in self.report_types:
+            keywords = pytrend.suggestions(keyword=self.terms[0])
+            suggested_data = pandas.DataFrame(keywords)
+            logging.info(f"Keyword suggestions:\n{suggested_data.to_string()}")
+
+        if TrendReportType.RELATED_QUERY in self.report_types:
+            related_queries = pytrend.related_queries()
+            for term in self.terms:
+                logging.info(f"Related queries, top for '{term}':\n{related_queries[term]['top']}")
+                logging.info(f"Related queries, rising for '{term}':\n{related_queries[term]['rising']}")
+
+        if TrendReportType.RELATED_TOPIC in self.report_types:
+            related_topic = pytrend.related_topics()
+            for term in self.terms:
+                logging.info(f"Related topics, top:\n{related_topic[term]['top']}")
+                logging.info(f"Related topics, rising:\n{related_topic[term]['rising']}")
 
         plt.show(block=True)
 
@@ -120,28 +142,26 @@ class TrendRunner(Runner):
         return collection
 
     def get_config(self) -> Dict:
-        # asset_type_overrides = {}
-        # for symbol, asset_type in self.asset_type_overrides.items():
-        #     asset_type_overrides[symbol] = asset_type.name
+        asset_type_overrides = {}
+        for symbol, asset_type in self.asset_type_overrides.items():
+            asset_type_overrides[symbol] = asset_type.name
         config = {
             'adapter_class': self.adapter_class.__name__,
             'base_symbol': self.base_symbol,
             'terms': self.terms,
             'symbol': self.symbol,
             'price_interval': self.price_interval.value,
-            # 'asset_type_overrides': asset_type_overrides,
+            'asset_type_overrides': asset_type_overrides,
         }
         return config
 
     def set_from_config(self, config, config_path):
-        asset_type_overrides: Dict[str, str] = config['asset_type_overrides']
-        for symbol, asset_type in asset_type_overrides.items():
-            self.asset_type_overrides[symbol] = AssetType[asset_type]
+        report_types: List[str] = config['report_types']
+        self.report_types = [TrendReportType[report_type] for report_type in report_types]
+        self.asset_type_overrides = get_asset_type_overrides(config['asset_type_overrides'])
         self.terms = config['terms']
         self.symbol = config['symbol']
-        class_name = config['adapter_class']
-        self.adapter_class = getattr(
-            sys.modules[f'main.adapters.third_party_adapters.{Report.camel_to_snake(class_name)}'], f'{class_name}')
+        self.adapter_class = get_adapter_class(config['adapter_class'])
         self.base_symbol = config['base_symbol']
         # self.price_interval = TimeInterval(config['price_interval'])
         self.check_member_variables(config_path)

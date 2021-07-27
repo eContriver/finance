@@ -25,7 +25,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow import keras
 
 from main.common.time_zones import TimeZones
-from main.runners.runner import Runner
+from main.application.runner import Runner
 
 
 class MLPredictionRunner(Runner):

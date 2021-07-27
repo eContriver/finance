@@ -14,10 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-
+#
+#
+#
 import os.path
 from datetime import datetime, timedelta
-from typing import Optional, Dict
+from typing import Dict
 
 import robin_stocks as rs
 
@@ -25,8 +27,8 @@ import pandas
 import pandas_datareader
 from pandas_datareader import DataReader
 
-from main.adapters.adapter import TimeInterval, AssetType, DataType, Adapter
-from main.adapters.value_type import ValueType
+from main.application.adapter import TimeInterval, AssetType, DataType, Adapter
+from main.application.value_type import ValueType
 from main.common.time_zones import TimeZones
 
 
@@ -37,7 +39,7 @@ class Yahoo(Adapter):
     def __init__(self, symbol: str):
         super().__init__(symbol)
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        self.cache_dir = os.path.join(script_dir, '../..', '..', '..', '.cache', Yahoo.name)
+        self.cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache', Yahoo.name)
         # self.span = '5year'
         # 'hour', 'day', 'week', 'month', '3month', 'year', '5year'
         years = 10

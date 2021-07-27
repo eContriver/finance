@@ -16,11 +16,11 @@
 from datetime import datetime
 from unittest import TestCase
 
-from main.adapters.adapter import Adapter, insert_data_column
-from main.adapters.adapter_collection import AdapterCollection, filter_adapters
-from main.adapters.value_type import ValueType
+from main.application.adapter import Adapter, insert_data_column
+from main.application.adapter_collection import AdapterCollection, filter_adapters
+from main.application.value_type import ValueType
 from main.runners.intrinsic_value_runner import predict_future_value_linear
-from test.adapters.test_adapter_collection import get_test_common_time, create_test_collection_with_data, \
+from test.adapters.test_adapter_collection import create_test_collection_with_data, \
     get_test_end_time, get_test_timedelta, get_test_start_time
 
 

@@ -13,7 +13,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import argparse
 import importlib
 import logging
 import os
@@ -27,7 +26,7 @@ import yaml
 from main.common.profiler import Profiler
 from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
-from main.runners.runner import Runner
+from main.application.runner import Runner
 
 
 def read_yaml_config_file(config_path: str):
@@ -62,16 +61,16 @@ def write_yaml_config_file(output_dir: str, runner: Runner) -> None:
         yaml.dump(runner.get_config(), outfile, default_flow_style=False)
 
 
-def add_third_party_adapters():
+def load_adapters():
     """
-    Add all modules in the third_party_adapters directory
+    Add all modules in the adapters directory
     :return:
     """
-    adapter_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'adapters', 'third_party_adapters'))
+    adapter_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'adapters'))
     for module in os.listdir(adapter_dir):
         if module == '__init__.py' or module[-3:] != '.py':
             continue
-        importlib.import_module(f'.{module[:-3]}', f'main.adapters.third_party_adapters')
+        importlib.import_module(f'.{module[:-3]}', f'main.adapters')
     del module
 
 
@@ -170,7 +169,7 @@ class Launcher:
             Profiler.get_instance().enable()
         success = True
         run_start = datetime.now()
-        add_third_party_adapters()
+        load_adapters()
         if 'config_path' in args:
             config = read_yaml_config_file(args.config_path)
             try:

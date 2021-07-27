@@ -24,9 +24,9 @@ import pandas
 from matplotlib import dates
 from mplfinance.original_flavor import candlestick_ochl
 
-from main.adapters.adapter import Adapter, get_start_time
-from main.adapters.value_type import ValueType
-from main.adapters.adapter_collection import AdapterCollection
+from main.application.adapter import Adapter, get_start_time
+from main.application.value_type import ValueType
+from main.application.adapter_collection import AdapterCollection
 from main.portfolio.portfolio import Portfolio
 from main.portfolio.order import OrderSide, Order
 from main.visual.annotation import Annotation

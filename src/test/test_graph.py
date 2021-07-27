@@ -13,15 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-from time import sleep
 from unittest import TestCase
 
-import pandas
-
-from main.adapters.value_type import ValueType
 from main.visual.pane import Pane
-from test.adapters.test_adapter_collection import get_test_start_time, get_test_end_time, get_test_common_time
-import matplotlib.pyplot as plt
+
 
 class TestGraph(TestCase):
     def test_dataframe_plot(self):

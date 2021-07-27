@@ -15,17 +15,16 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Optional, KeysView, List, Dict, Set
+from typing import Optional, List, Dict
 
 import pandas
 
-from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.value_type import ValueType
+from main.application.adapter import TimeInterval, AssetType
+from main.application.value_type import ValueType
 from datetime import datetime, timedelta
 
-from main.adapters.adapter_collection import AdapterCollection
-from main.common.profiler import Profiler
-from main.portfolio.order import OrderSide, Order, LimitOrder
+from main.application.adapter_collection import AdapterCollection
+from main.portfolio.order import OrderSide, Order
 
 
 class Portfolio:

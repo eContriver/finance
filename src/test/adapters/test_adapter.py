@@ -13,17 +13,16 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-from cmath import nan
 from datetime import datetime, timedelta
-from timeit import timeit
 from unittest import TestCase
 
 import numpy
 import pandas
 
-from main.adapters.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
+from main.application.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
     DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_data_column
-from main.adapters.value_type import ValueType
+from main.application.value_type import ValueType
+from test.utils_test import TestDigitalCurrencyAdapter
 
 
 def generate_data(data_height: int = 1000, start_time: datetime = datetime(year=3000, month=2, day=1)):
@@ -134,7 +133,7 @@ class TestAdapter(TestCase):
         Check that if data is inserted with duplicate indexes that the DuplicateRawIndexesException is thrown
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         common_time = datetime(year=3000, month=2, day=1)
         indexes = [common_time, common_time]
         values = [1.0, 1.0]
@@ -145,7 +144,7 @@ class TestAdapter(TestCase):
         Check that the data column is correctly inserted and sorted as expected
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         common_time = datetime(year=3000, month=2, day=1)
         start_time = common_time - timedelta(weeks=1)
         open_indexes = [start_time, common_time]
@@ -176,7 +175,7 @@ class TestAdapter(TestCase):
         Verify that the closest instance after a mismatched time is returned
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data = pandas.DataFrame()
         common_time = datetime(year=3000, month=2, day=1)
         mismatch_time = common_time - timedelta(weeks=1)
@@ -193,7 +192,7 @@ class TestAdapter(TestCase):
         Verify that the closest instance after a mismatched time is returned
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data, mid_time = generate_data()
         average_runtime = get_average_runtime(find_closest_instance_after, (adapter.data, mid_time))
         self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=40))
@@ -203,7 +202,7 @@ class TestAdapter(TestCase):
         Verify that the closest instance before a mismatched time is returned
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data = pandas.DataFrame()
         # index=pd.date_range('1/1/2000', periods=1000)
         # ts = pd.Series(np.random.randn(1000), index=pd.date_range('1/1/2000', periods=1000))
@@ -221,7 +220,7 @@ class TestAdapter(TestCase):
         Verify that the closest instance before a mismatched time is returned
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data, mid_time = generate_data()
         average_runtime = get_average_runtime(find_closest_instance_before, (adapter.data, mid_time))
         self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=40))
@@ -238,7 +237,7 @@ class TestAdapter(TestCase):
         Tests the adapter get_all_values, and checks that out-of-order data works as expected
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data = pandas.DataFrame()
         common_time = datetime(year=3000, month=2, day=1)
         adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
@@ -255,7 +254,7 @@ class TestAdapter(TestCase):
         Tests the adapter get_row, and checks that out-of-order data works as expected
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data = pandas.DataFrame()
         common_time = datetime(year=3000, month=2, day=1)
         adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
@@ -268,7 +267,7 @@ class TestAdapter(TestCase):
         Tests the adapter get_value, and checks that out-of-order data works as expected
         :return:
         """
-        adapter: Adapter = Adapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data = pandas.DataFrame()
         common_time = datetime(year=3000, month=2, day=1)
         adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0

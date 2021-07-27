@@ -20,20 +20,20 @@ import os.path
 from datetime import datetime
 from typing import List, Dict
 
-from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.third_party_adapters.alpha_vantage import AlphaVantage
-from main.adapters.value_type import ValueType
+from main.application.adapter import TimeInterval, AssetType
+from main.adapters.alpha_vantage import AlphaVantage
+from main.application.value_type import ValueType
 from main.common.locations import get_and_clean_timestamp_dir
 from main.executors.parallel_executor import ParallelExecutor
 from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
 from main.portfolio.portfolio import Portfolio
-from main.runners.runner import Runner
+from main.application.runner import Runner
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
 from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
 from main.strategies.soldiers_and_crows import SoldiersAndCrows
-from main.strategies.strategy import Strategy
+from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
 

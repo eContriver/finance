@@ -15,10 +15,10 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from main.adapters.value_type import ValueType
+from main.application.value_type import ValueType
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.strategies.single_symbol_strategy import SingleSymbolStrategy
+from main.application.single_symbol_strategy import SingleSymbolStrategy
 
 
 class BoundedRsi(SingleSymbolStrategy):

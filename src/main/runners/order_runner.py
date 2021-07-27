@@ -17,14 +17,14 @@
 import logging
 from datetime import datetime
 
-from main.adapters.third_party_adapters.alpha_vantage import AlphaVantage
-from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.value_type import ValueType
-from main.adapters.orders.order import Order
-from main.adapters.third_party_adapters.robinhood import Robinhood
+from main.adapters.alpha_vantage import AlphaVantage
+from main.application.adapter import TimeInterval, AssetType
+from main.application.value_type import ValueType
+from main.application.order import Order
+from main.adapters.robinhood import Robinhood
 from main.portfolio.order import OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.runners.runner import Runner
+from main.application.runner import Runner
 from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.visual.visualizer import Visualizer
 

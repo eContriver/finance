@@ -13,11 +13,18 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import inspect
-from abc import ABCMeta, abstractmethod
-from typing import Dict, Any, Optional
 
+#
+#
+#
+import inspect
+import sys
+from abc import ABCMeta, abstractmethod
+from typing import Dict, Any, Optional, Type
+
+from main.application.adapter import AssetType
 from main.common.locations import Locations, file_link_format
+from main.common.report import Report
 
 
 class NoSymbolsSpecifiedException(RuntimeError):
@@ -66,3 +73,26 @@ def validate_type(input_key: str, variable: Any, variable_type: type, config_pat
 
 class UnexpectedDataTypeException(RuntimeError):
     pass
+
+
+def get_adapter_class(class_name: str) -> Type:
+    """
+    Converts a string representation of an adapter class into the adapter class.
+    :param class_name: The string representation of the class
+    :return: The class type
+    """
+    adapter_class = getattr(sys.modules[f'main.adapters.{Report.camel_to_snake(class_name)}'], f'{class_name}')
+    return adapter_class
+
+
+def get_asset_type_overrides(asset_type_overrides: Dict[str, str]) -> Dict[str, AssetType]:
+    """
+    Converts a dictionary of symbol string paired with AssetType string representations into a dictionary of symbol
+    string paired with AssetType.
+    :param asset_type_overrides: The dictionary of symbol string paired with AssetType string
+    :return: The dictionary of symbol string paired with AssetType
+    """
+    overrides: Dict[str, AssetType] = {}
+    for symbol, asset_type in asset_type_overrides.items():
+        overrides[symbol] = AssetType[asset_type]
+    return overrides

@@ -24,7 +24,7 @@ from typing import Optional, List, Dict
 from main.common.locations import file_link_format
 from main.executors.job import Job, JobState
 from main.executors.parallel_executor import ParallelExecutor
-from main.strategies.strategy import Strategy
+from main.application.strategy import Strategy
 
 
 class StrategyJob(Job):

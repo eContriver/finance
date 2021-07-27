@@ -19,10 +19,10 @@ from datetime import datetime
 
 from typing import List
 
-from main.adapters.value_type import ValueType
+from main.application.value_type import ValueType
 from main.portfolio.order import OrderSide, MarketOrder
 from main.portfolio.portfolio import Portfolio
-from main.strategies.multi_symbol_strategy import MultiSymbolStrategy
+from main.application.multi_symbol_strategy import MultiSymbolStrategy
 
 
 class MultiDeltaSwap(MultiSymbolStrategy):

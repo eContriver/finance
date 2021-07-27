@@ -14,19 +14,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-
-import logging
-import os.path
-import time
+#
+#
+#
 from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
 
-from main.adapters.adapter import DataType, TimeInterval, AssetType, Adapter, get_response_value_or_none, \
-    IntervalNotSupportedException, insert_data_column
-from main.adapters.value_type import ValueType
-from main.adapters.converter import Converter
-from main.adapters.argument import ArgumentType
+from main.application.adapter import DataType, TimeInterval, AssetType, Adapter, get_response_value_or_none, \
+    IntervalNotSupportedException, insert_data_column, request_limit_with_timedelta_delay
+from main.application.value_type import ValueType
+from main.application.converter import Converter
+from main.application.argument import ArgumentType
 
 
 class AlphaVantage(Adapter):
@@ -57,12 +56,14 @@ class AlphaVantage(Adapter):
             Converter(ValueType.MACD_SIGNAL, self.get_macd_response, ['MACD_Signal']),
             Converter(ValueType.SMA, self.get_sma_response, ['SMA']),
             Converter(ValueType.EPS, self.get_earnings_response, ['reportedEPS']),
+            Converter(ValueType.REVENUE, self.get_income_response, ['totalRevenue']),
             # ESTIMATED_EPS = auto()
             # SURPRISE_EPS = auto()
             # SURPRISE_PERCENTAGE_EPS = auto()
             # GROSS_PROFIT = auto()
             # TOTAL_REVENUE = auto()
             # OPERATING_CASH_FLOW = auto()
+            Converter(ValueType.CASH_FLOW, self.get_cash_flow_response, ['operatingCashflow']),
             Converter(ValueType.DIVIDENDS, self.get_cash_flow_response, ['dividendPayout']),
             Converter(ValueType.NET_INCOME, self.get_cash_flow_response, ['netIncome']),
             Converter(ValueType.ASSETS, self.get_balance_sheet_response, ['totalAssets']),
@@ -293,7 +294,7 @@ class AlphaVantage(Adapter):
                         value = 0.0 if response_value == 'None' else float(response_value)
                         break
                 if value is not None:
-                    indexes.append(datetime.fromisoformat(entry['fiscalDateEnding'], data_date_format))
+                    indexes.append(datetime.fromisoformat(entry['fiscalDateEnding']))
                     values.append(value)
             insert_data_column(self.data, converter.value_type, indexes, values)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
@@ -432,43 +433,8 @@ class AlphaVantage(Adapter):
         return indicator_key
 
     def delay_requests(self, data_file: str) -> None:
-        wait = True
-        while wait:
-            # NOTE: there is a race condition here if running multi-process...
-            #       files could be created between when you read their create times and return thus allowing more than
-            #       X (i.e. 5 for this adapter) requests per allotted timeframe (i.e. minute for this)
-            #       to fix this you could create yet another lock here, but for now we limit to 1 request at a time
-            #       and that elegantly fixes this as well as prevents us from hammering servers ;)
-            historic_requests: dict = self.get_create_times()
-            wait_list = []
-            now: datetime = datetime.now()
-            closest = now + timedelta(minutes=1)
-            for key, request_time in historic_requests.items():
-                reset_time = request_time + timedelta(minutes=1)
-                if reset_time > now:
-                    wait_list.append(key)
-                    if reset_time < closest:
-                        closest = reset_time
-            if len(wait_list) >= 5:
-                sleep = closest - now
-                buffer = 10
-                sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
-                logging.info('-- Waiting for: {} = closest:{} - now:{}'.format(sleep_in_s, closest, now))
-                # logging.info('MAP: {}'.format(json.dumps(self.historicRequests, indent=2, default=str)))
-                time.sleep(sleep_in_s)
-            else:
-                wait = False
-
-    def get_create_times(self):
-        cache_requests = {}
-        date_dir = os.path.join(self.cache_root_dir, self.cache_key_date.strftime('%Y%m%d'))
-        for filename in os.listdir(date_dir):
-            file_path = os.path.join(date_dir, filename)
-            if filename.startswith(".lock"):
-                continue
-            cache_requests[file_path] = datetime.fromtimestamp(os.stat(file_path).st_ctime)
-            # modTimesinceEpoc = os.path.getmtime(file_path)
-        return cache_requests
+        request_limit_with_timedelta_delay(buffer=10, historic_requests=self.get_create_times(),
+                                           max_timeframe=timedelta(minutes=1), max_requests=5)
 
     def get_is_digital_currency(self):
         data, data_file = self.get_url_response("https://www.alphavantage.co/digital_currency_list", {},

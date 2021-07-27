@@ -21,14 +21,14 @@ import time
 from datetime import datetime, timedelta
 from enum import Enum
 from os import environ
-from typing import Optional, List, Dict
+from typing import Optional, List
 
 import pandas
 
-from main.adapters.adapter import TimeInterval, AssetType, Adapter
-from main.adapters.value_type import ValueType
-from main.adapters.converter import Converter
-from main.adapters.argument import ArgumentType
+from main.application.adapter import TimeInterval, AssetType, Adapter
+from main.application.value_type import ValueType
+from main.application.converter import Converter
+from main.application.argument import ArgumentType
 
 
 class NoDataReturnedException(RuntimeError):

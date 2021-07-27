@@ -14,15 +14,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-
+#
+#
+#
 import csv
 import inspect
-import itertools
 import json
 import logging
 import os.path
 import shutil
 import time
+from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Optional, Dict, List, Any
@@ -33,9 +35,9 @@ import numpy as np
 import pandas
 import requests
 
-from main.adapters.argument import Argument, ArgumentType
-from main.adapters.converter import Converter
-from main.adapters.value_type import ValueType
+from main.application.argument import Argument, ArgumentType
+from main.application.converter import Converter
+from main.application.value_type import ValueType
 from main.common.locations import file_link_format
 
 
@@ -179,6 +181,42 @@ def get_common_end_time(data: pandas.DataFrame) -> Optional[datetime]:
     for column in data:
         valid_end_times.append(data[column].last_valid_index())
     return None if len(valid_end_times) == 0 else min(valid_end_times)
+
+
+def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[str, datetime],
+                                       max_timeframe: timedelta, max_requests: int) -> None:
+    """
+    Handles rate limitings by accepting max requests immediately, but not more than max requests within
+    the max max timeframe.
+    :param buffer: How much extra time to add in seconds
+    :param historic_requests: Allows for pre-seed so that some requests can be ignored
+    :param max_timeframe: The timeframe for which the max requests are allowed
+    :param max_requests: The max number of requests allowed within the timeframe
+    :return:
+    """
+    wait = True
+    while wait:
+        # NOTE: there is a race condition here if running multi-process...
+        #       files could be created between when you read their create times and return thus allowing more than
+        #       X (i.e. 5 for this adapter) requests per allotted timeframe (i.e. minute for this)
+        #       to fix this you could create yet another lock here, but for now we limit to 1 request at a time
+        #       and that elegantly fixes this as well as prevents us from hammering servers ;)
+        wait_list = []
+        now: datetime = datetime.now()
+        closest = now + max_timeframe
+        for key, request_time in historic_requests.items():
+            reset_time = request_time + max_timeframe
+            if reset_time > now:
+                wait_list.append(key)
+                if reset_time < closest:
+                    closest = reset_time
+        if len(wait_list) >= max_requests:
+            sleep = closest - now
+            sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
+            logging.info('-- Waiting for: {} = closest:{} - now:{}'.format(sleep_in_s, closest, now))
+            time.sleep(sleep_in_s)
+        else:
+            wait = False
 
 
 def get_default_cache_key_date() -> datetime:
@@ -408,7 +446,7 @@ def insert_data_column(data: pandas.DataFrame, value_type: ValueType,
                                            f"{data[data.index.duplicated(keep=False)]}")
 
 
-class Adapter:
+class Adapter(metaclass=ABCMeta):
     """
     Adapters are used to interface with 3rd party websites.
 
@@ -664,6 +702,7 @@ class Adapter:
     def validate_data(self, data_file: str):
         pass
 
+    @abstractmethod
     def delay_requests(self, data_file: str) -> None:
         """
         Some APIs limit number of requests, this enables client requests for specific providers to match those limits.
@@ -755,3 +794,15 @@ class Adapter:
     def get_argument_value(self, arg_type: ArgumentType) -> Optional[Any]:
         values = list(set([argument.value for argument in self.arguments if argument.argument_type == arg_type]))
         return values[0] if len(values) == 1 else None
+
+    def get_create_times(self) -> Dict[str, datetime]:
+        cache_requests = {}
+        date_dir = os.path.join(self.cache_root_dir, self.cache_key_date.strftime('%Y%m%d'))
+        for filename in os.listdir(date_dir):
+            file_path = os.path.join(date_dir, filename)
+            if filename.startswith(".lock"):
+                continue
+            cache_requests[file_path] = datetime.fromtimestamp(os.stat(file_path).st_ctime)
+            # modTimesinceEpoc = os.path.getmtime(file_path)
+        return cache_requests
+

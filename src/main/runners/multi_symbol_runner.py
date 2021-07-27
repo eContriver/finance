@@ -20,21 +20,16 @@ import sys
 from datetime import datetime
 from typing import List, Optional, Dict
 
-from main.adapters.adapter import TimeInterval, AssetType
-from main.common.profiler import Profiler
+from main.application.adapter import TimeInterval, AssetType
 from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir
-from main.executors.parallel_executor import ParallelExecutor
 from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
 from main.executors.sequential_executor import SequentialExecutor
-from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
-from main.runners.runner import Runner, NoSymbolsSpecifiedException
+from main.application.runner import Runner, NoSymbolsSpecifiedException, get_adapter_class
 from main.strategies.buy_and_hold import BuyAndHold
-from main.strategies.multi_delta_swap import MultiDeltaSwap
-from main.strategies.multi_relative_sma_swap_down import MultiRelativeSmaSwapDown
 from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
-from main.strategies.strategy import Strategy
+from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
 
@@ -100,9 +95,7 @@ class MultiSymbolRunner(Runner):
         self.symbols = config['symbols']
         if not self.symbols:
             raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
-        class_name = config['adapter_class']
-        self.adapter_class = getattr(
-            sys.modules[f'main.adapters.third_party_adapters.{Report.camel_to_snake(class_name)}'], f'{class_name}')
+        self.adapter_class = get_adapter_class(config['adapter_class'])
         if 'base_symbol' in config:
             self.base_symbol = config['base_symbol']
         if 'price_interval' in config:

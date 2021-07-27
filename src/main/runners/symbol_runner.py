@@ -20,13 +20,13 @@ import os.path
 from abc import ABC
 from typing import List
 
-from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.third_party_adapters.iex_cloud import IexCloud
+from main.application.adapter import TimeInterval, AssetType
+from main.adapters.iex_cloud import IexCloud
 from main.common.locations import get_and_clean_timestamp_dir, Locations
 from main.executors.parallel_executor import ParallelExecutor
 from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
-from main.runners.runner import Runner
+from main.application.runner import Runner
 from main.strategies.bounded_rsi import BoundedRsi
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
@@ -34,7 +34,7 @@ from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
 from main.strategies.macd_crossing import MacdCrossing
 from main.strategies.soldiers_and_crows import SoldiersAndCrows
-from main.strategies.strategy import Strategy
+from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
 

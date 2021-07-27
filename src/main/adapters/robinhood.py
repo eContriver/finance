@@ -14,7 +14,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-
+#
+#
+#
 import os.path
 from datetime import datetime, timedelta
 from os import environ
@@ -22,9 +24,9 @@ from typing import Optional, Dict
 
 import robin_stocks as rs
 
-from main.adapters.adapter import TimeInterval, AssetType
-from main.adapters.value_type import ValueType
-from main.adapters.orders.order import Order
+from main.application.adapter import TimeInterval, AssetType
+from main.application.value_type import ValueType
+from main.application.order import Order
 from main.portfolio.order import LimitOrder, OrderSide, StopOrder
 
 
@@ -42,7 +44,7 @@ class Robinhood(Order):
         rs.robinhood.login(username, password)
         super().__init__(symbol, base_symbol, cache_key_date, span)
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        self.cache_dir = os.path.join(script_dir, '../..', '..', '..', '.cache', 'robinhood')
+        self.cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache', 'robinhood')
         # self.span = '5year'
         # 'hour', 'day', 'week', 'month', '3month', 'year', '5year'
         self.span = 'year'

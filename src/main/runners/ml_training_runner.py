@@ -24,12 +24,12 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import LSTM, Dense
 
-from main.adapters.third_party_adapters.alpha_vantage import AlphaVantage
-from main.adapters.adapter import AssetType, TimeInterval, Adapter
-from main.adapters.value_type import ValueType
+from main.adapters.alpha_vantage import AlphaVantage
+from main.application.adapter import TimeInterval, Adapter
+from main.application.value_type import ValueType
 from main.common.time_zones import TimeZones
-from main.adapters.adapter_collection import AdapterCollection
-from main.runners.runner import Runner
+from main.application.adapter_collection import AdapterCollection
+from main.application.runner import Runner
 
 
 class MLTrainingRunner(Runner):

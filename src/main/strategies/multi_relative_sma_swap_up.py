@@ -19,10 +19,10 @@ from datetime import datetime
 
 from typing import Dict, List
 
-from main.adapters.value_type import ValueType
-from main.portfolio.order import StopOrder, OrderSide, MarketOrder
+from main.application.value_type import ValueType
+from main.portfolio.order import OrderSide, MarketOrder
 from main.portfolio.portfolio import Portfolio
-from main.strategies.multi_symbol_strategy import MultiSymbolStrategy
+from main.application.multi_symbol_strategy import MultiSymbolStrategy
 
 
 class MultiRelativeSmaSwapUp(MultiSymbolStrategy):

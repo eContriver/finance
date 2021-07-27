@@ -18,13 +18,14 @@ from unittest import TestCase
 
 import pandas
 
-from main.adapters.adapter import Adapter, AssetType
-from main.adapters.adapter_collection import AdapterCollection
-from main.adapters.value_type import ValueType
+from main.application.adapter import Adapter, AssetType
+from main.application.adapter_collection import AdapterCollection
+from main.application.value_type import ValueType
+from test.utils_test import TestDigitalCurrencyAdapter
 
 
 def create_test_adapter_with_data():
-    adapter: Adapter = Adapter(get_test_symbol(), AssetType.DIGITAL_CURRENCY)
+    adapter: Adapter = TestDigitalCurrencyAdapter(get_test_symbol(), AssetType.DIGITAL_CURRENCY)
     adapter.data = pandas.DataFrame()
     adapter.request_value_types = [ValueType.CLOSE]
     adapter.data.loc[get_test_start_time(), ValueType.CLOSE] = 1.0

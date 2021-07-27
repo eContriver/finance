@@ -33,20 +33,20 @@ class ValueType(Enum):
     RSI = auto()
     SMA = auto()
     BOOK = auto()
-    EPS = auto()
+    EPS = auto()  # Reported EPS
     ESTIMATED_EPS = auto()
     SURPRISE_EPS = auto()
     SURPRISE_PERCENTAGE_EPS = auto()
     GROSS_PROFIT = auto()
-    TOTAL_REVENUE = auto()
-    OPERATING_CASH_FLOW = auto()
+    REVENUE = auto()  # Total Revenue
+    CASH_FLOW = auto()  # Operating Cash Flow
     DIVIDENDS = auto()
     NET_INCOME = auto()
-    ASSETS = auto()
-    LIABILITIES = auto()
-    SHARES = auto()
+    ASSETS = auto()  # Total Assets
+    LIABILITIES = auto()  # Total Liabilities
+    SHARES = auto()  # Total Outstanding Shares
     DILUTED_SHARES = auto()
-    EQUITY = auto()
+    EQUITY = auto()  # Total Shareholder Equity
 
     def __str__(self):
         return self.as_title()

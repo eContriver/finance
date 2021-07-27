@@ -13,11 +13,15 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+#
+#
 from datetime import datetime
 from typing import List, Optional
 
 from main.portfolio.portfolio import Portfolio
-from main.strategies.strategy import Strategy
+from main.application.strategy import Strategy
 
 
 class MultiSymbolStrategy(Strategy):

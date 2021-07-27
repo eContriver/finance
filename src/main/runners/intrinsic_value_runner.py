@@ -15,7 +15,6 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 import os
-import sys
 from datetime import datetime
 from typing import Dict, Set, Optional
 
@@ -24,15 +23,16 @@ import pandas
 from numpy import median
 from sklearn import linear_model
 
-from main.adapters.adapter import TimeInterval, AssetType, Adapter, get_common_start_time, get_common_end_time
-from main.adapters.adapter_collection import AdapterCollection, filter_adapters
-from main.adapters.argument import Argument, ArgumentType
-from main.adapters.value_type import ValueType
-from main.common.launchers import Launcher
+from main.application.adapter import TimeInterval, AssetType, Adapter, get_common_start_time, get_common_end_time
+from main.application.adapter_collection import AdapterCollection, filter_adapters
+from main.application.argument import Argument, ArgumentType
+from main.application.value_type import ValueType
+from main.common.launchers import get_copyright_notice
 from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir
 from main.executors.parallel_executor import ParallelExecutor
-from main.runners.runner import Runner, NoSymbolsSpecifiedException, validate_type
+from main.application.runner import Runner, NoSymbolsSpecifiedException, validate_type, get_adapter_class, \
+    get_asset_type_overrides
 from main.visual.visualizer import Visualizer
 
 
@@ -122,6 +122,7 @@ class IntrinsicValueRunner(Runner):
     graph: bool
     fundamentals_interval: TimeInterval
     price_interval: TimeInterval
+    asset_type_overrides: Dict[str, AssetType]
 
     def __init__(self):
         super().__init__()
@@ -129,8 +130,9 @@ class IntrinsicValueRunner(Runner):
         self.adapter_class = None
         self.base_symbol = 'USD'
         self.graph = True
-        self.price_interval = TimeInterval.WEEK
+        self.price_interval = TimeInterval.MONTH
         self.fundamentals_interval = TimeInterval.YEAR
+        self.asset_type_overrides = {}
 
     def start(self, locations: Locations):
         logging.info("#### Starting intrinsic value runner...")
@@ -145,22 +147,27 @@ class IntrinsicValueRunner(Runner):
         return success
 
     def get_config(self) -> Dict:
+        asset_type_overrides = {}
+        for symbol, asset_type in self.asset_type_overrides.items():
+            asset_type_overrides[symbol] = asset_type.name
         config = {
             'adapter_class': self.adapter_class.__name__,
             'base_symbol': self.base_symbol,
             'symbol': self.symbol,
             'graph': self.graph,
             'fundamentals_interval': self.fundamentals_interval.value,
+            'price_interval': self.price_interval.value,
+            'asset_type_overrides': asset_type_overrides,
         }
         return config
 
     def set_from_config(self, config, config_path):
+        self.asset_type_overrides = get_asset_type_overrides(config['asset_type_overrides'])
         self.symbol = config['symbol']
-        class_name = config['adapter_class']
-        self.adapter_class = getattr(
-            sys.modules[f'main.adapters.third_party_adapters.{Report.camel_to_snake(class_name)}'], f'{class_name}')
+        self.adapter_class = get_adapter_class(config['adapter_class'])
         self.base_symbol = config['base_symbol']
         self.fundamentals_interval = TimeInterval(config['fundamentals_interval'])
+        self.price_interval = TimeInterval(config['price_interval'])
         self.graph = config['graph']
         self.check_member_variables(config_path)
 
@@ -194,6 +201,8 @@ class IntrinsicValueRunner(Runner):
     def create_fundamentals_adapter(self, symbol):
         adapter = self.new_adapter(symbol)
         adapter.request_value_types = [
+            ValueType.REVENUE,
+            ValueType.CASH_FLOW,
             ValueType.EPS,
             ValueType.DIVIDENDS,
             ValueType.NET_INCOME,
@@ -219,13 +228,7 @@ class IntrinsicValueRunner(Runner):
         adapter.add_argument(Argument(ArgumentType.START_TIME, end_date - 10 * TimeInterval.YEAR.timedelta))
         adapter.add_argument(Argument(ArgumentType.END_TIME, end_date))
         adapter.cache_key_date = end_date
-        asset_type_overrides = {
-            'ETH': AssetType.DIGITAL_CURRENCY,
-            'LTC': AssetType.DIGITAL_CURRENCY,
-            'GEO': AssetType.EQUITY,
-            'BLK': AssetType.EQUITY,
-        }
-        adapter.asset_type = asset_type_overrides[symbol] if symbol in asset_type_overrides else None
+        adapter.asset_type = self.asset_type_overrides[symbol] if symbol in self.asset_type_overrides else None
         return adapter
 
     # def multiple_collections(self, symbols, asset_type_overrides, base_symbol, adapter_class, interval, cache_date):
@@ -273,7 +276,9 @@ class IntrinsicValueRunner(Runner):
             ]
             earnings_value_types = [ValueType.EPS]
             value_types += earnings_value_types
-            cash_flow_value_types = [ValueType.NET_INCOME, ValueType.DIVIDENDS]
+            income_value_types = [ValueType.REVENUE]
+            value_types += income_value_types
+            cash_flow_value_types = [ValueType.CASH_FLOW, ValueType.NET_INCOME, ValueType.DIVIDENDS]
             value_types += cash_flow_value_types
             price_value_types = [ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
             value_types += price_value_types
@@ -364,6 +369,8 @@ class IntrinsicValueRunner(Runner):
             #################################################################################
             # Report now...
             df_print = df.copy()
+            df_print[ValueType.REVENUE] = df_print[ValueType.REVENUE].apply(to_dollars)
+            df_print[ValueType.CASH_FLOW] = df_print[ValueType.CASH_FLOW].apply(to_dollars)
             df_print[ValueType.ASSETS] = df_print[ValueType.ASSETS].apply(to_dollars)
             df_print[ValueType.SHARES] = df_print[ValueType.SHARES].apply(to_abbrev)
             df_print[ValueType.LIABILITIES] = df_print[ValueType.LIABILITIES].apply(to_dollars)
@@ -376,7 +383,7 @@ class IntrinsicValueRunner(Runner):
             df_print[ValueType.CLOSE] = df_print[ValueType.CLOSE].apply(to_dollars)
             df_print[IntrinsicValueRunner.LOW_PE] = df_print[IntrinsicValueRunner.LOW_PE].apply(to_dollars)
             df_print[IntrinsicValueRunner.HIGH_PE] = df_print[IntrinsicValueRunner.HIGH_PE].apply(to_dollars)
-            report.log("Data table for intrinsic value caclulation using {}...\n{}".format(
+            report.log("Data table for intrinsic value calculation using {}...\n{}".format(
                 self.fundamentals_interval, df_print.to_string()))
 
             # predict into the future as far forwards as we have data backwards

@@ -19,7 +19,7 @@ from datetime import datetime
 
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.strategies.single_symbol_strategy import SingleSymbolStrategy
+from main.application.single_symbol_strategy import SingleSymbolStrategy
 
 
 class BuyAndHold(SingleSymbolStrategy):

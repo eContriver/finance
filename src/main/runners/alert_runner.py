@@ -16,19 +16,16 @@
 
 
 import logging
-import sys
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
 
-from main.adapters.adapter import TimeInterval, AssetType, Adapter
-from main.adapters.value_type import ValueType
-from main.adapters.argument import Argument, ArgumentType
-from main.adapters.third_party_adapters.alpha_vantage import AlphaVantage
-from main.adapters.third_party_adapters.yahoo import Yahoo
-from main.adapters.adapter_collection import AdapterCollection, set_all_cache_key_dates
+from main.application.adapter import TimeInterval, AssetType, Adapter
+from main.application.value_type import ValueType
+from main.application.argument import Argument, ArgumentType
+from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.common.locations import Locations
-from main.common.report import Report
-from main.runners.runner import Runner, validate_type, NoSymbolsSpecifiedException
+from main.application.runner import Runner, validate_type, NoSymbolsSpecifiedException, get_adapter_class, \
+    get_asset_type_overrides
 
 
 class AlertRunner(Runner):
@@ -132,13 +129,9 @@ class AlertRunner(Runner):
         return config
 
     def set_from_config(self, config, config_path):
-        asset_type_overrides: Dict[str, str] = config['asset_type_overrides']
-        for symbol, asset_type in asset_type_overrides.items():
-            self.asset_type_overrides[symbol] = AssetType[asset_type]
+        self.asset_type_overrides = get_asset_type_overrides(config['asset_type_overrides'])
         self.close_boundaries = config['close_boundaries']
-        class_name = config['adapter_class']
-        self.adapter_class = getattr(
-            sys.modules[f'main.adapters.third_party_adapters.{Report.camel_to_snake(class_name)}'], f'{class_name}')
+        self.adapter_class = get_adapter_class(config['adapter_class'])
         self.base_symbol = config['base_symbol']
         self.price_interval = TimeInterval(config['price_interval'])
         self.check_member_variables(config_path)
