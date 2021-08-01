@@ -29,7 +29,7 @@ class MultiRelativeSmaSwapUp(MultiSymbolStrategy):
     """
     For each symbol divide the current_time SMA (@ period) by the SMA from look_back intervals.
 
-    This gives a relative factor if the SMA is tending up or down. A way of calculating price momentum.
+    This gives a relative factor if the SMA is trending up or down. A way of calculating price momentum.
 
     Then we go through and compare all symbols 1 to 1 by dividing each relative factor by the other
     and if this ratio of relative factors is greater than delta then we know that one symbol is

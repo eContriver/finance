@@ -28,11 +28,35 @@ from main.application.converter import Converter
 from main.application.argument import ArgumentType
 
 
+def get_adjusted_ratio(time_data: Dict[str, str]) -> float:
+    """
+    AlphaVantage provides the stock values as they were and an adjusted close value. This is to
+    account for stock splits. To fix these close/adjusted_close = ratio and then ratio * price to
+    get the correct price to account for current splits etc.
+    :param time_data:
+    :return:
+    """
+    adjusted_close = get_response_value_or_none(time_data, '5. adjusted close')
+    # adjusted_close = self.get_value_or_none(time_data, ValueType.ADJUSTED_CLOSE)
+    close = get_response_value_or_none(time_data, '4. close')
+    ratio = 1.0 if (adjusted_close is None) or (close is None) else adjusted_close / close
+    return float(ratio)
+
+
+# def find_symbol_in_data(data, entry):
+#     contains = False
+#     for row in data:
+#         if row[0] == entry:
+#             contains = True
+#             break
+#     return contains
+
+
 class AlphaVantage(Adapter):
     name: str = 'alphaVantage'
     url: str = 'https://www.alphavantage.co/query'
 
-    def __init__(self, symbol: str, asset_type: Optional[AssetType]):
+    def __init__(self, symbol: str, asset_type: Optional[AssetType] = None):
         if environ.get('ALPHA_VANTAGE_API_KEY') is None:
             raise RuntimeError(
                 "The ALPHA_VANTAGE_API_KEY environment variable is not set - this needs to be set to the API KEY for "
@@ -87,22 +111,7 @@ class AlphaVantage(Adapter):
             Converter(ValueType.EQUITY, self.get_balance_sheet_response, ['totalShareholderEquity']),
         ]
 
-    def get_adjusted_ratio(self, time_data: Dict[str, str]) -> float:
-        adjusted_close = get_response_value_or_none(time_data, '5. adjusted close')
-        # adjusted_close = self.get_value_or_none(time_data, ValueType.ADJUSTED_CLOSE)
-        close = get_response_value_or_none(time_data, '4. close')
-        ratio = 1.0 if (adjusted_close is None) or (close is None) else adjusted_close / close
-        return float(ratio)
-
-    def find_symbol_in_data(self, data, entry):
-        contains = False
-        for row in data:
-            if row[0] == entry:
-                contains = True
-                break
-        return contains
-
-    def get_equities_list(self):
+    def get_equities_list(self) -> List[str]:
         query = {
             "apikey": self.api_key,
             "function": "LISTING_STATUS",
@@ -205,7 +214,7 @@ class AlphaVantage(Adapter):
                 if value is None:  # we didn't find a match so move on to the next thing to convert
                     continue
                 if converter.adjust_values:
-                    ratio = self.get_adjusted_ratio(response_entry)
+                    ratio = get_adjusted_ratio(response_entry)
                     value = value * ratio
                 indexes.append(datetime.fromisoformat(entry_datetime))
                 values.append(value)
@@ -333,7 +342,7 @@ class AlphaVantage(Adapter):
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
                 if value is not None:
-                    ratio = self.get_adjusted_ratio(entry)
+                    ratio = get_adjusted_ratio(entry)
                     value = value * ratio
                     translated[dt][value_type] = value
         return translated
@@ -370,7 +379,7 @@ class AlphaVantage(Adapter):
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
                 if value is not None:
-                    ratio = self.get_adjusted_ratio(entry)
+                    ratio = get_adjusted_ratio(entry)
                     value = value * ratio
                     translated[dt][value_type] = value
         return translated
@@ -407,7 +416,7 @@ class AlphaVantage(Adapter):
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
                 if value is not None:
-                    ratio = self.get_adjusted_ratio(entry)
+                    ratio = get_adjusted_ratio(entry)
                     value = value * ratio
                     translated[dt][value_type] = value
         return translated

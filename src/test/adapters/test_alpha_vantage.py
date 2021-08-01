@@ -15,10 +15,23 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 from datetime import timedelta, datetime
+from typing import Dict, List
 from unittest import TestCase
 
-from main.application.adapter import request_limit_with_timedelta_delay
+from main.adapters.alpha_vantage import AlphaVantage, get_adjusted_ratio
+from main.application.adapter import request_limit_with_timedelta_delay, DataType
 from test import utils_test
+
+
+class MockAlphaVantage(AlphaVantage):  # -> List(str), str
+    def get_url_response(self, url: str, query, cache: bool = True, data_type: DataType = DataType.JSON, delay: bool = True):
+        data = []
+        data_file = '/test/file'
+        if query['function'] == 'LISTING_STATUS':
+            data.append(['title'])
+            data.append(['testvalue'])
+        return data, data_file
+
 
 
 class TestAlphaVantage(TestCase):
@@ -40,3 +53,81 @@ class TestAlphaVantage(TestCase):
         end_time = datetime.now()
         delta_time = end_time - start_time
         self.assertLessEqual(max_timeframe, delta_time)
+
+    def test_get_adjusted_ratio(self):
+        time_data: Dict[str, str] = {
+            '5. adjusted close': 10.0,
+            '4. close': 5.0,
+        }
+        self.assertEqual(get_adjusted_ratio(time_data), 2.0)
+
+    # def test_find_symbol_in_data(self):
+    #     symbol: str = 'TEST'
+    #     adapter: AlphaVantage = AlphaVantage(symbol)
+    #     find_symbol_in_data(symbol)
+    #     self.fail()
+
+    def test_get_equities_list(self):
+        adapter: AlphaVantage = MockAlphaVantage('TEST')
+        equities: List[str] = adapter.get_equities_list()
+        self.assertEqual(equities[0], 'testvalue')
+
+    # def test_get_prices_response(self):
+    #     self.fail()
+    #
+    # def test_get_stock_prices_response(self):
+    #     self.fail()
+    #
+    # def test_get_digital_currency_response(self):
+    #     self.fail()
+    #
+    # def test_translate(self):
+    #     self.fail()
+    #
+    # def test_get_macd_response(self):
+    #     self.fail()
+    #
+    # def test_get_sma_response(self):
+    #     self.fail()
+    #
+    # def test_get_rsi_response(self):
+    #     self.fail()
+    #
+    # def test_get_earnings_response(self):
+    #     self.fail()
+    #
+    # def test_translate_earnings(self):
+    #     self.fail()
+    #
+    # def test_get_income_response(self):
+    #     self.fail()
+    #
+    # def test_translate_income(self):
+    #     self.fail()
+    #
+    # def test_get_balance_sheet_response(self):
+    #     self.fail()
+    #
+    # def test_translate_balance_sheet(self):
+    #     self.fail()
+    #
+    # def test_get_cash_flow_response(self):
+    #     self.fail()
+    #
+    # def test_translate_cash_flow(self):
+    #     self.fail()
+    #
+    # def test_validate_json_response(self):
+    #     self.fail()
+    #
+    # def test_get_indicator_key(self):
+    #     self.fail()
+    #
+    # def test_get_is_digital_currency(self):
+    #     self.fail()
+    #
+    # def test_get_is_listed(self):
+    #     self.fail()
+    #
+    # def test_get_is_physical_currency(self):
+    #     self.fail()

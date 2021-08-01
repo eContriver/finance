@@ -29,7 +29,7 @@ from main.application.argument import Argument, ArgumentType
 from main.application.value_type import ValueType
 from main.common.launchers import get_copyright_notice
 from main.common.report import Report
-from main.common.locations import Locations, get_and_clean_timestamp_dir
+from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
 from main.executors.parallel_executor import ParallelExecutor
 from main.application.runner import Runner, NoSymbolsSpecifiedException, validate_type, get_adapter_class, \
     get_asset_type_overrides
@@ -515,6 +515,7 @@ class IntrinsicValueRunner(Runner):
             report.log(
                 "    Annual Rate of Return (IRR) - {} on {}".format(irr_current, final_date.strftime("%Y-%m-%d")))
             report.log('-- End report for {}'.format(self.symbol))
+            logging.info(f'Report file: {file_link_format(report_path)}')
 
     # @staticmethod
     # def get_data(adapter: Adapter) -> pandas.DataFrame:  # , value_types):

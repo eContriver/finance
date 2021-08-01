@@ -681,18 +681,6 @@ class Adapter(metaclass=ABCMeta):
             path = os.path.join(self.cache_root_dir, filename)
             shutil.rmtree(path, ignore_errors=True)
 
-    def get_adjusted_ratio(self, time_data: Dict[str, str]) -> float:
-        """
-        Some data sources provide the stock values as they were and an adjusted close value. This is generally to
-        account for stock splits. To fix these just different close/adjusted_close = ratio and then ratio *_price to
-        get the correct price to account for current splits etc.
-        The default here is to return 1.0 so that no adjusting is done by default and override as needed.
-        See AlphaVantage as an example of how this is used.
-        :param time_data:
-        :return:
-        """
-        return 1.0  # default is to not adjust
-
     def get_response_value(self, time_data: Dict[str, str], key: str) -> float:
         price = get_response_value_or_none(time_data, key)
         if price is None:

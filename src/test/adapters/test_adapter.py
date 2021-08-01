@@ -20,7 +20,8 @@ import numpy
 import pandas
 
 from main.application.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
-    DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_data_column
+    DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_data_column, \
+    DataNotSortedException
 from main.application.value_type import ValueType
 from test.utils_test import TestDigitalCurrencyAdapter
 
@@ -170,6 +171,19 @@ class TestAdapter(TestCase):
         self.assertEqual(adapter.data.loc[end_time, ValueType.CLOSE], close_values[end_time_index],
                          "Close value order was not as expected")
 
+    def test_find_closest_instance_after_raises(self):
+        """
+        Verify that the closest instance after throws an exception for unsorted data
+        :return:
+        """
+        data: pandas.DataFrame = pandas.DataFrame()
+        common_time = datetime(year=3000, month=2, day=1)
+        indexes = [common_time, common_time - timedelta(weeks=1)]
+        values = [1.0, 1.0]
+        insert_data_column(data, ValueType.CLOSE, indexes, values)
+        data.sort_index(ascending=False, inplace=True)
+        self.assertRaises(DataNotSortedException, find_closest_instance_after, data, common_time)
+
     def test_find_closest_instance_after_mismatch(self):
         """
         Verify that the closest instance after a mismatched time is returned
@@ -185,7 +199,38 @@ class TestAdapter(TestCase):
         self.assertEqual(find_closest_instance_after(adapter.data, mismatch_time), common_time,
                          f"Did not get the correct common end time, expected {common_time}, "
                          f"received {get_common_end_time(adapter.data)}")
-        return True
+
+    def test_find_closest_instance_after_mismatch(self):
+        """
+        Verify that the closest instance after a mismatched time is returned
+        :return:
+        """
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter.data = pandas.DataFrame()
+        common_time = datetime(year=3000, month=2, day=1)
+        mismatch_time = common_time - timedelta(weeks=1)
+        adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
+        adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
+        adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
+        self.assertEqual(find_closest_instance_after(adapter.data, mismatch_time), common_time,
+                         f"Did not get the correct common end time, expected {common_time}, "
+                         f"received {get_common_end_time(adapter.data)}")
+
+    def test_find_closest_instance_after_mismatch(self):
+        """
+        Verify that the closest instance after a mismatched time is returned
+        :return:
+        """
+        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
+        adapter.data = pandas.DataFrame()
+        common_time = datetime(year=3000, month=2, day=1)
+        mismatch_time = common_time - timedelta(weeks=1)
+        adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
+        adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
+        adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
+        self.assertEqual(find_closest_instance_after(adapter.data, mismatch_time), common_time,
+                         f"Did not get the correct common end time, expected {common_time}, "
+                         f"received {get_common_end_time(adapter.data)}")
 
     def test_find_closest_instance_after_performance(self):
         """
@@ -195,7 +240,7 @@ class TestAdapter(TestCase):
         adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
         adapter.data, mid_time = generate_data()
         average_runtime = get_average_runtime(find_closest_instance_after, (adapter.data, mid_time))
-        self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=40))
+        self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=50))
 
     def test_find_closest_instance_before_mismatch(self):
         """
