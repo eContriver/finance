@@ -13,21 +13,3 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-from unittest import TestCase
-
-from main.visual.pane import Pane
-
-
-class TestGraph(TestCase):
-    def test_dataframe_plot(self):
-        # df = pandas.DataFrame()
-        # df.loc[get_test_start_time(), ValueType.CLOSE] = 100.0
-        # df.loc[get_test_common_time(), ValueType.CLOSE] = 200.0
-        # df.loc[get_test_end_time(), ValueType.CLOSE] = 300.0
-        # df.plot()
-        # plt.show(block=True)
-        pass
-
-    def test_to_json(self):
-        # sleep(10)
-        pane = Pane()

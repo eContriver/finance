@@ -20,7 +20,7 @@ from unittest import TestCase
 
 from main.adapters.alpha_vantage import AlphaVantage, get_adjusted_ratio
 from main.application.adapter import request_limit_with_timedelta_delay, DataType
-from test import utils_test
+from test import testing_utils
 
 
 class MockAlphaVantage(AlphaVantage):  # -> List(str), str
@@ -36,7 +36,7 @@ class MockAlphaVantage(AlphaVantage):  # -> List(str), str
 
 class TestAlphaVantage(TestCase):
     def test_delay_requests(self):
-        utils_test.configure_test_logging()
+        testing_utils.configure_test_logging()
         start_time = datetime.now()
         historic_requests = {
             '/path1': start_time,

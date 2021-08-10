@@ -22,7 +22,7 @@ from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
 from main.application.strategy import Strategy
 from test.runner_test import is_test
-from test.utils_test import MockDataAdapter
+from test.testing_utils import MockDataAdapter
 
 
 @is_test

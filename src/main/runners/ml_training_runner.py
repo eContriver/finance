@@ -44,42 +44,42 @@ class MLTrainingRunner(Runner):
         self.symbols = [
             # Technology
             'AAPL',  # Consumer Electronics
-            'MSFT',  # Software / Infrastructure
-            'NVDA', 'INTC', 'AVGO',
-            'AMD', 'XLNX', 'TSM',  # Semiconductors
-            # Communication Services
-            'GOOG', 'FB',  # Internet Information
-            'VZ', 'T',  # Telecommunications
-            'NFLX', 'DIS',  # Entertainment
-            # Commercial
-            'AMZN',  # Internet Retail
-            'TSLA',  # Automotive Manufacturing
-            'HD',  # Home Improvement
-            # Financial
-            'V', 'MA', 'AXP',  # Credit Services
-            'JPM', 'BAC', 'C', 'WFC',  # Banks - Diversified
-            'BRK-B', 'AIG',  # Insurance - Diversified
-            # Foods
-            'TTCF',  # Buy at 18
-            'BYND',  # 'IMPM',  # Buy impossible at $120
-            # Bonds
-            'TLT',
-            # Real Estate
-            'EXPI',
-            # Farm / Commodities
-            'DE', 'UHAL',
-            # Dividend + Reinvest
-            "FSKR",
-            # MJ
-            # "GGTTF",
-            # Payments
-            'SQ', 'PYPL', 'SNOW', 'NVTA', 'FROG',
-            # SPACs
-            'IPOE', 'CCIV',  # 'CCIX',
-            # ETFs
-            'ARKW', 'ARKQ', 'ARKF', 'ARKK', 'ARKG', 'PRNT', 'IZRL',  # ARK
-            # Digital Currencies
-            # 'BTC', 'ETH', 'LTC', 'DOGE',
+            # 'MSFT',  # Software / Infrastructure
+            # 'NVDA', 'INTC', 'AVGO',
+            # 'AMD', 'XLNX', 'TSM',  # Semiconductors
+            # # Communication Services
+            # 'GOOG', 'FB',  # Internet Information
+            # 'VZ', 'T',  # Telecommunications
+            # 'NFLX', 'DIS',  # Entertainment
+            # # Commercial
+            # 'AMZN',  # Internet Retail
+            # 'TSLA',  # Automotive Manufacturing
+            # 'HD',  # Home Improvement
+            # # Financial
+            # 'V', 'MA', 'AXP',  # Credit Services
+            # 'JPM', 'BAC', 'C', 'WFC',  # Banks - Diversified
+            # 'BRK-B', 'AIG',  # Insurance - Diversified
+            # # Foods
+            # 'TTCF',  # Buy at 18
+            # 'BYND',  # 'IMPM',  # Buy impossible at $120
+            # # Bonds
+            # 'TLT',
+            # # Real Estate
+            # 'EXPI',
+            # # Farm / Commodities
+            # 'DE', 'UHAL',
+            # # Dividend + Reinvest
+            # "FSKR",
+            # # MJ
+            # # "GGTTF",
+            # # Payments
+            # 'SQ', 'PYPL', 'SNOW', 'NVTA', 'FROG',
+            # # SPACs
+            # 'IPOE', 'CCIV',  # 'CCIX',
+            # # ETFs
+            # 'ARKW', 'ARKQ', 'ARKF', 'ARKK', 'ARKG', 'PRNT', 'IZRL',  # ARK
+            # # Digital Currencies
+            # # 'BTC', 'ETH', 'LTC', 'DOGE',
         ]
 
         # Split the data into x_train and y_train data sets

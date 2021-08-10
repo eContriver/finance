@@ -15,20 +15,11 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import argparse
 
-from main.common.launchers import Launcher
+from main.application.runner import launch_runner
 from main.runners.matrix_runner import MatrixRunner
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    Launcher.add_common_arguments(parser)
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    args = parse_args()
-    runner = MatrixRunner()
-    launcher = Launcher(runner)
-    exit(0 if launcher.run(args) else 1)
+    return_code = launch_runner(program='matrix', config_filename='matrix.yaml', runner_class=MatrixRunner)
+    exit(return_code)

@@ -15,29 +15,12 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import argparse
-import os.path
 
-from main.common.launchers import Launcher
-from main.common.locations import Locations
+from main.application.runner import launch_runner
 from main.runners.intrinsic_value_runner import IntrinsicValueRunner
 
 
-def parse_args(default_cache_dir: str, default_output_dir: str, default_config_file: str):
-    parser = argparse.ArgumentParser(prog='intrinsic_value', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    Launcher.add_common_arguments(parser, default_cache_dir, default_output_dir)
-    Launcher.add_config_arguments(parser, default_config_file)
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    locations = Locations()
-    input_config_path = os.path.join(locations.get_parent_user_dir(), 'intrinsic_value.yaml')
-    args = parse_args(locations.parent_cache_dir, locations.parent_output_dir, input_config_path)
-    locations.parent_cache_dir = args.cache_dir
-    locations.parent_output_dir = args.output_dir
-    input_config_path = args.config_path
-    runner = IntrinsicValueRunner()
-    launcher = Launcher(runner)
-    return_code = 0 if launcher.run(locations, args) else 1
+    return_code = launch_runner(program='intrinsic_value', config_filename='intrinsic_value.yaml',
+                                runner_class=IntrinsicValueRunner)
     exit(return_code)

@@ -21,6 +21,35 @@ from pathlib import Path
 from typing import Optional
 
 
+def get_parent_cache_dir() -> str:
+    """
+    Get the default cache cache directory, it is considered a parent because subfolders are created inside of it.
+    :return: The parent cache directory
+    """
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    parent_cache_dir = os.path.realpath(os.path.join(script_dir, '..', '..', '..', '.cache'))
+    return parent_cache_dir
+
+
+def get_parent_output_dir() -> str:
+    """
+    Get the default output output directory, it is considered a parent because subfolders are created inside of it.
+    :return: The parent output directory
+    """
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    parent_output_dir = os.path.realpath(os.path.join(script_dir, '..', '..', '..', 'output'))
+    return parent_output_dir
+
+
+def get_parent_user_dir() -> str:
+    """
+    Get the default user user directory, it is considered a parent because subfolders are created inside of it.
+    :return: The parent user directory
+    """
+    parent_user_dir = os.path.realpath(os.path.join(str(Path.home()), '.eContriver'))
+    return parent_user_dir
+
+
 class Locations:
 
     def __init__(self):
@@ -30,14 +59,26 @@ class Locations:
         self.parent_user_dir = os.path.realpath(os.path.join(str(Path.home()), '.eContriver'))
 
     def get_cache_dir(self, name: str) -> str:
+        """
+        Get the default cache cache directory, it is considered a parent because subfolders are created inside of it.
+        :return: The parent cache directory
+        """
         cache_dir = os.path.join(self.parent_cache_dir, name)
         return cache_dir
 
     def get_output_dir(self, name):
+        """
+        Get the default output output directory, it is considered a parent because subfolders are created inside of it.
+        :return: The parent output directory
+        """
         output_dir = os.path.join(self.parent_output_dir, name)
         return output_dir
 
     def get_parent_user_dir(self):
+        """
+        Get the default user user directory, it is considered a parent because subfolders are created inside of it.
+        :return: The parent user directory
+        """
         return self.parent_user_dir
 
 

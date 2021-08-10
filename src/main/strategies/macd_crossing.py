@@ -31,8 +31,8 @@ class MacdCrossing(SingleSymbolStrategy):
         self.slow = slow
         self.fast = fast
         self.signal = signal
-        self.build_price_collection(symbol)
-        self.build_macd_collection(symbol, slow, fast, signal)
+        self.build_price_collection()
+        self.build_macd_collection(slow, fast, signal)
 
     def next_step(self, current_time):
         last_time = self.portfolio.get_last_completed_time()

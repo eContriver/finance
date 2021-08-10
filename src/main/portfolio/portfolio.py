@@ -27,6 +27,46 @@ from main.application.adapter_collection import AdapterCollection
 from main.portfolio.order import OrderSide, Order
 
 
+def filter_list_times(start_time: Optional[datetime], end_time: Optional[datetime],
+                      times: List[datetime]) -> List[datetime]:
+    """
+    Given a start and end time return a subset of the times equal to or within that range. If the start is None then
+    only the end time is used, and vice versa. If both start and end are none, then the input times list is returned.
+    :param start_time: The minimum time filter
+    :param end_time: The maximum time filter
+    :param times:
+    :return:
+    """
+    if start_time is not None and end_time is not None:
+        times = [instance for instance in times if
+                 (instance >= start_time) and (instance <= end_time)]
+    elif start_time is not None:
+        times = [instance for instance in times if (instance >= start_time)]
+    elif end_time is not None:
+        times = [instance for instance in times if (instance <= end_time)]
+    return times
+
+
+def get_current_value(instance: datetime, collection: AdapterCollection, quantities: Dict[str, float],
+                      value_type: ValueType) -> float:
+    """
+    Given a specific instance in time, a collection of data (adapters), specific quantities of assets, and a value type
+    that can be used to look-up the current value of those assets, return the total value (i.e. of a Portfolio).
+    :param instance: The time to use when calculating the value
+    :param collection: The collection of data (i.e. the adapters to use to look-up the values)
+    :param quantities: The quantities as they existed at this time
+    :param value_type: The value type used to look-up the values of the assets (this is generally the 'close' values)
+    :return:
+    """
+    current_value: float = 0.0
+    for symbol, quantity in quantities.items():
+        if symbol == collection.get_base_symbol():
+            current_value += quantity
+        elif symbol in collection.get_symbols():
+            current_value += quantity * collection.get_value(symbol, instance, value_type)
+    return current_value
+
+
 class Portfolio:
     title: str
     quantities: Dict[str, float]
@@ -79,24 +119,15 @@ class Portfolio:
         #     as_str += "  Value = {:12.2f}".format(self.value_data[last_time])
         return as_str
 
-    def get_current_value(self, instance: datetime, collection: AdapterCollection, value_type: ValueType):
-        current_value: float = 0.0
-        for symbol, quantity in self.quantities.items():
-            if symbol == collection.get_base_symbol():
-                current_value += quantity
-            elif symbol in collection.get_symbols():
-                current_value += quantity * collection.get_value(symbol, instance, ValueType.CLOSE)
-        return current_value
-
-    def get_current_value_of(self, symbol: str, instance: datetime, collection: AdapterCollection,
-                             value_type: ValueType):
-        current_value: float = 0.0
-        if symbol == collection.get_base_symbol():
-            current_value += self.quantities[symbol]
-        elif symbol in collection.get_symbols():
-            current_value += self.quantities[symbol] * collection.get_value(symbol, instance, ValueType.CLOSE)
-        return current_value
-
+    # def get_current_value_of(self, symbol: str, instance: datetime, collection: AdapterCollection,
+    #                          value_type: ValueType):
+    #     current_value: float = 0.0
+    #     if symbol == collection.get_base_symbol():
+    #         current_value += self.quantities[symbol]
+    #     elif symbol in collection.get_symbols():
+    #         current_value += self.quantities[symbol] * collection.get_value(symbol, instance, ValueType.CLOSE)
+    #     return current_value
+    #
     def get_tradable_quantity(self, symbol):
         held_for_trade: float = 0.0
         for order in self.open_orders:
@@ -182,8 +213,8 @@ class Portfolio:
                                                                                      self.quantities[order.symbol]))
         order_message = "Closing {} on {}.".format(str(order), instance)
         portfolio = "Portfolio {}  Value = {:12.2f}".format(str(self),
-                                                            self.get_current_value(instance, collection,
-                                                                                   ValueType.CLOSE))
+                                                            get_current_value(instance, collection, self.quantities,
+                                                                              ValueType.CLOSE))
         logging.info("{:<215} {:<1}".format(order_message, portfolio))
         self.open_orders.remove(order)
         self.closed_orders.append(order)
@@ -192,16 +223,6 @@ class Portfolio:
         filtered = data[data.index >= self.start_time] if self.start_time is not None else data
         filtered = filtered[data.index <= self.end_time] if self.end_time is not None else filtered
         return filtered
-
-    def filter_list_times(self, remaining_times):
-        if self.start_time is not None and self.end_time is not None:
-            remaining_times = [instance for instance in remaining_times if
-                               (instance >= self.start_time) and (instance <= self.end_time)]
-        elif self.start_time is not None:
-            remaining_times = [instance for instance in remaining_times if (instance >= self.start_time)]
-        elif self.end_time is not None:
-            remaining_times = [instance for instance in remaining_times if (instance <= self.end_time)]
-        return remaining_times
 
     def get_last_closed_order(self) -> Optional[Order]:
         last_closed_order: Optional[Order] = None
@@ -234,7 +255,7 @@ class Portfolio:
         completed_times = self.data.index
         # completed_times: Set[datetime] = self.value_data.index
         remaining_times = set(times) - set(completed_times)  # asymmetric set difference
-        remaining_times = self.filter_list_times(remaining_times)
+        remaining_times = filter_list_times(self.start_time, self.end_time, list(remaining_times))
         sorted_remaining = sorted(remaining_times)
         self.remaining_times = sorted_remaining
 
@@ -268,7 +289,8 @@ class Portfolio:
                 value += close_price * self.quantities[symbol]
             indexes.append(time)
             # values.append(value + self.quantities[collection.get_base_symbol()])
-            self.data.loc[time, ValueType.CLOSE.value] = value + self.quantities[collection.get_base_symbol()]
+            close_value = value + self.quantities[collection.get_base_symbol()]
+            self.data.loc[time, ValueType.CLOSE.value] = close_value
         for time_to_remove in indexes:
             self.remaining_times.remove(time_to_remove)
 
@@ -296,7 +318,7 @@ class Portfolio:
         if first_time is not None and last_time is not None:
             years = (last_time - first_time) / timedelta(weeks=52)
             roi = self.calculate_roi(first_time, last_time)
-            interest_rate = self.calculate_rate(1.0, 1.0 + roi, years, 1)  # start 100%
+            interest_rate = calculate_rate(1.0, 1.0 + roi, years, 1)  # start 100%
         return interest_rate
 
     def calculate_roi(self, start_time: Optional[datetime] = None, end_time: Optional[datetime] = None):
@@ -313,20 +335,20 @@ class Portfolio:
         #     roi = (final_value / initial_value) - 1.0
         return roi
 
-    # APR = periodicRate * periodsInYear
-    # APY = (1 + periodicRate) ** periodsInYear - 1
-    # Default is CAGR, can set to periodsPerYear to 12 to see rate at compounding per month
-    @staticmethod
-    def calculate_rate(present_value, future_value, years, periods_per_year: int = 1):
-        # FV = PV * (1 + r)**n    ==> r is rate_per_period (1.0 == 100%) and n is number_of_periods
-        #  Check: 1104.71 = 1000.00 * (1 + (0.1 / 12)) ** 12
-        # r = (FV / PV)**(1/n) - 1.0
-        #  Check: 0.1 = (1104.71 / 1000.00)**(1/12) - 1.0
-        #        rate = self.calculateRate(1000.0, 1104.71, 1.0)
-        #        assert round(rate, 5) == 0.1
-        yearly_rate = 0.0
-        number_of_periods = float(years) * float(periods_per_year)
-        if (present_value != 0.0) and (number_of_periods != 0.0):
-            rate_per_period = (abs(float(future_value) / float(present_value))) ** (1.0 / number_of_periods) - 1.0
-            yearly_rate = rate_per_period * periods_per_year  # rate_per_period = yearly_rate / periodsPerYear
-        return yearly_rate  # if future_value >= present_value else -1.0 * yearly_rate
+
+# APR = periodicRate * periodsInYear
+# APY = (1 + periodicRate) ** periodsInYear - 1
+# Default is CAGR, can set to periodsPerYear to 12 to see rate at compounding per month
+def calculate_rate(present_value, future_value, years, periods_per_year: int = 1):
+    # FV = PV * (1 + r)**n    ==> r is rate_per_period (1.0 == 100%) and n is number_of_periods
+    #  Check: 1104.71 = 1000.00 * (1 + (0.1 / 12)) ** 12
+    # r = (FV / PV)**(1/n) - 1.0
+    #  Check: 0.1 = (1104.71 / 1000.00)**(1/12) - 1.0
+    #        rate = self.calculateRate(1000.0, 1104.71, 1.0)
+    #        assert round(rate, 5) == 0.1
+    yearly_rate = 0.0
+    number_of_periods = float(years) * float(periods_per_year)
+    if (present_value != 0.0) and (number_of_periods != 0.0):
+        rate_per_period = (abs(float(future_value) / float(present_value))) ** (1.0 / number_of_periods) - 1.0
+        yearly_rate = rate_per_period * periods_per_year  # rate_per_period = yearly_rate / periodsPerYear
+    return yearly_rate  # if future_value >= present_value else -1.0 * yearly_rate

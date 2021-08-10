@@ -65,7 +65,7 @@ class Yahoo(Adapter):
         }
         found_listed = False
         try:
-            raw_response, data_file = self.get_api_response(DataReader, args, cache=True, data_type=DataType.DATAFRAME)
+            raw_response, data_file = self.get_api_response(DataReader, args, cache=True, data_type=DataType.DATA_FRAME)
             found_listed = raw_response.shape[0] >= 1
         except (pandas_datareader._utils.RemoteDataError):
             pass  # this means that the symbol was not found
@@ -87,7 +87,7 @@ class Yahoo(Adapter):
             'start': today - self.span,
             'end': today
         }
-        raw_response, data_file = self.get_api_response(DataReader, args, cache=True, data_type=DataType.DATAFRAME)
+        raw_response, data_file = self.get_api_response(DataReader, args, cache=True, data_type=DataType.DATA_FRAME)
         data = self.translate_series(raw_response)
         return data
 

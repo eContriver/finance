@@ -27,7 +27,7 @@ import time
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Type
 from urllib.parse import urlparse
 
 import numpy
@@ -95,7 +95,7 @@ class DataType(Enum):
     """
     JSON = 1
     CSV = 2
-    DATAFRAME = 3
+    DATA_FRAME = 3
 
 
 class TimeInterval(Enum):
@@ -153,7 +153,8 @@ def get_common_start_time(data: pandas.DataFrame) -> Optional[datetime]:
     :return: The common start time across all columns with valid data
     """
     valid_start_times = []
-    data = data.sort_index(ascending=True)
+    # TODO: Is this best to sort here? Can we presort? Where should that happen? What are our entry points?
+    sort_data(data)
     for column in data:
         valid_start_times.append(data[column].first_valid_index())
     return None if len(valid_start_times) == 0 else max(valid_start_times)
@@ -177,10 +178,20 @@ def get_common_end_time(data: pandas.DataFrame) -> Optional[datetime]:
     :return: The common start time across all columns with valid data
     """
     valid_end_times = []
-    data = data.sort_index(ascending=True)
+    # TODO: Is this best to sort here? Can we presort? Where should that happen? What are our entry points?
+    sort_data(data)
     for column in data:
         valid_end_times.append(data[column].last_valid_index())
     return None if len(valid_end_times) == 0 else min(valid_end_times)
+
+
+def sort_data(data) -> None:
+    """
+    Sorts the data inplace. The intent is to provide a standard for how data is expected to be sorted in adapters etc.
+    :param data: The data to be sorted
+    :return:
+    """
+    data.sort_index(ascending=True, inplace=True)
 
 
 def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[str, datetime],
@@ -203,17 +214,25 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
         #       and that elegantly fixes this as well as prevents us from hammering servers ;)
         wait_list = []
         now: datetime = datetime.now()
-        closest = now + max_timeframe
         for key, request_time in historic_requests.items():
-            reset_time = request_time + max_timeframe
-            if reset_time > now:
+            if (now - request_time) < max_timeframe:
                 wait_list.append(key)
-                if reset_time < closest:
-                    closest = reset_time
+        logging.info('-- Waiting on...\n{}'.format("\n".join([f"{item}: {historic_requests[item]}" for item in wait_list])))
+        # wait_list = []
+        # now: datetime = datetime.now()
+        # closest = now + max_timeframe
+        # for key, request_time in historic_requests.items():
+        #     reset_time = request_time + max_timeframe
+        #     if reset_time > now:
+        #         wait_list.append(key)
+        #         if reset_time < closest:
+        #             closest = reset_time
         if len(wait_list) >= max_requests:
-            sleep = closest - now
+            times = [historic_requests[item] for item in wait_list]
+            oldest_time = min(times)
+            sleep = oldest_time - now
             sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
-            logging.info('-- Waiting for: {} = closest:{} - now:{}'.format(sleep_in_s, closest, now))
+            logging.info('-- Waiting for: {} = closest:{} - now:{}'.format(sleep_in_s, oldest_time, now))
             time.sleep(sleep_in_s)
         else:
             wait = False
@@ -322,15 +341,15 @@ def get_column(data: pandas.DataFrame, value_type: ValueType) -> pandas.Series:
 #     return data, columns
 
 
-def get_key_for_api_request(function, args) -> str:
+def get_key_for_api_request(function: Any, args: Dict[Any, Any]) -> str:
     """
     Converts a function and it's arguments into a key that can be used as a unique identifier for the function call.
     :param function: The function which would be called
-    :param args: The arguments that will be added into the key
+    :param args: A key value pair (dictionary) of arguments who's values will be added into the key
     :return: The key (string) representing the function and arguments
     """
     args_string = "" if len(args) == 0 else "." + "_".join(
-        [str(arg).replace(':', '_').replace('/', '_').replace('.', '_') for arg in args.values()])
+        [str(arg).replace(':', '_').replace('/', '_').replace('.', '_') .replace(' ', '_') for arg in args.values()])
     cls: str = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
     key: str = '{}{}{}'.format(cls, function.__name__, args_string)
     return key
@@ -369,7 +388,7 @@ def write_api_response_to_file(data_file, api, args, data_type):
     if data_type == DataType.JSON:
         with open(data_file, 'w') as fd:
             json.dump(response, fd, indent=4)
-    elif data_type == DataType.DATAFRAME:
+    elif data_type == DataType.DATA_FRAME:
         response.to_pickle(data_file)
     elif data_type == DataType.CSV:
         with open(data_file, 'w') as fd:
@@ -378,7 +397,14 @@ def write_api_response_to_file(data_file, api, args, data_type):
         raise UnknownDataTypeException("Unrecognized data type: {}".format(data_type))
 
 
-def write_url_response_to_file(data_file, query, url):
+def write_url_response_to_file(data_file: str, query: Dict[Any, Any], url) -> None:
+    """
+    Write a URL request's response to a file location on disk.
+    :param data_file: The location of the file to save the URL request's response to
+    :param query: The query parameters to be passed with the URL request
+    :param url: The full URL with protocol and end-point
+    :return:
+    """
     url_query = '' if not query else '?' + '&'.join(['%s=%s' % (key, value) for (key, value) in query.items()])
     url = '{}{}'.format(url, url_query)
     logging.debug('Requesting data from: {}'.format(url))
@@ -537,7 +563,7 @@ class Adapter(metaclass=ABCMeta):
         converter = converters[0]
         return converter
 
-    def get_api_response(self, api, args, cache: bool = True, data_type: DataType = DataType.JSON):
+    def get_api_response(self, api, args, cache: bool = True, data_type: DataType = DataType.JSON) -> (Any, str):
         """
         The data file will be generated by the current query. If the lock directory doesn't exist, then a check is
         performed to see if the data file exists. If the data file does exist, then we have a cache hit and we don't
@@ -545,11 +571,11 @@ class Adapter(metaclass=ABCMeta):
         wait and try to acquire the lock. By trying to acquire the lock the current process will either be: 1. The
         process that gets the lock and will create the cache the file 2. A process that waits on the lock directory
         and after it is acquired finds out the cache file was already created
-        :param api:
-        :param args:
-        :param cache:
-        :param data_type:
-        :return:
+        :param api: The function (API) to be called
+        :param args: The arguments to be passed into the function
+        :param cache: A boolean defining if the cache should be used (True) or if the it should always be called (False)
+        :param data_type: The type of the data returned buy the function: JSON, CSV, or DATAFRAME
+        :return: (data, cache_file) Where data can be anything the function returned and cache_file is a string
         """
         data_key = get_key_for_api_request(api, args)
         add_timestamp = not cache
@@ -560,7 +586,7 @@ class Adapter(metaclass=ABCMeta):
             if not os.path.exists(cache_file):  # only download files once per data_id - includes cache_key (e.g.daily)
                 self.delay_requests(cache_file)
                 write_api_response_to_file(cache_file, api, args, data_type)
-                logging.debug('Data saved to: {}'.format(file_link_format(cache_file)))
+                logging.debug('Data saved to: {} ({})'.format(file_link_format(cache_file), datetime.now()))
             else:
                 logging.debug('Using cached file: {}'.format(file_link_format(cache_file)))
         except Exception:
@@ -590,7 +616,7 @@ class Adapter(metaclass=ABCMeta):
                 if delay:
                     self.delay_requests(cache_file)
                 write_url_response_to_file(cache_file, query, url)
-                logging.debug('Data saved to: {}'.format(file_link_format(cache_file)))
+                logging.debug('Data saved to: {} ({})'.format(file_link_format(cache_file), datetime.now()))
             else:
                 logging.debug('Using cached file: {}'.format(file_link_format(cache_file)))
         except Exception:
@@ -625,7 +651,7 @@ class Adapter(metaclass=ABCMeta):
             if data_type == DataType.JSON:
                 with open(data_file, 'r') as fd:
                     data = json.load(fd)
-            elif data_type == DataType.DATAFRAME:
+            elif data_type == DataType.DATA_FRAME:
                 data = pandas.read_pickle(data_file)
             elif data_type == DataType.CSV:
                 with open(data_file, 'r') as fd:
@@ -656,7 +682,7 @@ class Adapter(metaclass=ABCMeta):
         file_id = "{}.{}".format(data_key, datetime.now().strftime("%Y%m%d_%H%M%S_%f")) if timestamp else data_key
         if data_type == DataType.JSON:
             ext = 'json'
-        elif data_type == DataType.DATAFRAME:
+        elif data_type == DataType.DATA_FRAME:
             ext = 'pickle'
         elif data_type == DataType.CSV:
             ext = 'csv'
@@ -787,9 +813,9 @@ class Adapter(metaclass=ABCMeta):
         cache_requests = {}
         date_dir = os.path.join(self.cache_root_dir, self.cache_key_date.strftime('%Y%m%d'))
         for filename in os.listdir(date_dir):
-            file_path = os.path.join(date_dir, filename)
             if filename.startswith(".lock"):
                 continue
+            file_path = os.path.join(date_dir, filename)
             cache_requests[file_path] = datetime.fromtimestamp(os.stat(file_path).st_ctime)
             # modTimesinceEpoc = os.path.getmtime(file_path)
         return cache_requests

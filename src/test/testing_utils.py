@@ -17,26 +17,33 @@
 import inspect
 import logging
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 
 import pandas
 
-from main.application.adapter import TimeInterval, AssetType, Adapter
+from main.application.adapter import TimeInterval, AssetType, Adapter, sort_data
 from main.application.converter import Converter
 from main.application.value_type import ValueType
 from main.application.adapter_collection import AdapterCollection
 
 from main.application.argument import ArgumentType, Argument
+from main.common.locations import get_and_clean_timestamp_dir
 
 
-def configure_test_logging(log_level = logging.DEBUG):
+def configure_test_logging(log_level=logging.DEBUG):
     """
     Configure logging so messages will show, from a test just call this method.
     :param log_level: The level of messages to show.
     :return:
     """
     logging.basicConfig(level=log_level)
+
+
+def get_test_output_dir():
+    test_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('tests'))
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    self.parent_cache_dir = os.path.realpath(os.path.join(script_dir, '..', '..', '..', '.cache'))
 
 
 class DataGenerator:
@@ -133,6 +140,9 @@ class StepGenerator(DataGenerator):
 
 
 class MockDataAdapter(Adapter):
+    def delay_requests(self, data_file: str) -> None:
+        pass
+
     def __init__(self, symbol: str, asset_type: Optional[AssetType] = None):
         super().__init__(symbol, asset_type)
         self.converters: List[Converter] = [
@@ -198,8 +208,8 @@ class MockDataAdapter(Adapter):
         samples_per_period = 4
         cycles_per_plot = 2  # means 2 cycles in this 1 set of self.data (x periods)
         sine_interval = TimeInterval.HOUR6  # TimeInterval.get(interval.timedelta / samples_per_period)
-        assert sine_interval == TimeInterval.HOUR6, "The interval ({}) was set to 6HOURS it must align with samples per period: 24hours/{}".format(
-            sine_interval, samples_per_period)
+        assert sine_interval == TimeInterval.HOUR6, "The interval ({}) was set to 6HOURS it must align with samples " \
+                                                    "per period: 24hours/{}".format(sine_interval, samples_per_period)
         # frequency (rad/sample) = 2 pi (rad/cycle) * 2 (cycles/plot) / ( 1 plot * 4 (sample/period) * 10 periods)
         frequency = (2.0 * math.pi) * cycles_per_plot / (samples_per_period * periods)
         generator = None
@@ -243,9 +253,9 @@ class MockDataAdapter(Adapter):
         return generator
 
     def get_is_physical_currency(self):
-        self.data = ['USD']
+        data = ['USD']
         logging.debug('Using currency {}'.format(self.base_symbol))
-        return self.base_symbol in self.data
+        return self.base_symbol in data
 
     def get_is_digital_currency(self):
         return False  # not testing with True
@@ -253,15 +263,15 @@ class MockDataAdapter(Adapter):
     def get_is_listed(self) -> bool:
         return True  # all are now stock/etf equivalent for testing
 
-    def get_prices_response(self):
-        return self.get_series_response()
-
-    def get_digital_series_response(self):
-        return self.get_series_response()
+    # def get_prices_response(self):
+    #     return self.get_series_response()
+    #
+    # def get_digital_series_response(self):
+    #     return self.get_series_response()
 
 
 def setup_collection(symbols: List[str],
-                     value_types=[ValueType.OPEN, ValueType.CLOSE, ValueType.HIGH, ValueType.LOW]):
+                     value_types=(ValueType.OPEN, ValueType.CLOSE, ValueType.HIGH, ValueType.LOW)):
     base_symbol: str = 'USD'
     collection: AdapterCollection = AdapterCollection()
     for symbol in symbols:
@@ -281,6 +291,7 @@ def setup_symbol_adapter(symbol, interval: TimeInterval, asset_type: AssetType, 
     data_adapter.add_argument(Argument(ArgumentType.RSI_PERIOD, 12.0))
     return data_adapter
 
+
 # def setup_portfolio(quantities: dict[str, float]):
 #     portfolio: Portfolio = Portfolio('Test Portfolio')
 #     assert isinstance(portfolio, Portfolio)
@@ -299,3 +310,75 @@ class TestDigitalCurrencyAdapter(Adapter):
 
     def get_is_physical_currency(self) -> bool:
         return False
+
+
+def get_test_adapter_data(start: datetime = datetime(year=3000, month=2, day=1), increments: int = 3,
+                          value_type: ValueType = ValueType.CLOSE, data_offset: float = 1.0) -> pandas.DataFrame:
+    """
+    Produces data that is set in the collection as well as can be used to validate the output of the APIs
+    :return:
+    """
+    data = pandas.DataFrame()
+    for it in range(increments):
+        data.loc[start + get_test_time_delta(it), value_type] = (it + data_offset)
+    sort_data(data)
+    return data
+
+
+def get_test_time_delta(weeks: int = 1) -> timedelta:
+    """
+    Intended to standardize the time increments for testing so that future values can be systematically predicted.
+    :param weeks: The number of weeks to go out, the default is 1
+    :return: The timedelta in weeks
+    """
+    return timedelta(weeks=weeks)
+
+
+def create_test_adapter_with_data(symbol: str, data: pandas.DataFrame) -> Adapter:
+    """
+    Create an Adapter with the test data.
+    :return: The Adapter with test data
+    """
+    adapter: Adapter = TestDigitalCurrencyAdapter(symbol, AssetType.DIGITAL_CURRENCY)
+    adapter.request_value_types = data.columns.values.tolist()
+    adapter.data = data
+    return adapter
+
+
+def get_test_base_symbol() -> str:
+    """
+    Returns a test symbol.
+    :return: The test symbol
+    """
+    return 'USD'
+
+
+def get_test_symbol() -> str:
+    """
+    Returns a test symbol.
+    :return: The test symbol
+    """
+    return 'TEST'
+
+
+def create_test_collection_with_data(symbol: str, data: pandas.DataFrame) -> AdapterCollection:
+    """
+    Create the test AdapterCollection with an Adapter that has data.
+    :param symbol: The symbol the data will be added as
+    :param data: The data to insert into the adapter
+    :return: The test AdapterCollection
+    """
+    adapter: Adapter = create_test_adapter_with_data(symbol, data)
+    collection: AdapterCollection = AdapterCollection()
+    collection.add(adapter)
+    return collection
+
+
+def create_test_collection() -> AdapterCollection:
+    """
+    Create the test AdapterCollection with an Adapter that has data.
+    :return: The test AdapterCollection
+    """
+    data: pandas.DataFrame = get_test_adapter_data()
+    collection: AdapterCollection = create_test_collection_with_data(get_test_symbol(), data)
+    return collection

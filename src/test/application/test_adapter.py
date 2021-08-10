@@ -13,6 +13,13 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+#
+#
+import json
+import os.path
+import subprocess
 from datetime import datetime, timedelta
 from unittest import TestCase
 
@@ -21,9 +28,12 @@ import pandas
 
 from main.application.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
     DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_data_column, \
-    DataNotSortedException
+    DataNotSortedException, write_url_response_to_file, get_default_cache_key_date, find_closest_before_else_after, \
+    get_column, get_key_for_api_request
 from main.application.value_type import ValueType
-from test.utils_test import TestDigitalCurrencyAdapter
+from main.common.locations import Locations, get_and_clean_timestamp_dir
+from test.testing_utils import TestDigitalCurrencyAdapter, get_test_adapter_data, get_test_symbol, \
+    create_test_adapter_with_data, configure_test_logging
 
 
 def generate_data(data_height: int = 1000, start_time: datetime = datetime(year=3000, month=2, day=1)):
@@ -138,7 +148,8 @@ class TestAdapter(TestCase):
         common_time = datetime(year=3000, month=2, day=1)
         indexes = [common_time, common_time]
         values = [1.0, 1.0]
-        self.assertRaises(DuplicateRawIndexesException, insert_data_column, adapter.data, ValueType.OPEN, indexes, values)
+        self.assertRaises(DuplicateRawIndexesException, insert_data_column, adapter.data, ValueType.OPEN, indexes,
+                          values)
 
     def test_insert_data_column(self):
         """
@@ -200,38 +211,6 @@ class TestAdapter(TestCase):
                          f"Did not get the correct common end time, expected {common_time}, "
                          f"received {get_common_end_time(adapter.data)}")
 
-    def test_find_closest_instance_after_mismatch(self):
-        """
-        Verify that the closest instance after a mismatched time is returned
-        :return:
-        """
-        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
-        adapter.data = pandas.DataFrame()
-        common_time = datetime(year=3000, month=2, day=1)
-        mismatch_time = common_time - timedelta(weeks=1)
-        adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
-        adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
-        adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
-        self.assertEqual(find_closest_instance_after(adapter.data, mismatch_time), common_time,
-                         f"Did not get the correct common end time, expected {common_time}, "
-                         f"received {get_common_end_time(adapter.data)}")
-
-    def test_find_closest_instance_after_mismatch(self):
-        """
-        Verify that the closest instance after a mismatched time is returned
-        :return:
-        """
-        adapter: Adapter = TestDigitalCurrencyAdapter('TEST', AssetType.DIGITAL_CURRENCY)
-        adapter.data = pandas.DataFrame()
-        common_time = datetime(year=3000, month=2, day=1)
-        mismatch_time = common_time - timedelta(weeks=1)
-        adapter.data.loc[common_time - timedelta(weeks=2), ValueType.CLOSE] = 1.0
-        adapter.data.loc[common_time, ValueType.CLOSE] = 1.0
-        adapter.data.loc[common_time + timedelta(weeks=2), ValueType.CLOSE] = 1.0
-        self.assertEqual(find_closest_instance_after(adapter.data, mismatch_time), common_time,
-                         f"Did not get the correct common end time, expected {common_time}, "
-                         f"received {get_common_end_time(adapter.data)}")
-
     def test_find_closest_instance_after_performance(self):
         """
         Verify that the closest instance after a mismatched time is returned
@@ -241,6 +220,19 @@ class TestAdapter(TestCase):
         adapter.data, mid_time = generate_data()
         average_runtime = get_average_runtime(find_closest_instance_after, (adapter.data, mid_time))
         self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=50))
+
+    def test_find_closest_instance_before_raises(self):
+        """
+        Verify that the closest instance before throws an exception for unsorted data
+        :return:
+        """
+        data: pandas.DataFrame = pandas.DataFrame()
+        common_time = datetime(year=3000, month=2, day=1)
+        indexes = [common_time, common_time - timedelta(weeks=1)]
+        values = [1.0, 1.0]
+        insert_data_column(data, ValueType.CLOSE, indexes, values)
+        data.sort_index(ascending=False, inplace=True)
+        self.assertRaises(DataNotSortedException, find_closest_instance_before, data, common_time)
 
     def test_find_closest_instance_before_mismatch(self):
         """
@@ -271,7 +263,7 @@ class TestAdapter(TestCase):
         self.assert_performant_runtime(average_runtime, expected_runtime=timedelta(microseconds=40))
 
     def assert_performant_runtime(self, average_runtime: timedelta, expected_runtime: timedelta,
-                                  allowed_multiple: int = 2):
+                                  allowed_multiple: int = 3):
         allowed_runtime = allowed_multiple * expected_runtime
         self.assertLess(average_runtime, allowed_runtime,
                         f"The runtime was {average_runtime} and was more than {allowed_multiple} times the expected "
@@ -323,3 +315,58 @@ class TestAdapter(TestCase):
         self.assertEqual(adapter.get_value(common_time + timedelta(weeks=2), ValueType.CLOSE), 3.0)
         adapter.data.loc[common_time - timedelta(weeks=4), ValueType.CLOSE] = 0.5
         self.assertEqual(adapter.get_value(common_time - timedelta(weeks=4), ValueType.CLOSE), 0.5)
+
+    def test_get_default_cache_key_date(self):
+        """
+        Tests that the cache key date returned is a datetime
+        :return:
+        """
+        cache_key_date: datetime = get_default_cache_key_date()
+        self.assertIsInstance(cache_key_date, datetime)
+
+    def test_find_closest_before_else_after(self):
+        """
+        Checks that the find closest before else after returns the same if it exists, the before if slightly before, and
+        an after value if there is no matching value before the given time.
+        :return:
+        """
+        data: pandas.DataFrame = get_test_adapter_data()
+        middle_date = data.index[1]
+        self.assertEqual(find_closest_before_else_after(data, middle_date), middle_date)
+        start_date = data.index[0]
+        just_before_middle = middle_date - timedelta(days=1)
+        self.assertEqual(find_closest_before_else_after(data, just_before_middle), start_date)
+        just_before_start = start_date - timedelta(days=1)
+        self.assertEqual(find_closest_before_else_after(data, just_before_start), start_date)
+
+    def test_get_column(self):
+        """
+        Checks that the column (series) from a data frame matches with get_column function returns.
+        :return:
+        """
+        data: pandas.DataFrame = get_test_adapter_data()
+        column: pandas.Series = get_column(data, ValueType.CLOSE)
+        expected_column: pandas.Series = data[ValueType.CLOSE]
+        self.assertTrue(column.equals(expected_column))
+
+    def test_get_key_for_api_request(self):
+        args = {'key1': 'arg1', 'key2': datetime(year=3000, month=1, day=1), 'arg3': 3.0}
+        key: str = get_key_for_api_request(self.test_get_key_for_api_request, args)
+        self.assertEqual(key, 'TestAdapter.test_get_key_for_api_request.arg1_3000-01-01_00_00_00_3_0')
+
+    def test_write_url_response_to_file(self):
+        configure_test_logging()
+        locations = Locations()
+        with Popen(["ifconfig"], stdout=PIPE) as proc:
+            strategy_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('tests'))
+            reposonse_url = os.path.join(strategy_date_dir, f'{self.test_write_url_response_to_file.__name__}')
+            input_file = os.path.join(strategy_date_dir, f'{self.test_write_url_response_to_file.__name__}.in.json')
+            test_data = {'key1': 'value1', 'key2': 'value2'}
+            # with open(input_file, "w") as outfile:
+            #     json.dump(test_data, outfile)
+            request_url = f"file://{input_file}"
+            args = {'key1': 'arg1'}
+            # args = {'key1': 'arg1', 'key2': datetime(year=3000, month=1, day=1), 'arg3': 3.0}
+            write_url_response_to_file(reposonse_url, args, request_url)
+        self.fail()
+        pass

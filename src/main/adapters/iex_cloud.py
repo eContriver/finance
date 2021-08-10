@@ -25,7 +25,7 @@ from typing import Optional, List
 
 import pandas
 
-from main.application.adapter import TimeInterval, AssetType, Adapter
+from main.application.adapter import TimeInterval, AssetType, Adapter, insert_data_column
 from main.application.value_type import ValueType
 from main.application.converter import Converter
 from main.application.argument import ArgumentType
@@ -197,7 +197,7 @@ class IexCloud(Adapter):
                 if value is not None:
                     indexes.append(datetime.strptime(entry['date'], data_date_format))
                     values.append(value)
-            insert_data_column(adapter.data, converter.value_type, indexes, values)
+            insert_data_column(self.data, converter.value_type, indexes, values)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)

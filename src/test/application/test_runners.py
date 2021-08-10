@@ -1,5 +1,3 @@
-#!/usr/local/bin/python
-
 #  Copyright 2021 eContriver LLC
 #  This file is part of Finance from eContriver.
 #
@@ -15,10 +13,17 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+from datetime import datetime
+from unittest import TestCase
 
-from main.application.runner import launch_runner
-from main.runners.alert_runner import AlertRunner
+from main.application.runner import get_current_copyright_year
 
-if __name__ == "__main__":
-    return_code = launch_runner(program='alert', config_filename='alert.yaml', runner_class=AlertRunner)
-    exit(return_code)
+
+class TestRunners(TestCase):
+    def test_get_current_copyright_year(self):
+        now = datetime.now()
+        copyright_year = get_current_copyright_year()
+        self.assertEqual(now.year, copyright_year,
+                         f"Current year is '{now.year}' and copyright year is '{copyright_year}'. When tests run, it is"
+                         f" assumed that code will be changing and as such copyright notices should also be updated, "
+                         f"but they currently are out-of-date.")

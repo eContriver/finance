@@ -21,7 +21,7 @@ from main.strategies.bounded_rsi import BoundedRsi
 from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 from test.runner_test import TestRunner, is_test
-from test.utils_test import setup_collection, MockDataAdapter
+from test.testing_utils import setup_collection, MockDataAdapter
 
 
 @is_test(should_run=TestRunner.get_instance().run_gui_tests)

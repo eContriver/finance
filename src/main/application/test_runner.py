@@ -13,15 +13,18 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import json
-from typing import List
+
+from unittest import TestCase
+
+from main.application.adapter import AssetType
+from main.application.runner import get_asset_type_overrides
 
 
-class Pane:
-    pane: List[str]
-
-    def __init__(self):
-        self.pane = []
-
-    def to_json(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
+class Test(TestCase):
+    def test_get_asset_type_overrides(self):
+        """
+        Test that the get asset overrides method will correctly convert asset type strings to their enumeration
+        :return:
+        """
+        for asset_type in AssetType:
+            self.assertEqual(get_asset_type_overrides({'TEST': asset_type.name}), {'TEST': asset_type})

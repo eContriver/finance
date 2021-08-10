@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
-
+from main.application.adapter import find_closest_before_else_after, Adapter
+from main.application.adapter_collection import filter_adapters
 from main.application.value_type import ValueType
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
@@ -33,15 +33,15 @@ class BoundedRsi(SingleSymbolStrategy):
         self.lower = lower
         self.period = period
         self.build_price_collection()
-        self.build_rsi_collection(symbol, self.period)
+        self.build_rsi_collection(self.period)
 
     def next_step(self, current_time):
         last_time = self.portfolio.get_last_completed_time()
         if last_time is not None:
             cash = self.portfolio.quantities[self.collection.get_base_symbol()]
             quantity: float = self.portfolio.quantities[self.symbol]
-            closest_time = self.collection.find_closest_before_else_after(
-                adapter.data, last_time)
+            adapter: Adapter = filter_adapters(self.collection.adapters, self.symbol, ValueType.RSI)
+            closest_time = find_closest_before_else_after(adapter.data, last_time)
             rsi = self.collection.get_value(self.symbol, closest_time, ValueType.RSI)
             if (quantity > 0.0) and (rsi >= self.upper):
                 order = MarketOrder(self.symbol, OrderSide.SELL, quantity, current_time)

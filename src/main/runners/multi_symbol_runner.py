@@ -106,6 +106,14 @@ class MultiSymbolRunner(Runner):
             self.start_time = datetime.combine(config['start_time'], datetime.min.time())
         if 'end_time' in config:
             self.end_time = datetime.combine(config['end_time'], datetime.min.time())
+        self.check_member_variables(config_path)
+
+    def check_member_variables(self, config_path: str):
+        # validate_type('symbol', self.symbol, dict, config_path)
+        if not self.symbols:
+            raise NoSymbolsSpecifiedException(f"Please specify at least one symbol under 'symbol' in: "
+                                              f"{config_path}")
+        pass
 
     def get_run_name(self):
         return f"{'_'.join(sorted(self.symbols))}_{self.price_interval.value}_{self.adapter_class.__name__}"
@@ -120,7 +128,7 @@ class MultiSymbolRunner(Runner):
         template.interval = self.price_interval
         template.add_adapter_class(self.adapter_class)
         template.asset_type_overrides = self.asset_type_overrides
-        strategy_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('strategy'))
+        strategy_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('strategies'))
 
         # Can always run direct if things get messy...
         # MultiRelativeSmaSwapUp(self.symbols, copy.deepcopy(template), period=20, delta=1.05, look_back=10).run()

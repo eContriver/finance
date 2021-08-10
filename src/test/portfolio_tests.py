@@ -22,7 +22,7 @@ from main.portfolio.order import LimitOrder, OrderSide
 
 from main.portfolio.portfolio import Portfolio
 from test.runner_test import is_test
-from test.utils_test import setup_collection
+from test.testing_utils import setup_collection
 
 
 @is_test

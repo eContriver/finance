@@ -22,6 +22,7 @@ import logging
 import os
 import unittest
 
+from main.application.runner import add_common_arguments
 from main.common.launchers import Launcher
 from main.common.locations import Locations
 from test.runner_test import TestRunner
@@ -41,7 +42,7 @@ del module
 
 def parse_args(locations: Locations):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    Launcher.add_common_arguments(parser, locations.parent_cache_dir, locations.parent_output_dir)
+    add_common_arguments(locations.parent_cache_dir, locations.parent_output_dir)
     return parser.parse_args()
 
 

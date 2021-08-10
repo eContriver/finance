@@ -14,18 +14,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-from datetime import datetime
 
-from main.common.launchers import Launcher
-from test.runner_test import is_test
+from quart import Quart, render_template, websocket
+
+app = Quart(__name__)
 
 
-@is_test
-# @only_test
-def check_copyright_year():
-    now = datetime.now()
-    copyright_year = get_current_copyright_year()
-    assert now.year == copyright_year, f"Current year is '{now.year}' and copyright year is '{copyright_year}'. When " \
-                                       f"tests run, it is assumed that code will be changing and as such copyright " \
-                                       f"notices should also be updated, but they currently are out-of-date."
-    return True
+@app.route("/")
+async def hello():
+    return await render_template("index.html")
+
+
+@app.route("/api")
+async def json():
+    return {"hello": "world"}
+
+
+@app.websocket("/ws")
+async def ws():
+    while True:
+        await websocket.send("hello")
+        await websocket.send_json({"hello": "world"})
+
+
+if __name__ == "__main__":
+    app.run()
