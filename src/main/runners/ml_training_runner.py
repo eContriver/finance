@@ -20,67 +20,29 @@ from datetime import datetime, timedelta
 from typing import Dict
 
 import numpy as np
+import pandas
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import LSTM, Dense
 
 from main.adapters.alpha_vantage import AlphaVantage
 from main.application.adapter import TimeInterval, Adapter
-from main.application.value_type import ValueType
-from main.common.time_zones import TimeZones
 from main.application.adapter_collection import AdapterCollection
-from main.application.runner import Runner
+from main.application.argument import Argument, ArgumentType
+from main.application.value_type import ValueType
+from main.common.locations import Locations
+from main.common.time_zones import TimeZones
+from main.runners.ml_runner import MLRunner
 
 
-class MLTrainingRunner(Runner):
+class MLTrainingRunner(MLRunner):
     def __init__(self):
         super().__init__()
-        self.symbols = []
 
-    def start(self):
+    def start(self, locations: Locations):
         logging.info("#### Starting ML training runner...")
 
         success = True
-        self.symbols = [
-            # Technology
-            'AAPL',  # Consumer Electronics
-            # 'MSFT',  # Software / Infrastructure
-            # 'NVDA', 'INTC', 'AVGO',
-            # 'AMD', 'XLNX', 'TSM',  # Semiconductors
-            # # Communication Services
-            # 'GOOG', 'FB',  # Internet Information
-            # 'VZ', 'T',  # Telecommunications
-            # 'NFLX', 'DIS',  # Entertainment
-            # # Commercial
-            # 'AMZN',  # Internet Retail
-            # 'TSLA',  # Automotive Manufacturing
-            # 'HD',  # Home Improvement
-            # # Financial
-            # 'V', 'MA', 'AXP',  # Credit Services
-            # 'JPM', 'BAC', 'C', 'WFC',  # Banks - Diversified
-            # 'BRK-B', 'AIG',  # Insurance - Diversified
-            # # Foods
-            # 'TTCF',  # Buy at 18
-            # 'BYND',  # 'IMPM',  # Buy impossible at $120
-            # # Bonds
-            # 'TLT',
-            # # Real Estate
-            # 'EXPI',
-            # # Farm / Commodities
-            # 'DE', 'UHAL',
-            # # Dividend + Reinvest
-            # "FSKR",
-            # # MJ
-            # # "GGTTF",
-            # # Payments
-            # 'SQ', 'PYPL', 'SNOW', 'NVTA', 'FROG',
-            # # SPACs
-            # 'IPOE', 'CCIV',  # 'CCIX',
-            # # ETFs
-            # 'ARKW', 'ARKQ', 'ARKF', 'ARKK', 'ARKG', 'PRNT', 'IZRL',  # ARK
-            # # Digital Currencies
-            # # 'BTC', 'ETH', 'LTC', 'DOGE',
-        ]
 
         # Split the data into x_train and y_train data sets
         x_train = []
@@ -101,7 +63,9 @@ class MLTrainingRunner(Runner):
             adapter: Adapter = data_adapter_class(symbol)
             adapter.base_symbol = 'USD'
             adapter.interval = TimeInterval.DAY
-            collection.add([ValueType.CLOSE], adapter)
+            adapter.request_value_types = [ValueType.CLOSE]
+            adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))
+            collection.add(adapter)
         # These can run in parallel as they do for Strategy.run() which is called in ParallelStrategyRunner when
         # Runners are called, if we can build each model separately and then later join them we could get the data
         # in parallel here as well... for now we just get it all sequentially using this:
@@ -155,12 +119,12 @@ class MLTrainingRunner(Runner):
             # TODO: Use OCLH as the 4 inputs
             # TODO: Use low and high?
 
-            data: Dict[datetime, float] = collection.get_column(symbol, ValueType.ADJUSTED_CLOSE)
+            data: pandas.Series = collection.get_column(symbol, ValueType.CLOSE)
             logging.info("Dataframe: {}".format(list(data.items())[:5]))
             # data = dataframe.filter(['Adj Close'])
 
             # Convert dataframe to numpy array
-            dataset = np.array(list(data.values())).reshape(-1, 1)
+            dataset = data.values.reshape(-1, 1)
             logging.info("Closing Values: {}...".format(list(dataset)[:5]))
 
             # Get the number of rows to train the model on

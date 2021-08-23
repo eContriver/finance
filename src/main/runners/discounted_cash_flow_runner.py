@@ -21,100 +21,21 @@ from typing import Dict, Set, Optional
 import numpy
 import pandas
 from numpy import median
-from sklearn import linear_model
 
-from main.application.adapter import TimeInterval, AssetType, Adapter, get_common_start_time, get_common_end_time
+from main.application.adapter import TimeInterval, AssetType, Adapter
 from main.application.adapter_collection import AdapterCollection, filter_adapters
 from main.application.argument import Argument, ArgumentType
-from main.application.value_type import ValueType
-from main.common.report import Report
-from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
-from main.executors.parallel_executor import ParallelExecutor
 from main.application.runner import Runner, NoSymbolsSpecifiedException, validate_type, get_adapter_class, \
     get_asset_type_overrides, get_copyright_notice
+from main.application.value_type import ValueType
+from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
+from main.common.report import Report
+from main.executors.parallel_executor import ParallelExecutor
+from main.runners.intrinsic_value_runner import IntrinsicValueRunner
 from main.visual.visualizer import Visualizer
 
 
-def to_dollars(value: float) -> str:
-    abs_value = abs(value)
-    if numpy.isnan(abs_value):
-        value_as_str = "{}".format(value)
-    elif abs_value > 10000000000:
-        value_as_str = "${:.1f}b".format(value / 1000000000)
-    elif abs_value > 10000000:
-        value_as_str = "${:.1f}m".format(value / 1000000)
-    elif abs_value > 10000:
-        value_as_str = "${:.1f}k".format(value / 1000)
-    else:
-        value_as_str = "${:.2f}".format(value)
-    return value_as_str
-
-
-def to_abbrev(value: float) -> str:
-    abs_value = abs(value)
-    if numpy.isnan(abs_value):
-        value_as_str = "{}".format(value)
-    elif abs_value > 10000000000:
-        value_as_str = "{:.1f}b".format(value / 1000000000)
-    elif abs_value > 10000000:
-        value_as_str = "{:.1f}m".format(value / 1000000)
-    elif abs_value > 10000:
-        value_as_str = "{:.1f}k".format(value / 1000)
-    else:
-        value_as_str = "{:.2f}".format(value)
-    return value_as_str
-
-
-def report_common_dividends(common_dividends):
-    report = "  Common Dividends - "
-    for date, common_dividend in common_dividends.items():
-        report += "{}: {}  ".format(date.strftime("%Y-%m-%d"), to_dollars(common_dividend))
-    return report
-
-
-def calculate_common_dividend(calculated_earnings, payout_ratio):
-    common_dividends = {}
-    for date, earnings in calculated_earnings.items():
-        common_dividends[date] = earnings * payout_ratio
-    return common_dividends
-
-
-def report_irr(future_earnings, common_dividends, at_price, avg_price, max_price, median_price, min_price):
-    cash_flows = [at_price * -1]
-    for date, earnings in future_earnings.items():
-        cash_flows += [common_dividends[date]]
-    max_irr = round(numpy.irr(cash_flows + [max_price]) * 100, 4)
-    irr_report = "Max: {}%".format(max_irr)
-    avg_irr = round(numpy.irr(cash_flows + [avg_price]) * 100, 4)
-    irr_report += "  Average: {}%".format(avg_irr)
-    median_irr = round(numpy.irr(cash_flows + [median_price]) * 100, 4)
-    irr_report += "  Median: {}%".format(median_irr)
-    min_irr = round(numpy.irr(cash_flows + [min_price]) * 100, 4)
-    irr_report += "  Min: {}%".format(min_irr)
-    return irr_report
-
-
-def predict_future_value_linear(symbol: str, future_time: datetime, collection: AdapterCollection,
-                                value_type: ValueType):
-    adapter: Adapter = filter_adapters(collection.adapters, symbol, value_type)
-    start_time = get_common_start_time(adapter.data)
-    end_time = get_common_end_time(adapter.data)
-    column: pandas.Series = adapter.get_column_between(start_time, end_time, value_type)
-    column.dropna(inplace=True)
-    column = column.sort_index(ascending=True)
-    y = column.values
-    days_from_start = (column.index - start_time).days.to_numpy()
-    x = days_from_start.reshape(-1, 1)
-    model = linear_model.LinearRegression().fit(x, y)
-    future_days = (future_time - start_time).days
-    predictions = model.predict([[future_days]])
-    return predictions[0]
-
-
-class IntrinsicValueRunner(Runner):
-    HIGH_PE: str = 'High P/E'
-    LOW_PE: str = 'Low P/E'
-
+class DiscountedCashFlowRunner(Runner):
     symbol: Optional[str]
     adapter_class: Optional[type]
     base_symbol: str
@@ -134,7 +55,7 @@ class IntrinsicValueRunner(Runner):
         self.asset_type_overrides = {}
 
     def start(self, locations: Locations):
-        logging.info("#### Starting intrinsic value runner...")
+        logging.info("#### Starting discounted cash flow runner...")
         success = True
         # Multiple collections == Multiple plots : Each collection is in it's own dict entry under the query type
         # collections = self.multiple_collections(symbols, overrides, base_symbol, adapter_class, interval, today)
@@ -200,16 +121,14 @@ class IntrinsicValueRunner(Runner):
     def create_fundamentals_adapter(self, symbol):
         adapter = self.new_adapter(symbol)
         adapter.request_value_types = [
-            ValueType.REVENUE,
-            ValueType.CASH_FLOW,
-            ValueType.EPS,
-            ValueType.DIVIDENDS,
             ValueType.NET_INCOME,
-            ValueType.ASSETS,
-            ValueType.LIABILITIES,
-            ValueType.SHARES,
-            ValueType.DILUTED_SHARES,
-            ValueType.EQUITY,
+            ValueType.DEPRECIATION,
+            ValueType.RECEIVABLES,
+            ValueType.INVENTORY,
+            ValueType.PAYABLES,
+            ValueType.CASH_FLOW,  # Operating Cash Flow
+            ValueType.CAPITAL_EXPENDITURES,
+            ValueType.FREE_CASH_FLOW,
         ]
         adapter.add_argument(Argument(ArgumentType.INTERVAL, self.fundamentals_interval))
         return adapter

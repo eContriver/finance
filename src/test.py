@@ -23,7 +23,6 @@ import os
 import unittest
 
 from main.application.runner import add_common_arguments
-from main.common.launchers import Launcher
 from main.common.locations import Locations
 from test.runner_test import TestRunner
 

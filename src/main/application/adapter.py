@@ -230,9 +230,9 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
         if len(wait_list) >= max_requests:
             times = [historic_requests[item] for item in wait_list]
             oldest_time = min(times)
-            sleep = oldest_time - now
+            sleep = now - oldest_time
             sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
-            logging.info('-- Waiting for: {} = closest:{} - now:{}'.format(sleep_in_s, oldest_time, now))
+            logging.info('-- Waiting for: {}s = closest:{} - now:{}'.format(sleep_in_s, oldest_time, now))
             time.sleep(sleep_in_s)
         else:
             wait = False

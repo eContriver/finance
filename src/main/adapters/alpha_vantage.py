@@ -26,6 +26,7 @@ from main.application.adapter import DataType, TimeInterval, AssetType, Adapter,
 from main.application.value_type import ValueType
 from main.application.converter import Converter
 from main.application.argument import ArgumentType
+from main.common.locations import file_link_format
 
 
 def get_adjusted_ratio(time_data: Dict[str, str]) -> float:
@@ -87,6 +88,13 @@ class AlphaVantage(Adapter):
             # GROSS_PROFIT = auto()
             # TOTAL_REVENUE = auto()
             # OPERATING_CASH_FLOW = auto()
+            Converter(ValueType.DEPRECIATION, self.get_cash_flow_response, ['depreciationDepletionAndAmortization']),
+            Converter(ValueType.RECEIVABLES, self.get_cash_flow_response, ['changeInReceivables']),
+            Converter(ValueType.INVENTORY, self.get_cash_flow_response, ['changeInInventory']),
+            Converter(ValueType.PAYABLES, self.get_cash_flow_response, ['operatingCashflow']),
+            Converter(ValueType.CAPITAL_EXPENDITURES, self.get_cash_flow_response, ['capitalExpenditures']),
+            # Converter(ValueType.FREE_CASH_FLOW, self.get_cash_flow_response, ['operatingCashflow']),
+
             Converter(ValueType.CASH_FLOW, self.get_cash_flow_response, ['operatingCashflow']),
             Converter(ValueType.DIVIDENDS, self.get_cash_flow_response, ['dividendPayout']),
             Converter(ValueType.NET_INCOME, self.get_cash_flow_response, ['netIncome']),
@@ -426,14 +434,16 @@ class AlphaVantage(Adapter):
     def validate_json_response(data_file, raw_response):
         if "Error Message" in raw_response:
             raise RuntimeError(
-                "Error message in response - {}\n  See: {}".format(raw_response["Error Message"], data_file))
+                "Error message in response - {}\n  See: {}".format(raw_response["Error Message"],
+                                                                   file_link_format(data_file)))
         if "Note" in raw_response:
-            raise RuntimeError("Note message in response - {}\n  See: {}".format(raw_response["Note"], data_file))
+            raise RuntimeError("Note message in response - {}\n  See: {}".format(raw_response["Note"],
+                                                                                 file_link_format(data_file)))
         if not "Meta Data" in raw_response:
             raise RuntimeError(
                 "Failed to find the meta data in response: {} (perhaps the currency doesn't support "
                 "this)".format(
-                    data_file))
+                    file_link_format(data_file)))
 
     def get_indicator_key(self):
         self.calculate_asset_type()

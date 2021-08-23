@@ -46,6 +46,7 @@ services:
       - root_home:/root
     ports:
       - 4000:4000
+      - 5000:5000
     working_dir:
       /app
     command:

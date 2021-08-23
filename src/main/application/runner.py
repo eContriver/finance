@@ -58,7 +58,14 @@ class Runner(metaclass=ABCMeta):
     def __init__(self):
         pass
 
-    def run(self, locations: Locations, args) -> bool:
+    def run(self, locations: Locations, args: Namespace) -> bool:
+        """
+        A standard entry point to run this class. The start method is called by this method and start must be
+        implemented by the subclasses.
+        :param locations: The Locations that were configured from command-line/configuration files
+        :param args: The parsed args
+        :return: A bool that represents
+        """
         cache_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('runs'))
         configure_logging(cache_dir, args.debug)
         print_copyright_notice()
@@ -290,6 +297,13 @@ def add_common_arguments(parser: ArgumentParser, default_cache_dir: str, default
 
 
 def process_shared_arguments(locations: Locations, program: str, config_filename: str) -> Namespace:
+    """
+    PRocess the shared arguments by parsing them and setting the corresponding locations
+    :param locations: The Locations object design to house the configurable locations for cache, logs, output, etc.
+    :param program: The name of the program (should be snake case string - lower case)
+    :param config_filename: The config filename (*.yaml)
+    :return: The argparse Namespace (the parsed args)
+    """
     input_config_path = os.path.join(locations.get_parent_user_dir(), config_filename)
     args = parse_args(program, locations.parent_cache_dir, locations.parent_output_dir, input_config_path)
     locations.parent_cache_dir = args.cache_dir
@@ -298,7 +312,15 @@ def process_shared_arguments(locations: Locations, program: str, config_filename
     return args
 
 
-def parse_args(program: str, default_cache_dir: str, default_output_dir: str, default_config_file: str):
+def parse_args(program: str, default_cache_dir: str, default_output_dir: str, default_config_file: str) -> Namespace:
+    """
+    Parse the arguments.
+    :param program: The name of the program (should be snake case string - lower case)
+    :param default_cache_dir: The default cache directory
+    :param default_output_dir: The default output directory
+    :param default_config_file: The default configuration file
+    :return: The argparse Namespace (the parsed args)
+    """
     parser = argparse.ArgumentParser(prog=program, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     add_common_arguments(parser, default_cache_dir, default_output_dir)
     add_config_arguments(parser, default_config_file)
@@ -306,8 +328,15 @@ def parse_args(program: str, default_cache_dir: str, default_output_dir: str, de
 
 
 def launch_runner(program: str, config_filename: str, runner_class: type) -> int:
+    """
+    Launch the provided runner.
+    :param program: The name of the program (should be snake case string - lower case)
+    :param config_filename: The config filename (*.yaml)
+    :param runner_class: The runner class to launch
+    :return: The return code, zero means success
+    """
     locations = Locations()
-    args = process_shared_arguments(locations, program, config_filename)
+    args: Namespace = process_shared_arguments(locations, program, config_filename)
     runner = runner_class()
     return_code = 0 if runner.run(locations, args) else 1
     return return_code

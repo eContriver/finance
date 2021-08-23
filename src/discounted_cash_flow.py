@@ -17,9 +17,9 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 from main.application.runner import launch_runner
-from main.runners.ml_prediction_runner import MLPredictionRunner
-
+from main.runners.discounted_cash_flow_runner import DiscountedCashFlowRunner
 
 if __name__ == "__main__":
-    return_code = launch_runner(program='ml_predictor', config_filename='ml.yaml', runner_class=MLPredictionRunner)
+    return_code = launch_runner(program='discounted_cash_flow', config_filename='discounted_cash_flow.yaml',
+                                runner_class=DiscountedCashFlowRunner)
     exit(return_code)

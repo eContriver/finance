@@ -21,5 +21,5 @@ from main.runners.ml_training_runner import MLTrainingRunner
 
 
 if __name__ == "__main__":
-    return_code = launch_runner(program='ml_trainer', config_filename='ml_trainer.yaml', runner_class=MLTrainingRunner)
+    return_code = launch_runner(program='ml_trainer', config_filename='ml.yaml', runner_class=MLTrainingRunner)
     exit(return_code)

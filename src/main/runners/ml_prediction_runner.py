@@ -20,20 +20,27 @@ from datetime import datetime, timedelta
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas
 import pandas_datareader as web
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow import keras
 
+from main.application.adapter import Adapter, TimeInterval
+from main.application.adapter_collection import AdapterCollection
+from main.application.argument import ArgumentType, Argument
+from main.application.value_type import ValueType
+from main.common.locations import Locations
 from main.common.time_zones import TimeZones
 from main.application.runner import Runner
+from main.runners.ml_runner import MLRunner
 
 
-class MLPredictionRunner(Runner):
+class MLPredictionRunner(MLRunner):
+
     def __init__(self):
         super().__init__()
-        self.symbols = []
 
-    def start(self):
+    def start(self, locations: Locations):
         logging.info("#### Starting ML prediction runner...")
 
         success = True
@@ -61,16 +68,26 @@ class MLPredictionRunner(Runner):
         years = 20
         start = today - timedelta(weeks=years*52)
         # start = datetime(year=2012, month=1, day=1)
-        symbol_count = 47
+        symbol_count = len(self.symbols)
 
         yesterday = today - timedelta(days=1)
 
         # Create new dataframe with only close column
-        df = web.DataReader(symbol, data_source='yahoo', start=start.strftime('%Y-%m-%d'), end=yesterday.strftime('%Y-%m-%d'))
-        data = df.filter(['Adj Close'])
+        collection: AdapterCollection = AdapterCollection()
+        symbol = 'AAPL'
+        adapter: Adapter = self.adapter_class(symbol)
+        adapter.base_symbol = 'USD'
+        adapter.interval = TimeInterval.DAY
+        adapter.request_value_types = [ValueType.CLOSE]
+        adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))
+        collection.add(adapter)
+        collection.retrieve_all_data()
+        data: pandas.Series = collection.get_column(symbol, ValueType.CLOSE)
+        # df = web.DataReader(symbol, data_source='yahoo', start=start.strftime('%Y-%m-%d'), end=yesterday.strftime('%Y-%m-%d'))
+        # data = df.filter(['Adj Close'])
 
         # Convert dataframe to numpy array
-        dataset = data.values
+        dataset = data.values.reshape(-1, 1)
         logging.info("Closing Values: {}...".format(dataset[:5]))
 
         scaler = MinMaxScaler(feature_range=(0, 1))
@@ -134,15 +151,19 @@ class MLPredictionRunner(Runner):
 
         # Plot the data
         train = data[:sample_size]
-        valid = data[sample_size:-1 * predict_size + 1]
+        # valid = {}
+        # valid['Close'] = data[sample_size:-1 * predict_size + 1]
+        valid = data.copy()
         valid['Predictions'] = predictions[:, 0]  # if we are predicting 7 out, we only use the first one?
+        data.plot()
+        predictions.plot()
         # Visualize the data
         plt.figure(figsize=(16, 8))
         plt.title('Model: {}'.format(symbol))
         plt.xlabel('Date', fontsize=18)
         plt.ylabel('Close Price USD ($)', fontsize=18)
-        plt.plot(train['Adj Close'])
-        plt.plot(valid[['Adj Close', 'Predictions']])
+        plt.plot(train)
+        plt.plot(valid)
         plt.legend(['Train', 'Validation', 'Predictions'], loc='lower right')
         plt.show()
 
