@@ -21,8 +21,8 @@ import pandas
 from main.application.adapter import Adapter, insert_data_column
 from main.application.adapter_collection import filter_adapters, AdapterCollection
 from main.application.value_type import ValueType
-from main.runners.intrinsic_value_runner import predict_future_value_linear
-from test.testing_utils import create_test_collection, get_test_adapter_data, get_test_symbol, \
+from main.runners.intrinsic_value_runner import predict_value_type_linear, predict_value_linear
+from test.testing_utils import get_test_adapter_data, get_test_symbol, \
     create_test_collection_with_data, get_test_time_delta
 
 
@@ -39,7 +39,7 @@ class TestIntrinsicValueRunner(TestCase):
         symbol: str = get_test_symbol()
         collection: AdapterCollection = create_test_collection_with_data(symbol, data)
         future_time: datetime = data.index[-1] + get_test_time_delta()
-        next_value = predict_future_value_linear(symbol, future_time, collection, ValueType.CLOSE)
+        next_value = predict_value_type_linear(collection, symbol, ValueType.CLOSE, future_time)
         # 1 -> 2 -> 3 so predict -> 4
         self.assertAlmostEqual(next_value, 4.0)
 
@@ -60,6 +60,13 @@ class TestIntrinsicValueRunner(TestCase):
         end_time: datetime = data.index[-1]
         insert_data_column(adapter.data, ValueType.OPEN, [start_time, end_time], [1.0, 2.0])
         future_time: datetime = end_time + get_test_time_delta(2)
-        next_value = predict_future_value_linear('TEST', future_time, collection, ValueType.OPEN)
+        next_value = predict_value_type_linear(collection, 'TEST', ValueType.OPEN, future_time)
         self.assertAlmostEqual(next_value, 3.0)  # D5 equivalent
 
+    def test_predict_value_linear_is_accurate(self):
+        data: pandas.DataFrame = get_test_adapter_data()
+        column: pandas.Series = data[ValueType.CLOSE]
+        future_time = (column.index.max() - column.index.min()) + column.index.max()
+        expected_value = column.iloc[-1] - column.iloc[0] + column.iloc[-1]
+        future_value = predict_value_linear(column, future_time)
+        self.assertAlmostEqual(expected_value, future_value)

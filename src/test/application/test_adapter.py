@@ -14,12 +14,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-#
-#
-#
-import json
-import os.path
-import subprocess
 from datetime import datetime, timedelta
 from unittest import TestCase
 
@@ -28,12 +22,10 @@ import pandas
 
 from main.application.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
     DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_data_column, \
-    DataNotSortedException, write_url_response_to_file, get_default_cache_key_date, find_closest_before_else_after, \
+    DataNotSortedException, get_default_cache_key_date, find_closest_before_else_after, \
     get_column, get_key_for_api_request
 from main.application.value_type import ValueType
-from main.common.locations import Locations, get_and_clean_timestamp_dir
-from test.testing_utils import TestDigitalCurrencyAdapter, get_test_adapter_data, get_test_symbol, \
-    create_test_adapter_with_data, configure_test_logging
+from test.testing_utils import TestDigitalCurrencyAdapter, get_test_adapter_data
 
 
 def generate_data(data_height: int = 1000, start_time: datetime = datetime(year=3000, month=2, day=1)):
@@ -354,19 +346,19 @@ class TestAdapter(TestCase):
         key: str = get_key_for_api_request(self.test_get_key_for_api_request, args)
         self.assertEqual(key, 'TestAdapter.test_get_key_for_api_request.arg1_3000-01-01_00_00_00_3_0')
 
-    def test_write_url_response_to_file(self):
-        configure_test_logging()
-        locations = Locations()
-        with Popen(["ifconfig"], stdout=PIPE) as proc:
-            strategy_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('tests'))
-            reposonse_url = os.path.join(strategy_date_dir, f'{self.test_write_url_response_to_file.__name__}')
-            input_file = os.path.join(strategy_date_dir, f'{self.test_write_url_response_to_file.__name__}.in.json')
-            test_data = {'key1': 'value1', 'key2': 'value2'}
-            # with open(input_file, "w") as outfile:
-            #     json.dump(test_data, outfile)
-            request_url = f"file://{input_file}"
-            args = {'key1': 'arg1'}
-            # args = {'key1': 'arg1', 'key2': datetime(year=3000, month=1, day=1), 'arg3': 3.0}
-            write_url_response_to_file(reposonse_url, args, request_url)
-        self.fail()
-        pass
+    # def test_write_url_response_to_file(self):
+    #     configure_test_logging()
+    #     locations = Locations()
+    #     with subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE) as proc:
+    #         strategy_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('tests'))
+    #         reposonse_url = os.path.join(strategy_date_dir, f'{self.test_write_url_response_to_file.__name__}')
+    #         input_file = os.path.join(strategy_date_dir, f'{self.test_write_url_response_to_file.__name__}.in.json')
+    #         test_data = {'key1': 'value1', 'key2': 'value2'}
+    #         # with open(input_file, "w") as outfile:
+    #         #     json.dump(test_data, outfile)
+    #         request_url = f"file://{input_file}"
+    #         args = {'key1': 'arg1'}
+    #         # args = {'key1': 'arg1', 'key2': datetime(year=3000, month=1, day=1), 'arg3': 3.0}
+    #         write_url_response_to_file(reposonse_url, args, request_url)
+    #     self.fail()
+    #     pass

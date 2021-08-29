@@ -130,6 +130,19 @@ In PyCharm this can be setup using a configuration with runs script:
 
     -t ./src/ -s ./src/test/ -v
 
+For PyCharm run test button next to each test to work it should be using unittests as the testing framework. PyCharm
+will try to auto-detect the frame work and in the past it has failed and selected Twisted Trial. To fix this change it
+back to Unittests here:
+
+* File | Settings | Tools | Python Integrated Tools
+
+The error message was:
+
+    OSError: [Errno 95] Operation not supported: '12501' -> '/app/src/test/runners/_trial_temp.lock
+
+The Twisted Trial runner: `_jb_trialtest_runner.py`
+The Unittests runner: `_jb_unittest_runner.py`
+
 # Coverage
 
 Working flow is to run this as you work and make sure you are maintaining coverage.

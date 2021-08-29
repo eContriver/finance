@@ -16,7 +16,8 @@
 import logging
 import os
 from datetime import datetime
-from typing import Dict, Set, Optional
+from math import ceil
+from typing import Dict, Set, Optional, List
 
 import numpy
 import pandas
@@ -94,21 +95,70 @@ def report_irr(future_earnings, common_dividends, at_price, avg_price, max_price
     return irr_report
 
 
-def predict_future_value_linear(symbol: str, future_time: datetime, collection: AdapterCollection,
-                                value_type: ValueType):
+def predict_value_type_linear(collection: AdapterCollection, symbol: str, value_type: ValueType,
+                              future_time: datetime) -> float:
     adapter: Adapter = filter_adapters(collection.adapters, symbol, value_type)
     start_time = get_common_start_time(adapter.data)
     end_time = get_common_end_time(adapter.data)
     column: pandas.Series = adapter.get_column_between(start_time, end_time, value_type)
     column.dropna(inplace=True)
     column = column.sort_index(ascending=True)
-    y = column.values
+    prediction = predict_value_linear(column, future_time)
+    return prediction
+
+
+def predict_value_linear(column: pandas.Series, future_time: datetime) -> float:
+    start_time = min(column.index)
     days_from_start = (column.index - start_time).days.to_numpy()
+    y = column.values
     x = days_from_start.reshape(-1, 1)
     model = linear_model.LinearRegression().fit(x, y)
     future_days = (future_time - start_time).days
     predictions = model.predict([[future_days]])
     return predictions[0]
+
+
+def get_cash_flow_value_types() -> List[ValueType]:
+    value_types = [ValueType.CASH_FLOW, ValueType.NET_INCOME, ValueType.DIVIDENDS]
+    return value_types
+
+
+def get_income_value_types() -> List[ValueType]:
+    value_types = [ValueType.REVENUE]
+    return value_types
+
+
+def get_earnings_value_types() -> List[ValueType]:
+    value_types = [ValueType.EPS]
+    return value_types
+
+
+def get_balance_sheet_value_types() -> List[ValueType]:
+    value_types = [
+        ValueType.ASSETS,
+        ValueType.LIABILITIES,
+        ValueType.EQUITY,
+        ValueType.LONG_DEBT,
+        ValueType.SHORT_DEBT,
+    ]
+    return value_types
+
+
+def get_price_value_types() -> List[ValueType]:
+    value_types = [ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
+    return value_types
+
+
+def get_prices_from_earnings(earnings_per_share, max_pe, median_pe, avg_pe, min_pe) -> (float, float, float, float):
+    max_price = max_pe * earnings_per_share
+    max_price = -1.0 * max_price if (max_pe < 0) and (earnings_per_share < 0) else max_price
+    avg_price = avg_pe * earnings_per_share
+    avg_price = -1.0 * avg_price if (avg_pe < 0) and (earnings_per_share < 0) else avg_price
+    median_price = median_pe * earnings_per_share
+    median_price = -1.0 * median_price if (median_pe < 0) and (earnings_per_share < 0) else median_price
+    min_price = min_pe * earnings_per_share
+    min_price = -1.0 * min_price if (min_pe < 0) and (earnings_per_share < 0) else min_price
+    return max_price, avg_price, median_price, min_price
 
 
 class IntrinsicValueRunner(Runner):
@@ -140,9 +190,13 @@ class IntrinsicValueRunner(Runner):
         # collections = self.multiple_collections(symbols, overrides, base_symbol, adapter_class, interval, today)
         # Single collection == Single plots      : There is one collection in the dict with the key Fundamentals
         collections: Dict[str, AdapterCollection] = self.single_collection(self.symbol)
-        self.report_collections(locations, collections)
+        df = self.report_collections(locations, collections)
         if self.graph:
-            self.plot_collections(locations, collections, self.fundamentals_interval)
+            # self.plot_collections(locations, collections, self.fundamentals_interval)
+            df[get_balance_sheet_value_types()].plot.bar()
+            df[get_earnings_value_types()].plot()
+            df[get_cash_flow_value_types()].plot()
+            df[get_income_value_types()].bar.plot()
         return success
 
     def get_config(self) -> Dict:
@@ -167,7 +221,7 @@ class IntrinsicValueRunner(Runner):
         self.base_symbol = config['base_symbol']
         self.fundamentals_interval = TimeInterval(config['fundamentals_interval'])
         self.price_interval = TimeInterval(config['price_interval'])
-        self.graph = config['graph']
+        self.graph = config['graph'] if 'graph' in config else True
         self.check_member_variables(config_path)
 
     def check_member_variables(self, config_path: str):
@@ -199,18 +253,25 @@ class IntrinsicValueRunner(Runner):
 
     def create_fundamentals_adapter(self, symbol):
         adapter = self.new_adapter(symbol)
-        adapter.request_value_types = [
-            ValueType.REVENUE,
-            ValueType.CASH_FLOW,
-            ValueType.EPS,
-            ValueType.DIVIDENDS,
-            ValueType.NET_INCOME,
-            ValueType.ASSETS,
-            ValueType.LIABILITIES,
-            ValueType.SHARES,
-            ValueType.DILUTED_SHARES,
-            ValueType.EQUITY,
-        ]
+        value_types = [ValueType.SHARES]
+        value_types += get_balance_sheet_value_types()
+        value_types += get_earnings_value_types()
+        value_types += get_income_value_types()
+        value_types += get_cash_flow_value_types()
+        # value_types += get_price_value_types()
+        adapter.request_value_types = value_types
+        # adapter.request_value_types = [
+        #     ValueType.REVENUE,
+        #     ValueType.CASH_FLOW,
+        #     ValueType.EPS,
+        #     ValueType.DIVIDENDS,
+        #     ValueType.NET_INCOME,
+        #     ValueType.ASSETS,
+        #     ValueType.LIABILITIES,
+        #     ValueType.SHARES,
+        #     ValueType.DILUTED_SHARES,
+        #     ValueType.EQUITY,
+        # ]
         adapter.add_argument(Argument(ArgumentType.INTERVAL, self.fundamentals_interval))
         return adapter
 
@@ -255,7 +316,7 @@ class IntrinsicValueRunner(Runner):
     #         collections[query_type.name] = self.get_collection(handles[query_type], base_symbol)
     #     return collections
 
-    def report_collections(self, locations: Locations, collections: Dict[str, AdapterCollection]):
+    def report_collections(self, locations: Locations, collections: Dict[str, AdapterCollection]) -> pandas.DataFrame:
         # A Collection can have multiple symbols tied to a variety of adapters, instead of iterating these right now,
         # we just support one, but if we want to do multiple then we can add support for it
         for name, collection in collections.items():
@@ -267,23 +328,15 @@ class IntrinsicValueRunner(Runner):
                 ValueType.EPS, eps_intervals)
             interval: TimeInterval = list(eps_intervals)[0]
 
-            value_types = [
-                ValueType.ASSETS,
-                ValueType.LIABILITIES,
-                ValueType.SHARES,
-                ValueType.EQUITY,
-            ]
-            earnings_value_types = [ValueType.EPS]
-            value_types += earnings_value_types
-            income_value_types = [ValueType.REVENUE]
-            value_types += income_value_types
-            cash_flow_value_types = [ValueType.CASH_FLOW, ValueType.NET_INCOME, ValueType.DIVIDENDS]
-            value_types += cash_flow_value_types
-            price_value_types = [ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
-            value_types += price_value_types
+            value_types = [ValueType.SHARES]
+            value_types += get_balance_sheet_value_types()
+            value_types += get_earnings_value_types()
+            value_types += get_income_value_types()
+            value_types += get_cash_flow_value_types()
+            value_types += get_price_value_types()
 
-            last_time = collection.get_common_end_time()
-            first_time = collection.get_common_start_time()
+            # last_time = collection.get_common_end_time()
+            # first_time = collection.get_common_start_time()
 
             output_dir = locations.get_output_dir(Report.camel_to_snake(self.__class__.__name__))
             report_name = f"{self.get_run_name()}.log"
@@ -292,35 +345,35 @@ class IntrinsicValueRunner(Runner):
 
             report.log('-- Start report for {}'.format(self.symbol))
             report.log('\n'.join(get_copyright_notice()))
-            report.log('Last time: {}  First time: {}'.format(last_time.strftime("%Y-%m-%d"),
-                                                              first_time.strftime("%Y-%m-%d")))
 
             unbound_df: pandas.DataFrame = collection.get_columns(self.symbol, value_types)
-
-            # NOTE: In the future we can add an interpolation that will either fill nan values with the previous or
-            #       we can do some kind of linear interpolation between data points to fill nans, but with boundaries
-            #       known and filling middle nans we should end up with a complete data set...
+            unbound_df.interpolate(method='time', inplace=True)
+            first_time = get_common_start_time(unbound_df)
+            last_time = get_common_end_time(unbound_df)
+            report.log('Last time: {}  First time: {}'.format(last_time.strftime("%Y-%m-%d"),
+                                                              first_time.strftime("%Y-%m-%d")))
             df: pandas.DataFrame = unbound_df.truncate(first_time, last_time)
 
             # get earnings data - we requested access to earnings info from IEX, but if not then we'll calculate it
-            e_df: pandas.DataFrame = collection.get_columns(self.symbol, earnings_value_types)
+            # e_df: pandas.DataFrame = df[get_earnings_value_types()]
+            # e_df: pandas.DataFrame = collection.get_columns(self.symbol, earnings_value_types)
 
             # merge earnings data into the data - match earnings dates using +/- X weeks
-            df[ValueType.EPS] = ""
-            for date in df.index:
-                closest_idx = e_df.index.get_loc(date, method='nearest')
-                df.loc[date, ValueType.EPS] = e_df.iloc[closest_idx, :][ValueType.EPS]
+            # df[ValueType.EPS] = ""
+            # for date in df.index:
+            #     closest_idx = e_df.index.get_loc(date, method='nearest')
+            #     df.loc[date, ValueType.EPS] = e_df.iloc[closest_idx, :][ValueType.EPS]
 
             # use cash flow as the model for data - if something else makes more sense, then use it
-            cf_df = collection.get_columns(self.symbol, cash_flow_value_types)
+            # cf_df = collection.get_columns(self.symbol, get_cash_flow_value_types())
 
             # merge cash flow data into the data - match earnings dates using +/- 2 weeks
-            df[ValueType.NET_INCOME] = ""
-            df[ValueType.DIVIDENDS] = ""
-            for date in df.index:
-                closest_idx = cf_df.index.get_loc(date, method='nearest')
-                df.loc[date, ValueType.NET_INCOME] = cf_df.iloc[closest_idx, :][ValueType.NET_INCOME]
-                df.loc[date, ValueType.DIVIDENDS] = cf_df.iloc[closest_idx, :][ValueType.DIVIDENDS]
+            # df[ValueType.NET_INCOME] = ""
+            # df[ValueType.DIVIDENDS] = ""
+            # for date in df.index:
+            #     closest_idx = cf_df.index.get_loc(date, method='nearest')
+            #     df.loc[date, ValueType.NET_INCOME] = cf_df.iloc[closest_idx, :][ValueType.NET_INCOME]
+            #     df.loc[date, ValueType.DIVIDENDS] = cf_df.iloc[closest_idx, :][ValueType.DIVIDENDS]
 
             # TODO: Where this is used, is it appropriate?
             outstanding_last_time = df[ValueType.SHARES].last_valid_index()
@@ -344,7 +397,7 @@ class IntrinsicValueRunner(Runner):
             #     # https://www.fool.com/investing/stock-market/basics/earnings-per-share/#:~:text=EPS%20is%20calculated%20by%20subtracting,the%20number%20of%20shares%20outstanding.
 
             # get series data
-            p_df = collection.get_columns(self.symbol, price_value_types)
+            p_df = collection.get_columns(self.symbol, get_price_value_types())
 
             # merge series data into the data - match earnings dates using +/- 2 weeks
             df[ValueType.LOW] = ""
@@ -367,53 +420,60 @@ class IntrinsicValueRunner(Runner):
 
             #################################################################################
             # Report now...
-            df_print = df.copy()
-            df_print[ValueType.REVENUE] = df_print[ValueType.REVENUE].apply(to_dollars)
-            df_print[ValueType.CASH_FLOW] = df_print[ValueType.CASH_FLOW].apply(to_dollars)
-            df_print[ValueType.ASSETS] = df_print[ValueType.ASSETS].apply(to_dollars)
-            df_print[ValueType.SHARES] = df_print[ValueType.SHARES].apply(to_abbrev)
-            df_print[ValueType.LIABILITIES] = df_print[ValueType.LIABILITIES].apply(to_dollars)
-            df_print[ValueType.EQUITY] = df_print[ValueType.EQUITY].apply(to_dollars)
-            df_print[ValueType.EPS] = df_print[ValueType.EPS].apply(to_dollars)
-            df_print[ValueType.NET_INCOME] = df_print[ValueType.NET_INCOME].apply(to_dollars)
-            df_print[ValueType.DIVIDENDS] = df_print[ValueType.DIVIDENDS].apply(to_dollars)
-            df_print[ValueType.HIGH] = df_print[ValueType.HIGH].apply(to_dollars)
-            df_print[ValueType.LOW] = df_print[ValueType.LOW].apply(to_dollars)
-            df_print[ValueType.CLOSE] = df_print[ValueType.CLOSE].apply(to_dollars)
-            df_print[IntrinsicValueRunner.LOW_PE] = df_print[IntrinsicValueRunner.LOW_PE].apply(to_dollars)
-            df_print[IntrinsicValueRunner.HIGH_PE] = df_print[IntrinsicValueRunner.HIGH_PE].apply(to_dollars)
+            report_df = self.report_format(df)
+            report_df[IntrinsicValueRunner.LOW_PE] = report_df[IntrinsicValueRunner.LOW_PE].apply(to_dollars)
+            report_df[IntrinsicValueRunner.HIGH_PE] = report_df[IntrinsicValueRunner.HIGH_PE].apply(to_dollars)
             report.log("Data table for intrinsic value calculation using {}...\n{}".format(
-                self.fundamentals_interval, df_print.to_string()))
+                self.fundamentals_interval, report_df.to_string()))
 
             # predict into the future as far forwards as we have data backwards
-            intervals = len(df.index)
-            future_timedelta = intervals * interval.timedelta
+            future_timedelta = df.index.max() - df.index.min()
 
             predictions = {}
             # last = {}
             future_time = last_time + future_timedelta
             for value_type in value_types:
-                prediction = predict_future_value_linear(self.symbol, future_time, collection, value_type)
+                prediction = predict_value_type_linear(collection, self.symbol, value_type, future_time)
                 predictions[value_type] = prediction
-                # values = symbol_handle.get_all_items(value_type)
-                # end_time = max(values.keys())
-                report.log("  - {}".format(value_type.as_title()))
-                # last[value_type] = df[last_time, value_type]
-                non_dollar_columns = [ValueType.SHARES]
-                current_last_time = df[value_type].last_valid_index()
-                current_value = df.loc[current_last_time, value_type]
-                current_value = f'{current_value:.2f}' if value_type in non_dollar_columns else to_dollars(
-                    current_value)
-                report.log("  Current    :  {} (on {})".format(current_value, current_last_time.strftime("%Y-%m-%d")))
-                prediction = f'{prediction:.2f}' if value_type in non_dollar_columns else to_dollars(prediction)
-                report.log("  Prediction :  {} (on {})".format(prediction, future_time.strftime("%Y-%m-%d")))
+                # # values = symbol_handle.get_all_items(value_type)
+                # # end_time = max(values.keys())
+                # report.log("  - {}".format(value_type.as_title()))
+                # # last[value_type] = df[last_time, value_type]
+                # non_dollar_columns = [ValueType.SHARES]
+                # current_last_time = df[value_type].last_valid_index()
+                # current_value = df.loc[current_last_time, value_type]
+                # current_value = f'{current_value:.2f}' if value_type in non_dollar_columns else to_dollars(
+                #     current_value)
+                # report.log("  Current    :  {} (on {})".format(current_value, current_last_time.strftime("%Y-%m-%d")))
+                # prediction = f'{prediction:.2f}' if value_type in non_dollar_columns else to_dollars(prediction)
+                # report.log("  Prediction :  {} (on {})".format(prediction, future_time.strftime("%Y-%m-%d")))
+
+            predictions[IntrinsicValueRunner.LOW_PE] = predict_value_linear(df.loc[:, IntrinsicValueRunner.LOW_PE],
+                                                                            future_time)
+            predictions[IntrinsicValueRunner.HIGH_PE] = predict_value_linear(df.loc[:, IntrinsicValueRunner.HIGH_PE],
+                                                                             future_time)
+
+            predictions_df = pandas.DataFrame.from_dict([predictions])
+            predictions_df[IntrinsicValueRunner.LOW_PE] = predictions_df[IntrinsicValueRunner.LOW_PE].apply(to_dollars)
+            predictions_df[IntrinsicValueRunner.HIGH_PE] = predictions_df[IntrinsicValueRunner.HIGH_PE].apply(
+                to_dollars)
+            predictions_df.index = [future_time]
+            # predictions_df.insert(0, "Date", [future_time])
+            # predictions_df.set_index("Date")
+            predictions_print = self.report_format(predictions_df)
+            report.log("Data table of intrinsic value predictions using {}...\n{}".format(
+                self.fundamentals_interval, predictions_print.to_string()))
 
             report.log("  - Book Value")
             assets_last_time = df[ValueType.ASSETS].last_valid_index()
             liabilities_last_time = df[ValueType.LIABILITIES].last_valid_index()
-            book_value = df.loc[assets_last_time, ValueType.ASSETS] - df.loc[liabilities_last_time, ValueType.LIABILITIES]
-            assert book_value != 0.0, "Total Assets {} - Total Liabilities {} = {} (book value should not be 0)".format(
-                df.loc[assets_last_time, ValueType.ASSETS], df.loc[liabilities_last_time, ValueType.LIABILITIES], book_value)
+            book_value = df.loc[assets_last_time, ValueType.ASSETS] - df.loc[
+                liabilities_last_time, ValueType.LIABILITIES]
+            assert book_value != 0.0, "Total Assets {} - Total Liabilities {} = {} (book value should not be 0, " \
+                                      "it will lead to a divide by zero problem for book value growth rate " \
+                                      "calculations)".format(df.loc[assets_last_time, ValueType.ASSETS],
+                                                             df.loc[liabilities_last_time, ValueType.LIABILITIES],
+                                                             book_value)
             report.log("  Current    :  {} (on {})".format(to_dollars(book_value), last_time.strftime("%Y-%m-%d")))
             predicted_book_value = predictions[ValueType.ASSETS] - predictions[ValueType.LIABILITIES]
             report.log(
@@ -426,23 +486,25 @@ class IntrinsicValueRunner(Runner):
             dividend_last_time = df[ValueType.DIVIDENDS].last_valid_index()
             dividends_per_share = df.loc[dividend_last_time, ValueType.DIVIDENDS] / outstanding
             payout_ratio = dividends_per_share / earnings_per_share
+            # On a per fundamentals_interval period, can be yearly, can be quarterly
             retention_ratio = 1 - payout_ratio
             book_value_per_share = book_value / outstanding
             book_yield_per_share = earnings_per_share / book_value_per_share
             book_value_growth = book_yield_per_share * retention_ratio
 
-            # Predicted ROE - Using a trend-line equivalent predict where ROW will be
-            return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.EQUITY]
+            # Predicted ROE - Using a trend-line equivalent predict where ROE will be
+            # return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.EQUITY]
             # Average ROE - If the last net income is negative, then using average will hopefully be positive...
-            # historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.TOTAL_SHAREHOLDER_EQUITY]
-            # return_on_equity = sum(historic_roe) / len(historic_roe)
+            historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.EQUITY]
+            return_on_equity = sum(historic_roe) / len(historic_roe)
             # Last ROE
-            # shareholder_equity = df.loc[last_time, ValueType.TOTAL_SHAREHOLDER_EQUITY]
+            # shareholder_equity = df.loc[last_time, ValueType.EQUITY]
             # net_income = df.loc[last_time, ValueType.NET_INCOME]
             # return_on_equity = net_income / shareholder_equity
 
             calculated_book_values = {last_time: book_value_per_share}
             future_earnings = {}
+            intervals = ceil((last_time - first_time) / interval.timedelta)
             for it in range(intervals):
                 previous_date = it * interval.timedelta + last_time
                 current_date = (1 + it) * interval.timedelta + last_time
@@ -468,14 +530,15 @@ class IntrinsicValueRunner(Runner):
             report.log("  Calculated : ${:.2f} (on {})".format(calculated_book_values[final_date],
                                                                final_date.strftime("%Y-%m-%d")))
 
-            report.log(f"  - Chart of future earnings\n{pandas.DataFrame.from_dict(future_earnings, orient='index', columns=['Future EPS'])}")
+            report.log(
+                f"  - Chart of future earnings\n{pandas.DataFrame.from_dict(future_earnings, orient='index', columns=['Future EPS'])}")
             report.log("  - Estimate of Earnings per Share")
             report.log("  Current    : ${:.2f} (on {})".format(earnings_per_share, last_time.strftime("%Y-%m-%d")))
             final_date = max(list(future_earnings.keys()))
             report.log("  Calculated : ${:.2f} (on {})".format(future_earnings[final_date],
                                                                final_date.strftime("%Y-%m-%d")))
 
-            report.log("  - Future P/E (using historic P/E ratios)")
+            report.log("  - Historic P/E Ratios")
             max_pe = max(pe_ratios)
             avg_pe = sum(pe_ratios) / len(pe_ratios)
             median_pe = median(pe_ratios)
@@ -485,22 +548,17 @@ class IntrinsicValueRunner(Runner):
 
             # the predictions are from a linear regression and could be used, but instead we do as Buffet does:
             calculated_eps = future_earnings[final_date]  # predictions[ValueType.REPORTED_EPS]
-            report.log("  - Future Share Price (future P/E * future EPS ${})".format(round(calculated_eps, 2)))
-            max_price = max_pe * calculated_eps
-            max_price = -1.0 * max_price if (max_pe < 0) and (calculated_eps < 0) else max_price
-            avg_price = avg_pe * calculated_eps
-            avg_price = -1.0 * avg_price if (avg_pe < 0) and (calculated_eps < 0) else avg_price
-            median_price = median_pe * calculated_eps
-            median_price = -1.0 * median_price if (median_pe < 0) and (calculated_eps < 0) else median_price
-            min_price = min_pe * calculated_eps
-            min_price = -1.0 * min_price if (min_pe < 0) and (calculated_eps < 0) else min_price
+            report.log("  - Future Share Price (historic P/E * future EPS ${}) - On {}".format(
+                round(calculated_eps, 2), final_date.strftime("%Y-%m-%d")))
+            max_price, avg_price, median_price, min_price = get_prices_from_earnings(
+                calculated_eps, max_pe, median_pe, avg_pe, min_pe)
             report.log("  Max Price: {}  Average Price: {}  Median Price: {}  Min Price: {}".
                        format(to_dollars(max_price), to_dollars(avg_price),
                               to_dollars(median_price), to_dollars(min_price)))
 
             report.log("  - Future Return on Investment (ROI)")
             current_time = p_df.index.max()
-            current_price = p_df.loc[current_time, ValueType.CLOSE]
+            current_price_per_share = p_df.loc[current_time, ValueType.CLOSE]
             last_price = df.loc[last_time, ValueType.CLOSE]
             future_dividends = calculate_common_dividend(future_earnings, payout_ratio)
             report.log(report_common_dividends(future_dividends))
@@ -509,14 +567,53 @@ class IntrinsicValueRunner(Runner):
                                   avg_price, max_price, median_price, min_price)
             report.log(
                 "    Annual Rate of Return (IRR) - {} on {}".format(irr_last, final_date.strftime("%Y-%m-%d")))
-            report.log("  Current price: {} ({})".format(to_dollars(current_price), current_time.strftime("%Y-%m-%d")))
-            irr_current = report_irr(future_earnings, future_dividends, current_price,
+            report.log("  Current price: {} ({})".format(to_dollars(current_price_per_share),
+                                                         current_time.strftime("%Y-%m-%d")))
+            irr_current = report_irr(future_earnings, future_dividends, current_price_per_share,
                                      avg_price, max_price, median_price, min_price)
             report.log(
                 "    Annual Rate of Return (IRR) - {} on {}".format(irr_current, final_date.strftime("%Y-%m-%d")))
+
+            report.log("  - Current Fair Share Price (historic P/E * current EPS ${}) - On {}".format(
+                round(earnings_per_share, 2), current_time.strftime("%Y-%m-%d")))
+            max_current, avg_current, median_current, min_current = get_prices_from_earnings(
+                earnings_per_share, max_pe, median_pe, avg_pe, min_pe)
+            report.log("  Max Price: {}  Average Price: {}  Median Price: {}  Min Price: {} ({:.2f}%)".
+                       format(to_dollars(max_current), to_dollars(avg_current),
+                              to_dollars(median_current), to_dollars(min_current),
+                              (current_price_per_share / min_current * 100)))
+
+            price_to_book_ratio = current_price_per_share / book_value_per_share
+            report.log("  - Current price to book ratio: {:.2f}%".format(price_to_book_ratio * 100))
+
+            short_debt_last_time = df[ValueType.SHORT_DEBT].last_valid_index()
+            long_debt_last_time = df[ValueType.LONG_DEBT].last_valid_index()
+            debt = df.loc[short_debt_last_time, ValueType.SHORT_DEBT] + df.loc[long_debt_last_time, ValueType.LONG_DEBT]
+            debt_to_asset_ratio = debt / df.loc[assets_last_time, ValueType.ASSETS]
+            report.log("  - Last report debt to asset ratio: {:.2f}%".format(debt_to_asset_ratio * 100))
+
             report.log('-- End report for {}'.format(self.symbol))
             logging.info(f'Report file: {file_link_format(report_path)}')
 
+            return df
+
+    def report_format(self, df):
+        df_print = df.copy()
+        df_print[ValueType.REVENUE] = df_print[ValueType.REVENUE].apply(to_dollars)
+        df_print[ValueType.CASH_FLOW] = df_print[ValueType.CASH_FLOW].apply(to_dollars)
+        df_print[ValueType.ASSETS] = df_print[ValueType.ASSETS].apply(to_dollars)
+        df_print[ValueType.SHARES] = df_print[ValueType.SHARES].apply(to_abbrev)
+        df_print[ValueType.LIABILITIES] = df_print[ValueType.LIABILITIES].apply(to_dollars)
+        df_print[ValueType.LONG_DEBT] = df_print[ValueType.LONG_DEBT].apply(to_dollars)
+        df_print[ValueType.SHORT_DEBT] = df_print[ValueType.SHORT_DEBT].apply(to_dollars)
+        df_print[ValueType.EQUITY] = df_print[ValueType.EQUITY].apply(to_dollars)
+        df_print[ValueType.EPS] = df_print[ValueType.EPS].apply(to_dollars)
+        df_print[ValueType.NET_INCOME] = df_print[ValueType.NET_INCOME].apply(to_dollars)
+        df_print[ValueType.DIVIDENDS] = df_print[ValueType.DIVIDENDS].apply(to_dollars)
+        df_print[ValueType.HIGH] = df_print[ValueType.HIGH].apply(to_dollars)
+        df_print[ValueType.LOW] = df_print[ValueType.LOW].apply(to_dollars)
+        df_print[ValueType.CLOSE] = df_print[ValueType.CLOSE].apply(to_dollars)
+        return df_print
 
     # @staticmethod
     # def get_data(adapter: Adapter) -> pandas.DataFrame:  # , value_types):

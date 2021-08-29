@@ -153,13 +153,11 @@ class AdapterCollection:
         self.adapters.append(to_add)
 
     def get_columns(self, symbol: str, value_types: List[ValueType]) -> pandas.DataFrame:
-        all_items = None
+        all_items: pandas.DataFrame = pandas.DataFrame()
         for value_type in value_types:
             adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
-            if all_items is None:
-                all_items = get_column(adapter.data, value_type).to_frame()
-            else:
-                all_items = all_items.join(get_column(adapter.data, value_type))
+            column: pandas.Series = get_column(adapter.data, value_type)
+            all_items = column.to_frame() if all_items.empty else all_items.join(column)
         return all_items
 
     def get_column(self, symbol: str, value_type: ValueType) -> pandas.Series:

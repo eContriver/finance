@@ -14,9 +14,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-#
-#
-#
 from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
@@ -88,11 +85,11 @@ class AlphaVantage(Adapter):
             # GROSS_PROFIT = auto()
             # TOTAL_REVENUE = auto()
             # OPERATING_CASH_FLOW = auto()
-            Converter(ValueType.DEPRECIATION, self.get_cash_flow_response, ['depreciationDepletionAndAmortization']),
-            Converter(ValueType.RECEIVABLES, self.get_cash_flow_response, ['changeInReceivables']),
-            Converter(ValueType.INVENTORY, self.get_cash_flow_response, ['changeInInventory']),
-            Converter(ValueType.PAYABLES, self.get_cash_flow_response, ['operatingCashflow']),
-            Converter(ValueType.CAPITAL_EXPENDITURES, self.get_cash_flow_response, ['capitalExpenditures']),
+            # Converter(ValueType.DEPRECIATION, self.get_cash_flow_response, ['depreciationDepletionAndAmortization']),
+            # Converter(ValueType.RECEIVABLES, self.get_cash_flow_response, ['changeInReceivables']),
+            # Converter(ValueType.INVENTORY, self.get_cash_flow_response, ['changeInInventory']),
+            # Converter(ValueType.PAYABLES, self.get_cash_flow_response, ['operatingCashflow']),
+            # Converter(ValueType.CAPITAL_EXPENDITURES, self.get_cash_flow_response, ['capitalExpenditures']),
             # Converter(ValueType.FREE_CASH_FLOW, self.get_cash_flow_response, ['operatingCashflow']),
 
             Converter(ValueType.CASH_FLOW, self.get_cash_flow_response, ['operatingCashflow']),
@@ -100,6 +97,8 @@ class AlphaVantage(Adapter):
             Converter(ValueType.NET_INCOME, self.get_cash_flow_response, ['netIncome']),
             Converter(ValueType.ASSETS, self.get_balance_sheet_response, ['totalAssets']),
             Converter(ValueType.LIABILITIES, self.get_balance_sheet_response, ['totalLiabilities']),
+            Converter(ValueType.SHORT_DEBT, self.get_balance_sheet_response, ['shortTermDebt']),
+            Converter(ValueType.LONG_DEBT, self.get_balance_sheet_response, ['longTermDebt']),
             # This value was very wrong for BRK-A, it says something like 3687360528 shares outstanding, while there
             # are actually only something like 640000
             Converter(ValueType.SHARES, self.get_balance_sheet_response, ['commonStockSharesOutstanding']),
@@ -290,6 +289,7 @@ class AlphaVantage(Adapter):
         else:
             raise RuntimeError(
                 'Interval not supported: {} (for: {})'.format(interval, self.__class__.__name__))
+        self.validate_json_response(data_file, raw_response, expects_meta_data=False)
         self.translate_earnings(raw_response, value_type, key)
 
     def translate_earnings(self, response_data, value_type: ValueType, key, data_date_format='%Y-%m-%d'):
@@ -335,6 +335,7 @@ class AlphaVantage(Adapter):
         else:
             raise RuntimeError(
                 'Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
+        self.validate_json_response(data_file, raw_response, expects_meta_data=False)
         self.translate_earnings(raw_response, value_type, key)
         # self.translate_income(raw_response, value_type, key)
 
@@ -431,7 +432,7 @@ class AlphaVantage(Adapter):
         return translated
 
     @staticmethod
-    def validate_json_response(data_file, raw_response):
+    def validate_json_response(data_file, raw_response, expects_meta_data=True):
         if "Error Message" in raw_response:
             raise RuntimeError(
                 "Error message in response - {}\n  See: {}".format(raw_response["Error Message"],
@@ -439,11 +440,9 @@ class AlphaVantage(Adapter):
         if "Note" in raw_response:
             raise RuntimeError("Note message in response - {}\n  See: {}".format(raw_response["Note"],
                                                                                  file_link_format(data_file)))
-        if not "Meta Data" in raw_response:
-            raise RuntimeError(
-                "Failed to find the meta data in response: {} (perhaps the currency doesn't support "
-                "this)".format(
-                    file_link_format(data_file)))
+        if expects_meta_data and "Meta Data" not in raw_response:
+            raise RuntimeError("Failed to find the meta data in response: {} (perhaps the currency doesn't support "
+                               "this)".format(file_link_format(data_file)))
 
     def get_indicator_key(self):
         self.calculate_asset_type()

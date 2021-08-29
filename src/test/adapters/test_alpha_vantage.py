@@ -13,18 +13,17 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-import logging
 from datetime import timedelta, datetime
 from typing import Dict, List
 from unittest import TestCase
 
 from main.adapters.alpha_vantage import AlphaVantage, get_adjusted_ratio
 from main.application.adapter import request_limit_with_timedelta_delay, DataType
-from test import testing_utils
 
 
 class MockAlphaVantage(AlphaVantage):  # -> List(str), str
-    def get_url_response(self, url: str, query, cache: bool = True, data_type: DataType = DataType.JSON, delay: bool = True):
+    def get_url_response(self, url: str, query, cache: bool = True, data_type: DataType = DataType.JSON,
+                         delay: bool = True):
         data = []
         data_file = '/test/file'
         if query['function'] == 'LISTING_STATUS':
@@ -33,10 +32,9 @@ class MockAlphaVantage(AlphaVantage):  # -> List(str), str
         return data, data_file
 
 
-
 class TestAlphaVantage(TestCase):
     def test_delay_requests(self):
-        testing_utils.configure_test_logging()
+        # testing_utils.configure_test_logging()
         start_time = datetime.now()
         historic_requests = {
             '/path1': start_time,
@@ -56,8 +54,8 @@ class TestAlphaVantage(TestCase):
 
     def test_get_adjusted_ratio(self):
         time_data: Dict[str, str] = {
-            '5. adjusted close': 10.0,
-            '4. close': 5.0,
+            '5. adjusted close': '10.0',
+            '4. close': '5.0',
         }
         self.assertEqual(get_adjusted_ratio(time_data), 2.0)
 
