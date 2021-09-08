@@ -9,16 +9,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/app.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/discounted_cash_flow.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/adapter_collection.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/adapter_collection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/value_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/value_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/discounted_cash_flow_runner.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/iex_cloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/iex_cloud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/application/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/adapter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/adapters/test_alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/adapters/test_alpha_vantage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/trend_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/trend_runner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/application/test_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/application/test_adapter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/runners/test_intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/runners/test_intrinsic_value_runner.py" afterDir="false" />
     </list>
@@ -399,18 +396,18 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.coverage-parallel" />
-      <item itemvalue="Python.unittest-parallel" />
-      <item itemvalue="Python.test" />
-      <item itemvalue="Python.unittest" />
-      <item itemvalue="Python.intrinsic_value" />
-      <item itemvalue="Python.symbol" />
-      <item itemvalue="Python.matrix" />
       <item itemvalue="Python.alert" />
-      <item itemvalue="Python.trend" />
-      <item itemvalue="Python.ml_trainer" />
+      <item itemvalue="Python.coverage-parallel" />
+      <item itemvalue="Python.intrinsic_value" />
+      <item itemvalue="Python.matrix" />
       <item itemvalue="Python.ml_predictor" />
+      <item itemvalue="Python.ml_trainer" />
       <item itemvalue="Python.multi_symbol" />
+      <item itemvalue="Python.symbol" />
+      <item itemvalue="Python.test" />
+      <item itemvalue="Python.trend" />
+      <item itemvalue="Python.unittest-parallel" />
+      <item itemvalue="Python.unittest" />
       <item itemvalue="Python tests.Unittests for test_adapter.TestAdapter.test_get_key_for_api_request" />
       <item itemvalue="Python tests.Unittests for test.runners.test_intrinsic_value_runner.TestIntrinsicValueRunner.test_predict_value_linear_is_accurate" />
       <item itemvalue="Python tests.Unittests for test_intrinsic_value_runner.TestIntrinsicValueRunner.test_predict_value_linear_is_accurate" />
@@ -519,12 +516,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>532</line>
+          <line>617</line>
           <option name="timeStamp" value="65" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>514</line>
+          <line>594</line>
           <option name="timeStamp" value="68" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -534,8 +531,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>506</line>
-          <option name="timeStamp" value="78" />
+          <line>579</line>
+          <option name="timeStamp" value="79" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

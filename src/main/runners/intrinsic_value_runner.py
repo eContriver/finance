@@ -17,14 +17,15 @@ import logging
 import os
 from datetime import datetime
 from math import ceil
-from typing import Dict, Set, Optional, List
+from typing import Dict, Set, Optional, List, Any
 
 import numpy
 import pandas
 from numpy import median
 from sklearn import linear_model
 
-from main.application.adapter import TimeInterval, AssetType, Adapter, get_common_start_time, get_common_end_time
+from main.application.adapter import TimeInterval, AssetType, Adapter, get_common_start_time, get_common_end_time, \
+    insert_column
 from main.application.adapter_collection import AdapterCollection, filter_adapters
 from main.application.argument import Argument, ArgumentType
 from main.application.value_type import ValueType
@@ -66,32 +67,41 @@ def to_abbrev(value: float) -> str:
     return value_as_str
 
 
-def report_common_dividends(common_dividends):
-    report = "  Common Dividends - "
-    for date, common_dividend in common_dividends.items():
+def to_percent(value: float) -> str:
+    if numpy.isnan(value):
+        value_as_str = "{}".format(value)
+    else:
+        value_as_str = "{:.2f}%".format(value * 100)
+    return value_as_str
+
+
+def report_common_dividends(common_dividends: pandas.Series) -> str:
+    report = "dividends: "
+    for date, common_dividend in common_dividends.iteritems():
         report += "{}: {}  ".format(date.strftime("%Y-%m-%d"), to_dollars(common_dividend))
     return report
 
 
-def calculate_common_dividend(calculated_earnings, payout_ratio):
-    common_dividends = {}
-    for date, earnings in calculated_earnings.items():
+def calculate_common_dividend(earnings: pandas.Series, payout_ratio: float) -> pandas.Series:
+    common_dividends = pandas.Series()
+    for date, earnings in earnings.iteritems():
         common_dividends[date] = earnings * payout_ratio
     return common_dividends
 
 
-def report_irr(future_earnings, common_dividends, at_price, avg_price, max_price, median_price, min_price):
+def report_irr(future_earnings: pandas.Series, common_dividends, at_price, avg_price, max_price, median_price,
+               min_price):
     cash_flows = [at_price * -1]
-    for date, earnings in future_earnings.items():
+    for date, earnings in future_earnings.iteritems():
         cash_flows += [common_dividends[date]]
     max_irr = round(numpy.irr(cash_flows + [max_price]) * 100, 4)
-    irr_report = "Max: {}%".format(max_irr)
+    irr_report = "max={}%".format(max_irr)
     avg_irr = round(numpy.irr(cash_flows + [avg_price]) * 100, 4)
-    irr_report += "  Average: {}%".format(avg_irr)
+    irr_report += " avg={}%".format(avg_irr)
     median_irr = round(numpy.irr(cash_flows + [median_price]) * 100, 4)
-    irr_report += "  Median: {}%".format(median_irr)
+    irr_report += " med={}%".format(median_irr)
     min_irr = round(numpy.irr(cash_flows + [min_price]) * 100, 4)
-    irr_report += "  Min: {}%".format(min_irr)
+    irr_report += " min={}%".format(min_irr)
     return irr_report
 
 
@@ -108,6 +118,7 @@ def predict_value_type_linear(collection: AdapterCollection, symbol: str, value_
 
 
 def predict_value_linear(column: pandas.Series, future_time: datetime) -> float:
+    column = column.replace([numpy.inf, -numpy.inf], numpy.nan).dropna()
     start_time = min(column.index)
     days_from_start = (column.index - start_time).days.to_numpy()
     y = column.values
@@ -161,9 +172,41 @@ def get_prices_from_earnings(earnings_per_share, max_pe, median_pe, avg_pe, min_
     return max_price, avg_price, median_price, min_price
 
 
+def convert_formats(df):
+    df[ValueType.REVENUE] = df[ValueType.REVENUE].apply(to_dollars)
+    df[ValueType.CASH_FLOW] = df[ValueType.CASH_FLOW].apply(to_dollars)
+    df[ValueType.ASSETS] = df[ValueType.ASSETS].apply(to_dollars)
+    df[ValueType.SHARES] = df[ValueType.SHARES].apply(to_abbrev)
+    df[ValueType.LIABILITIES] = df[ValueType.LIABILITIES].apply(to_dollars)
+    df[ValueType.LONG_DEBT] = df[ValueType.LONG_DEBT].apply(to_dollars)
+    df[ValueType.SHORT_DEBT] = df[ValueType.SHORT_DEBT].apply(to_dollars)
+    df[ValueType.EQUITY] = df[ValueType.EQUITY].apply(to_dollars)
+    df[ValueType.EPS] = df[ValueType.EPS].apply(to_dollars)
+    df[ValueType.NET_INCOME] = df[ValueType.NET_INCOME].apply(to_dollars)
+    df[ValueType.DIVIDENDS] = df[ValueType.DIVIDENDS].apply(to_dollars)
+    df[ValueType.HIGH] = df[ValueType.HIGH].apply(to_dollars)
+    df[ValueType.LOW] = df[ValueType.LOW].apply(to_dollars)
+    df[ValueType.CLOSE] = df[ValueType.CLOSE].apply(to_dollars)
+    df[IntrinsicValueRunner.LOW_PE] = df[IntrinsicValueRunner.LOW_PE].apply(to_abbrev)
+    df[IntrinsicValueRunner.HIGH_PE] = df[IntrinsicValueRunner.HIGH_PE].apply(to_abbrev)
+    df[IntrinsicValueRunner.ROE] = df[IntrinsicValueRunner.ROE].apply(to_percent)
+
+
+def report_order(df):
+    columns = [ValueType.SHARES]
+    columns += get_balance_sheet_value_types()
+    columns += get_earnings_value_types()
+    columns += get_income_value_types()
+    columns += get_cash_flow_value_types()
+    columns += [IntrinsicValueRunner.LOW_PE, IntrinsicValueRunner.HIGH_PE, IntrinsicValueRunner.ROE]
+    df_ordered = df[columns]  # reorders using order of values in value_types
+    return df_ordered
+
+
 class IntrinsicValueRunner(Runner):
     HIGH_PE: str = 'High P/E'
     LOW_PE: str = 'Low P/E'
+    ROE: str = 'ROE'
 
     symbol: Optional[str]
     adapter_class: Optional[type]
@@ -215,12 +258,12 @@ class IntrinsicValueRunner(Runner):
         return config
 
     def set_from_config(self, config, config_path):
-        self.asset_type_overrides = get_asset_type_overrides(config['asset_type_overrides'])
+        self.asset_type_overrides = get_asset_type_overrides(config['asset_type_overrides'] if 'asset_type_overrides' in config else {})
         self.symbol = config['symbol']
         self.adapter_class = get_adapter_class(config['adapter_class'])
         self.base_symbol = config['base_symbol']
         self.fundamentals_interval = TimeInterval(config['fundamentals_interval'])
-        self.price_interval = TimeInterval(config['price_interval'])
+        self.price_interval = TimeInterval(config['price_interval'] if 'price_interval' in config else 'monthly')
         self.graph = config['graph'] if 'graph' in config else True
         self.check_member_variables(config_path)
 
@@ -412,29 +455,42 @@ class IntrinsicValueRunner(Runner):
                 df.loc[date, ValueType.LOW] = p_df.iloc[closest_idx, :][ValueType.LOW]
                 df.loc[date, ValueType.HIGH] = p_df.iloc[closest_idx, :][ValueType.HIGH]
                 df.loc[date, ValueType.CLOSE] = p_df.iloc[closest_idx, :][ValueType.CLOSE]
+
+            # P/Es
             multiple = 4 if self.fundamentals_interval is TimeInterval.QUARTER else 1
             df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / (df.loc[:, ValueType.EPS] * multiple)
             df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / (df.loc[:, ValueType.EPS] * multiple)
             pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE] + df.loc[:, IntrinsicValueRunner.HIGH_PE]
             pe_ratios.dropna(inplace=True)
+            # ROEs
+            df.loc[:, IntrinsicValueRunner.ROE] = df.loc[:, ValueType.NET_INCOME] / (df.loc[:, ValueType.EQUITY])
 
             #################################################################################
             # Report now...
             report_df = self.report_format(df)
-            report_df[IntrinsicValueRunner.LOW_PE] = report_df[IntrinsicValueRunner.LOW_PE].apply(to_dollars)
-            report_df[IntrinsicValueRunner.HIGH_PE] = report_df[IntrinsicValueRunner.HIGH_PE].apply(to_dollars)
+            # report_df[IntrinsicValueRunner.LOW_PE] = report_df[IntrinsicValueRunner.LOW_PE].apply(to_abbrev)
+            # report_df[IntrinsicValueRunner.HIGH_PE] = report_df[IntrinsicValueRunner.HIGH_PE].apply(to_abbrev)
             report.log("Data table for intrinsic value calculation using {}...\n{}".format(
                 self.fundamentals_interval, report_df.to_string()))
 
             # predict into the future as far forwards as we have data backwards
             future_timedelta = df.index.max() - df.index.min()
 
-            predictions = {}
+            predictions_df = pandas.DataFrame()
+            # predictions = {}
             # last = {}
-            future_time = last_time + future_timedelta
-            for value_type in value_types:
-                prediction = predict_value_type_linear(collection, self.symbol, value_type, future_time)
-                predictions[value_type] = prediction
+            future_start_time = last_time + interval.timedelta
+            intervals = ceil((df.index.max() - df.index.min()) / interval.timedelta)
+            for column in value_types:
+                values = []
+                indexes = []
+                for it in range(intervals):
+                    future_datetime = future_start_time + it * interval.timedelta
+                    indexes.append(future_datetime)
+                    values.append(predict_value_type_linear(collection, self.symbol, column, future_datetime))
+                insert_column(predictions_df, column, indexes, values)
+                # prediction = predict_value_type_linear(collection, self.symbol, value_type, future_time)
+                # predictions[value_type] = prediction
                 # # values = symbol_handle.get_all_items(value_type)
                 # # end_time = max(values.keys())
                 # report.log("  - {}".format(value_type.as_title()))
@@ -448,23 +504,44 @@ class IntrinsicValueRunner(Runner):
                 # prediction = f'{prediction:.2f}' if value_type in non_dollar_columns else to_dollars(prediction)
                 # report.log("  Prediction :  {} (on {})".format(prediction, future_time.strftime("%Y-%m-%d")))
 
-            predictions[IntrinsicValueRunner.LOW_PE] = predict_value_linear(df.loc[:, IntrinsicValueRunner.LOW_PE],
-                                                                            future_time)
-            predictions[IntrinsicValueRunner.HIGH_PE] = predict_value_linear(df.loc[:, IntrinsicValueRunner.HIGH_PE],
-                                                                             future_time)
-
-            predictions_df = pandas.DataFrame.from_dict([predictions])
-            predictions_df[IntrinsicValueRunner.LOW_PE] = predictions_df[IntrinsicValueRunner.LOW_PE].apply(to_dollars)
-            predictions_df[IntrinsicValueRunner.HIGH_PE] = predictions_df[IntrinsicValueRunner.HIGH_PE].apply(
-                to_dollars)
-            predictions_df.index = [future_time]
+            for column in [IntrinsicValueRunner.LOW_PE, IntrinsicValueRunner.HIGH_PE, IntrinsicValueRunner.ROE]:
+                values = []
+                indexes = []
+                for it in range(intervals):
+                    future_datetime = future_start_time + it * interval.timedelta
+                    indexes.append(future_datetime)
+                    values.append(predict_value_linear(df.loc[:, column], future_datetime))
+                insert_column(predictions_df, column, indexes, values)
+            # # predictions[IntrinsicValueRunner.LOW_PE] = predict_value_linear(df.loc[:, IntrinsicValueRunner.LOW_PE], future_time)
+            # low_values = []
+            # low_indexes = []
+            # for it in range(intervals):
+            #     future_datetime = future_start_time + it * interval.timedelta
+            #     low_indexes.append(future_datetime)
+            #     low_values.append(predict_value_linear(df[IntrinsicValueRunner.LOW_PE], future_datetime))
+            #     # values.append(predict_value_type_linear(collection, self.symbol, value_type, future_time))
+            # insert_column(predictions_df, IntrinsicValueRunner.LOW_PE, low_indexes, low_values)
+            # # predictions[IntrinsicValueRunner.HIGH_PE] = predict_value_linear(df.loc[:, IntrinsicValueRunner.HIGH_PE],
+            # #                                                                  future_time)
+            # high_values = []
+            # high_indexes = []
+            # for it in range(intervals):
+            #     future_datetime = future_start_time + it * interval.timedelta
+            #     high_indexes.append(future_datetime)
+            #     high_values.append(predict_value_linear(df[IntrinsicValueRunner.HIGH_PE], future_datetime))
+            #     # values.append(predict_value_type_linear(collection, self.symbol, value_type, future_time))
+            # insert_column(predictions_df, IntrinsicValueRunner.HIGH_PE, high_indexes, high_values)
+            #
+            # predictions_df = pandas.DataFrame.from_dict([predictions])
+            # predictions_df[IntrinsicValueRunner.LOW_PE] = predictions_df[IntrinsicValueRunner.LOW_PE].apply(to_abbrev)
+            # predictions_df[IntrinsicValueRunner.HIGH_PE] = predictions_df[IntrinsicValueRunner.HIGH_PE].apply(to_abbrev)
+            # predictions_df.index = [future_time]
             # predictions_df.insert(0, "Date", [future_time])
             # predictions_df.set_index("Date")
             predictions_print = self.report_format(predictions_df)
             report.log("Data table of intrinsic value predictions using {}...\n{}".format(
                 self.fundamentals_interval, predictions_print.to_string()))
 
-            report.log("  - Book Value")
             assets_last_time = df[ValueType.ASSETS].last_valid_index()
             liabilities_last_time = df[ValueType.LIABILITIES].last_valid_index()
             book_value = df.loc[assets_last_time, ValueType.ASSETS] - df.loc[
@@ -474,12 +551,15 @@ class IntrinsicValueRunner(Runner):
                                       "calculations)".format(df.loc[assets_last_time, ValueType.ASSETS],
                                                              df.loc[liabilities_last_time, ValueType.LIABILITIES],
                                                              book_value)
-            report.log("  Current    :  {} (on {})".format(to_dollars(book_value), last_time.strftime("%Y-%m-%d")))
-            predicted_book_value = predictions[ValueType.ASSETS] - predictions[ValueType.LIABILITIES]
-            report.log(
-                "  Prediction :  {} (on {})".format(to_dollars(predicted_book_value), future_time.strftime("%Y-%m-%d")))
+            future_end_time = predictions_df.index.max()
+            predicted_book_value = predictions_df.loc[future_end_time, ValueType.EQUITY]
+            report.log("book value: current={} (on {}) | prediction={} (for {})".format(
+                to_dollars(book_value),
+                assets_last_time.strftime("%Y-%m-%d"),
+                to_dollars(predicted_book_value),
+                future_end_time.strftime("%Y-%m-%d"),
+            ))
 
-            report.log("  - Book Yield")
             # NOTE: we could do this math on the dataframe instead of scalar, but we don't currently need it
             eps_last_time = df[ValueType.EPS].last_valid_index()
             earnings_per_share = df.loc[eps_last_time, ValueType.EPS]
@@ -488,132 +568,131 @@ class IntrinsicValueRunner(Runner):
             payout_ratio = dividends_per_share / earnings_per_share
             # On a per fundamentals_interval period, can be yearly, can be quarterly
             retention_ratio = 1 - payout_ratio
+            retention_ratio = 0.0 if retention_ratio < 0.0 else retention_ratio
             book_value_per_share = book_value / outstanding
             book_yield_per_share = earnings_per_share / book_value_per_share
             book_value_growth = book_yield_per_share * retention_ratio
 
             # Predicted ROE - Using a trend-line equivalent predict where ROE will be
-            # return_on_equity = predictions[ValueType.NET_INCOME] / predictions[ValueType.EQUITY]
+            return_on_equity = predictions_df.loc[future_end_time, IntrinsicValueRunner.ROE]
             # Average ROE - If the last net income is negative, then using average will hopefully be positive...
-            historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.EQUITY]
-            return_on_equity = sum(historic_roe) / len(historic_roe)
+            # historic_roe = df.loc[:, ValueType.NET_INCOME] / df.loc[:, ValueType.EQUITY]
+            # return_on_equity = sum(historic_roe) / len(historic_roe)
             # Last ROE
             # shareholder_equity = df.loc[last_time, ValueType.EQUITY]
             # net_income = df.loc[last_time, ValueType.NET_INCOME]
             # return_on_equity = net_income / shareholder_equity
 
-            calculated_book_values = {last_time: book_value_per_share}
-            future_earnings = {}
-            intervals = ceil((last_time - first_time) / interval.timedelta)
-            for it in range(intervals):
-                previous_date = it * interval.timedelta + last_time
-                current_date = (1 + it) * interval.timedelta + last_time
-                calculated_book_values[current_date] = calculated_book_values[previous_date] * (
-                        1 + book_value_growth)
-                value = calculated_book_values[current_date] * return_on_equity
-                if not numpy.isnan(value):
-                    future_earnings[current_date] = value
-
-            report.log("  Dividend Payout        : {} (on {})".format(
-                to_dollars(df.loc[last_time, ValueType.DIVIDENDS]),
-                last_time.strftime("%Y-%m-%d")))
-            report.log("  Dividends per Share    : ${:.2f}".format(dividends_per_share))
-            report.log("  Payout Ratio           : {:.2f}%".format(payout_ratio * 100.0))
-            report.log("  Retention Ratio        : {:.2f}%".format(retention_ratio * 100.0))
-            report.log("  Book Yield per Share   : {:.2f}%".format(book_yield_per_share * 100.0))
-            report.log("  Growth in Book Value   : {:.2f}%".format(book_value_growth * 100.0))
-            report.log("  Return on Equity (ROE) : {:.2f}%".format(return_on_equity * 100.0))
-
-            report.log("  - Estimate of Book Value per Share (using shares outstanding: {})".format(outstanding))
-            report.log("  Current    : ${:.2f} (on {})".format(book_value_per_share, last_time.strftime("%Y-%m-%d")))
-            final_date = max(list(calculated_book_values.keys()))
-            report.log("  Calculated : ${:.2f} (on {})".format(calculated_book_values[final_date],
-                                                               final_date.strftime("%Y-%m-%d")))
+            # calculated_book_values = {last_time: book_value_per_share}
+            # future_earnings = {}
+            # for it in range(intervals):
+            #     previous_date = it * interval.timedelta + last_time
+            #     current_date = (1 + it) * interval.timedelta + last_time
+            #     calculated_book_values[current_date] = calculated_book_values[previous_date] * (
+            #             1 + book_value_growth)
+            #     value = calculated_book_values[current_date] * return_on_equity
+            #     if not numpy.isnan(value):
+            #         future_earnings[current_date] = value
 
             report.log(
-                f"  - Chart of future earnings\n{pandas.DataFrame.from_dict(future_earnings, orient='index', columns=['Future EPS'])}")
-            report.log("  - Estimate of Earnings per Share")
-            report.log("  Current    : ${:.2f} (on {})".format(earnings_per_share, last_time.strftime("%Y-%m-%d")))
-            final_date = max(list(future_earnings.keys()))
-            report.log("  Calculated : ${:.2f} (on {})".format(future_earnings[final_date],
-                                                               final_date.strftime("%Y-%m-%d")))
+                "dividend: payout={} (on {}) | div/share(DPS)=${:.2f} | DPS/EPS={:.2f}% | retained={:.2f}%".format(
+                    to_dollars(df.loc[last_time, ValueType.DIVIDENDS]),
+                    last_time.strftime("%Y-%m-%d"),
+                    dividends_per_share,
+                    payout_ratio * 100.0,
+                    retention_ratio * 100.0,
+                ))
+            report.log(
+                "book: value(BVPS)=${:.2f} (on {}) | EPS/BVPS(yield)={:.2f}% | yield*retained(growth)={:.2f}%".format(
+                    book_value_per_share,
+                    last_time.strftime("%Y-%m-%d"),
+                    book_yield_per_share * 100.0,
+                    book_value_growth * 100.0,
+                ))
 
-            report.log("  - Historic P/E Ratios")
+            # report.log("  - Estimate of Book Value per Share (using shares outstanding: {})".format(outstanding))
+            # future_end_time = predictions_df.index.max()
+            # report.log("  Calculated : ${:.2f} (on {})".format(predictions_df.loc[future_end_time, ValueType.EQUITY],
+            #                                                    future_end_time.strftime("%Y-%m-%d")))
+
+            # report.log(
+            #     f"  - Chart of future earnings\n{pandas.DataFrame.from_dict(future_earnings, orient='index', columns=['Future EPS'])}")
+            # future_end_time = max(list(future_earnings.keys()))
+
             max_pe = max(pe_ratios)
             avg_pe = sum(pe_ratios) / len(pe_ratios)
             median_pe = median(pe_ratios)
             min_pe = min(pe_ratios)
-            report.log("  Max P/E: {:.2f}  Average P/E: {:.2f}  Median P/E: {:.2f}  Min P/E: {:.2f}  ".format(
-                max_pe, avg_pe, median_pe, min_pe))
 
             # the predictions are from a linear regression and could be used, but instead we do as Buffet does:
-            calculated_eps = future_earnings[final_date]  # predictions[ValueType.REPORTED_EPS]
-            report.log("  - Future Share Price (historic P/E * future EPS ${}) - On {}".format(
-                round(calculated_eps, 2), final_date.strftime("%Y-%m-%d")))
+            calculated_eps = predictions_df.loc[future_end_time, ValueType.EPS]
+            # calculated_eps = future_earnings[future_end_time]  # predictions[ValueType.REPORTED_EPS]
             max_price, avg_price, median_price, min_price = get_prices_from_earnings(
                 calculated_eps, max_pe, median_pe, avg_pe, min_pe)
-            report.log("  Max Price: {}  Average Price: {}  Median Price: {}  Min Price: {}".
-                       format(to_dollars(max_price), to_dollars(avg_price),
-                              to_dollars(median_price), to_dollars(min_price)))
 
-            report.log("  - Future Return on Investment (ROI)")
             current_time = p_df.index.max()
-            current_price_per_share = p_df.loc[current_time, ValueType.CLOSE]
+            current_price = p_df.loc[current_time, ValueType.CLOSE]
             last_price = df.loc[last_time, ValueType.CLOSE]
-            future_dividends = calculate_common_dividend(future_earnings, payout_ratio)
+            future_dividends: pandas.Series = calculate_common_dividend(predictions_df[ValueType.EPS], payout_ratio)
             report.log(report_common_dividends(future_dividends))
-            report.log("  Last report price: {} ({})".format(to_dollars(last_price), last_time.strftime("%Y-%m-%d")))
+
+            future_price = "max={} avg={} med={} min={} ({:.2f}%) | ROE=".format(to_dollars(max_price),
+                                                                                 to_dollars(avg_price),
+                                                                                 to_dollars(median_price),
+                                                                                 to_dollars(min_price),
+                                                                                 (current_price / min_price * 100),
+                                                                                 )
+            report.log("P/Es: max={:.2f} avg={:.2f} med={:.2f} min={:.2f} | ROE={:.2f}%".format(
+                max_pe, avg_pe, median_pe, min_pe, return_on_equity * 100.0))
+            report.log("future prices (P/Es * future EPS ${}): {} ({})".format(
+                round(calculated_eps, 2), future_price, future_end_time.strftime("%Y-%m-%d")))
+            future_earnings = predictions_df[ValueType.EPS]
             irr_last = report_irr(future_earnings, future_dividends, last_price,
                                   avg_price, max_price, median_price, min_price)
             report.log(
-                "    Annual Rate of Return (IRR) - {} on {}".format(irr_last, final_date.strftime("%Y-%m-%d")))
-            report.log("  Current price: {} ({})".format(to_dollars(current_price_per_share),
-                                                         current_time.strftime("%Y-%m-%d")))
-            irr_current = report_irr(future_earnings, future_dividends, current_price_per_share,
+                "last IRR from {} ({}): {} on {}".format(to_dollars(last_price), last_time.strftime("%Y-%m-%d"),
+                                                         irr_last, future_end_time.strftime("%Y-%m-%d")))
+            irr_current = report_irr(future_earnings, future_dividends, current_price,
                                      avg_price, max_price, median_price, min_price)
             report.log(
-                "    Annual Rate of Return (IRR) - {} on {}".format(irr_current, final_date.strftime("%Y-%m-%d")))
-
-            report.log("  - Current Fair Share Price (historic P/E * current EPS ${}) - On {}".format(
-                round(earnings_per_share, 2), current_time.strftime("%Y-%m-%d")))
+                "current IRR from {} ({}): {} on {}".format(to_dollars(current_price),
+                                                            current_time.strftime("%Y-%m-%d"),
+                                                            irr_current, future_end_time.strftime("%Y-%m-%d")))
             max_current, avg_current, median_current, min_current = get_prices_from_earnings(
                 earnings_per_share, max_pe, median_pe, avg_pe, min_pe)
-            report.log("  Max Price: {}  Average Price: {}  Median Price: {}  Min Price: {} ({:.2f}%)".
-                       format(to_dollars(max_current), to_dollars(avg_current),
-                              to_dollars(median_current), to_dollars(min_current),
-                              (current_price_per_share / min_current * 100)))
+            fair_price = "max={} avg={} med={} min={} ({:.2f}%)".format(to_dollars(max_current),
+                                                                        to_dollars(avg_current),
+                                                                        to_dollars(median_current),
+                                                                        to_dollars(min_current),
+                                                                        (current_price / min_current * 100))
+            report.log("fair prices (P/Es * current EPS ${}): {} ({})".format(
+                round(earnings_per_share, 2), fair_price, current_time.strftime("%Y-%m-%d")))
 
-            price_to_book_ratio = current_price_per_share / book_value_per_share
-            report.log("  - Current price to book ratio: {:.2f}%".format(price_to_book_ratio * 100))
+            price_to_book = current_price / book_value_per_share
+            price_to_earnings = current_price / earnings_per_share
+            report.log("price/book={:.2f} | price/earnings={:.2f}".format(price_to_book, price_to_earnings))
 
             short_debt_last_time = df[ValueType.SHORT_DEBT].last_valid_index()
             long_debt_last_time = df[ValueType.LONG_DEBT].last_valid_index()
             debt = df.loc[short_debt_last_time, ValueType.SHORT_DEBT] + df.loc[long_debt_last_time, ValueType.LONG_DEBT]
-            debt_to_asset_ratio = debt / df.loc[assets_last_time, ValueType.ASSETS]
-            report.log("  - Last report debt to asset ratio: {:.2f}%".format(debt_to_asset_ratio * 100))
+            debt_to_equity_ratio = debt / df.loc[assets_last_time, ValueType.EQUITY]
+            debt_to_assets_ratio = debt / df.loc[assets_last_time, ValueType.ASSETS]
+            liabilities_to_assets_ratio = df.loc[assets_last_time, ValueType.LIABILITIES] / df.loc[
+                assets_last_time, ValueType.ASSETS]
+            report.log("debt/equity={:.2f}%".format(debt_to_equity_ratio * 100) +
+                       " | liabilities/assets={:.2f}%".format(liabilities_to_assets_ratio * 100) +
+                       " | debt/assets={:.2f}%".format(debt_to_assets_ratio * 100))
 
             report.log('-- End report for {}'.format(self.symbol))
             logging.info(f'Report file: {file_link_format(report_path)}')
 
             return df
 
-    def report_format(self, df):
-        df_print = df.copy()
-        df_print[ValueType.REVENUE] = df_print[ValueType.REVENUE].apply(to_dollars)
-        df_print[ValueType.CASH_FLOW] = df_print[ValueType.CASH_FLOW].apply(to_dollars)
-        df_print[ValueType.ASSETS] = df_print[ValueType.ASSETS].apply(to_dollars)
-        df_print[ValueType.SHARES] = df_print[ValueType.SHARES].apply(to_abbrev)
-        df_print[ValueType.LIABILITIES] = df_print[ValueType.LIABILITIES].apply(to_dollars)
-        df_print[ValueType.LONG_DEBT] = df_print[ValueType.LONG_DEBT].apply(to_dollars)
-        df_print[ValueType.SHORT_DEBT] = df_print[ValueType.SHORT_DEBT].apply(to_dollars)
-        df_print[ValueType.EQUITY] = df_print[ValueType.EQUITY].apply(to_dollars)
-        df_print[ValueType.EPS] = df_print[ValueType.EPS].apply(to_dollars)
-        df_print[ValueType.NET_INCOME] = df_print[ValueType.NET_INCOME].apply(to_dollars)
-        df_print[ValueType.DIVIDENDS] = df_print[ValueType.DIVIDENDS].apply(to_dollars)
-        df_print[ValueType.HIGH] = df_print[ValueType.HIGH].apply(to_dollars)
-        df_print[ValueType.LOW] = df_print[ValueType.LOW].apply(to_dollars)
-        df_print[ValueType.CLOSE] = df_print[ValueType.CLOSE].apply(to_dollars)
-        return df_print
+    def report_format(self, df_orig):
+        df = df_orig.copy()
+        convert_formats(df)
+        df = report_order(df)
+        return df
 
     # @staticmethod
     # def get_data(adapter: Adapter) -> pandas.DataFrame:  # , value_types):

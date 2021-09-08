@@ -25,7 +25,7 @@ from typing import Optional, List
 
 import pandas
 
-from main.application.adapter import TimeInterval, AssetType, Adapter, insert_data_column
+from main.application.adapter import TimeInterval, AssetType, Adapter, insert_column
 from main.application.value_type import ValueType
 from main.application.converter import Converter
 from main.application.argument import ArgumentType
@@ -197,7 +197,7 @@ class IexCloud(Adapter):
                 if value is not None:
                     indexes.append(datetime.strptime(entry['date'], data_date_format))
                     values.append(value)
-            insert_data_column(self.data, converter.value_type, indexes, values)
+            insert_column(self.data, converter.value_type, indexes, values)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)
@@ -332,7 +332,7 @@ class IexCloud(Adapter):
                 if value is not None:
                     indexes.append(datetime.strptime(entry['date'], data_date_format))
                     values.append(value)
-            insert_data_column(adapter.data, converter.value_type, indexes, values)
+            insert_column(adapter.data, converter.value_type, indexes, values)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)
@@ -381,7 +381,7 @@ class IexCloud(Adapter):
                 if value is not None:
                     indexes.append(datetime.strptime(entry['fiscalDateEnding'], data_date_format))
                     values.append(value)
-            insert_data_column(adapter.data, converter.value_type, indexes, values)
+            insert_column(adapter.data, converter.value_type, indexes, values)
 
     def get_income_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
@@ -424,7 +424,7 @@ class IexCloud(Adapter):
             if value is not None:
                 indexes.append(datetime.strptime(entry['fiscalDate'], data_date_format))
                 values.append(value)
-        insert_data_column(adapter.data, converter.value_type, indexes, values)
+        insert_column(adapter.data, converter.value_type, indexes, values)
 
     # def translate_income(self, response_data, key, data_date_format='%Y-%m-%d'):
     #     if key not in response_data:
@@ -480,7 +480,7 @@ class IexCloud(Adapter):
                 if value is not None:
                     indexes.append(datetime.strptime(entry['fiscalDate'], data_date_format))
                     values.append(value)
-            insert_data_column(adapter.data, converter.value_type, indexes, values)
+            insert_column(adapter.data, converter.value_type, indexes, values)
 
     def get_reported_financials_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
@@ -548,7 +548,7 @@ class IexCloud(Adapter):
                 indexes.append(instance)  # these are already the same
                 updates.append(updated)
                 values.append(value)
-        insert_data_column(adapter.data, converter.value_type, indexes, values)
+        insert_column(adapter.data, converter.value_type, indexes, values)
         # max_entries = 0
         # if converter.value_type in indexes:
         #     max_entries = max(max_entries, len(indexes))
@@ -579,7 +579,7 @@ class IexCloud(Adapter):
                         ratio = self.get_adjusted_ratio(entry)
                         value = value * ratio
                         values.append(value)
-            insert_data_column(adapter.data, converter.value_type, indexes, values)
+            insert_column(adapter.data, converter.value_type, indexes, values)
 
     def calculate_eps(self):
         # Represents net income available to common basic EPS before extraordinaries for the period calculated as (

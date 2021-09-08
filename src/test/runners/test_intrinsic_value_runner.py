@@ -18,7 +18,7 @@ from unittest import TestCase
 
 import pandas
 
-from main.application.adapter import Adapter, insert_data_column
+from main.application.adapter import Adapter, insert_column
 from main.application.adapter_collection import filter_adapters, AdapterCollection
 from main.application.value_type import ValueType
 from main.runners.intrinsic_value_runner import predict_value_type_linear, predict_value_linear
@@ -58,7 +58,7 @@ class TestIntrinsicValueRunner(TestCase):
         adapter.request_value_types.append(ValueType.OPEN)
         start_time: datetime = data.index[0]
         end_time: datetime = data.index[-1]
-        insert_data_column(adapter.data, ValueType.OPEN, [start_time, end_time], [1.0, 2.0])
+        insert_column(adapter.data, ValueType.OPEN, [start_time, end_time], [1.0, 2.0])
         future_time: datetime = end_time + get_test_time_delta(2)
         next_value = predict_value_type_linear(collection, 'TEST', ValueType.OPEN, future_time)
         self.assertAlmostEqual(next_value, 3.0)  # D5 equivalent

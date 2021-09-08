@@ -179,6 +179,16 @@ The Profile class can also be used to profile a small section of code, but it do
     apt-get install kcachegrind
     pyprof2calltree -k -i multi_symbol.prof
 
+# Large Reruns
+
+To rerun the YAMLs that exist use:
+
+    find /app/output/intrinsic_value_runner/ -name "*.yaml" | xargs -n 1 -P 1 /app/src/intrinsic_value.py -i
+
+To compare a line from these files:
+
+    grep "current IRR" *.log | grep -v nan | grep yearly
+
 # Example output
 
 ## STDOUT - Symbol Runner

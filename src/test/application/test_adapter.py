@@ -21,7 +21,7 @@ import numpy
 import pandas
 
 from main.application.adapter import Adapter, AssetType, get_common_start_time, get_common_end_time, \
-    DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_data_column, \
+    DuplicateRawIndexesException, find_closest_instance_after, find_closest_instance_before, insert_column, \
     DataNotSortedException, get_default_cache_key_date, find_closest_before_else_after, \
     get_column, get_key_for_api_request
 from main.application.value_type import ValueType
@@ -140,7 +140,7 @@ class TestAdapter(TestCase):
         common_time = datetime(year=3000, month=2, day=1)
         indexes = [common_time, common_time]
         values = [1.0, 1.0]
-        self.assertRaises(DuplicateRawIndexesException, insert_data_column, adapter.data, ValueType.OPEN, indexes,
+        self.assertRaises(DuplicateRawIndexesException, insert_column, adapter.data, ValueType.OPEN, indexes,
                           values)
 
     def test_insert_data_column(self):
@@ -153,7 +153,7 @@ class TestAdapter(TestCase):
         start_time = common_time - timedelta(weeks=1)
         open_indexes = [start_time, common_time]
         open_values = [1.0, 2.0]
-        insert_data_column(adapter.data, ValueType.OPEN, open_indexes, open_values)
+        insert_column(adapter.data, ValueType.OPEN, open_indexes, open_values)
         open_time_index = open_indexes.index(common_time)
         self.assertEqual(open_values[open_time_index], adapter.data.loc[common_time, ValueType.OPEN],
                          "First open value was not as expected")
@@ -162,7 +162,7 @@ class TestAdapter(TestCase):
         end_time = common_time + timedelta(weeks=1)
         close_indexes = [end_time, common_time]  # ... swapped
         close_values = [4.0, 3.0]  # ... swapped
-        insert_data_column(adapter.data, ValueType.CLOSE, close_indexes, close_values)
+        insert_column(adapter.data, ValueType.CLOSE, close_indexes, close_values)
         close_time_index = close_indexes.index(common_time)
         self.assertEqual(close_values[close_time_index], adapter.data.loc[common_time, ValueType.CLOSE],
                          "First close value was not as expected")
@@ -183,7 +183,7 @@ class TestAdapter(TestCase):
         common_time = datetime(year=3000, month=2, day=1)
         indexes = [common_time, common_time - timedelta(weeks=1)]
         values = [1.0, 1.0]
-        insert_data_column(data, ValueType.CLOSE, indexes, values)
+        insert_column(data, ValueType.CLOSE, indexes, values)
         data.sort_index(ascending=False, inplace=True)
         self.assertRaises(DataNotSortedException, find_closest_instance_after, data, common_time)
 
@@ -222,7 +222,7 @@ class TestAdapter(TestCase):
         common_time = datetime(year=3000, month=2, day=1)
         indexes = [common_time, common_time - timedelta(weeks=1)]
         values = [1.0, 1.0]
-        insert_data_column(data, ValueType.CLOSE, indexes, values)
+        insert_column(data, ValueType.CLOSE, indexes, values)
         data.sort_index(ascending=False, inplace=True)
         self.assertRaises(DataNotSortedException, find_closest_instance_before, data, common_time)
 

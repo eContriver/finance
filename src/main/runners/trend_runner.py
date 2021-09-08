@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import pandas
 from pytrends.request import TrendReq
 
-from main.application.adapter import insert_data_column, AssetType, Adapter, TimeInterval
+from main.application.adapter import insert_column, AssetType, Adapter, TimeInterval
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.application.argument import Argument, ArgumentType
 from main.application.value_type import ValueType
@@ -78,8 +78,8 @@ class TrendRunner(Runner):
             time_data = pytrend.interest_over_time()
             close_column: pandas.Series = collection.get_column(self.symbol, ValueType.CLOSE)
             max_price = close_column.max()
-            insert_data_column(time_data, ValueType.CLOSE, close_column.index.tolist(),
-                               ((close_column.values / max_price) * 100.0).tolist())
+            insert_column(time_data, ValueType.CLOSE, close_column.index.tolist(),
+                          ((close_column.values / max_price) * 100.0).tolist())
             time_data.interpolate(method='time', inplace=True)
             logging.info(f"Interest over time:\n{time_data}")
             time_data.rename(columns={ValueType.CLOSE: f"Closing Price {self.symbol}"}, inplace=True)

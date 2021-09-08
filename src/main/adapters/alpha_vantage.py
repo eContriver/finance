@@ -19,7 +19,7 @@ from os import environ
 from typing import Dict, List, Optional
 
 from main.application.adapter import DataType, TimeInterval, AssetType, Adapter, get_response_value_or_none, \
-    IntervalNotSupportedException, insert_data_column, request_limit_with_timedelta_delay
+    IntervalNotSupportedException, insert_column, request_limit_with_timedelta_delay
 from main.application.value_type import ValueType
 from main.application.converter import Converter
 from main.application.argument import ArgumentType
@@ -226,7 +226,7 @@ class AlphaVantage(Adapter):
                     value = value * ratio
                 indexes.append(datetime.fromisoformat(entry_datetime))
                 values.append(value)
-            insert_data_column(self.data, converter.value_type, indexes, values)
+            insert_column(self.data, converter.value_type, indexes, values)
 
     def get_macd_response(self, value_type: ValueType) -> None:
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
@@ -314,7 +314,7 @@ class AlphaVantage(Adapter):
                 if value is not None:
                     indexes.append(datetime.fromisoformat(entry['fiscalDateEnding']))
                     values.append(value)
-            insert_data_column(self.data, converter.value_type, indexes, values)
+            insert_column(self.data, converter.value_type, indexes, values)
         assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)

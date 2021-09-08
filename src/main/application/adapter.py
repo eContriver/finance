@@ -451,21 +451,21 @@ def get_response_value_or_none(time_data: Dict[str, str], key: str) -> Optional[
     return value
 
 
-def insert_data_column(data: pandas.DataFrame, value_type: ValueType,
-                       indexes: List[datetime], values: List[float]) -> None:
+def insert_column(data: pandas.DataFrame, column: Any,
+                  indexes: List[datetime], values: List[float]) -> None:
     """
     Inserts a new column of data into the underlying DataFrame
     :param data: The DataFrame that will have the column inserted into it
-    :param value_type: The column will be insert under this ValueType label (i.e. column name)
+    :param column: The column will be insert under this ValueType label (i.e. column name)
     :param indexes: The indices of the data, these do not have to match with the existing indexes
     :param values: The value of the new column, these are expected to be index aligned with the indexes
     :return:
     """
-    column = pandas.Series(values, index=indexes)
+    column_values = pandas.Series(values, index=indexes)
     add_indices = pandas.Index(indexes).difference(data.index)
-    data.insert(0, value_type, column)
+    data.insert(0, column, column_values)
     for index in add_indices:
-        data.loc[index, value_type] = column[index] if index in column else np.NaN
+        data.loc[index, column] = column_values[index] if index in column_values else np.NaN
     data.sort_index(ascending=True, inplace=True)
     if True in data.index.duplicated():
         raise DuplicateRawIndexesException(f"Indexes must be unique, yet found duplicates: "
