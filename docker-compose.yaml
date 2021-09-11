@@ -23,18 +23,25 @@
 # Test volumes
 #   docker volume rm financial_static_site && docker volume create --driver local --opt type=cifs --opt device=//192.168.2.235/private/projects/financial_static_site --opt o=username=user,password=pw financial_static_site
 #   docker run --rm -it -v financial_static_site:/financial_static_site/ py_deps bash -c "ls -la /financial_static_site && touch /financial_static_site/test-`date +%s` && ls -la /financial_static_site"
+# Rebuilding - keep latest working until it is tested...
+#   export version=0.0.1
+#   docker-compose build
+#   docker-compose push
+#   unset version      # <- this releases latest
+#   docker-compose build
+#   docker-compose push
 
 version: "3.8"
 
 services:
   py_deps:
-    image: py_deps:latest
+    image: py_deps:${version:-latest}
     build: 
       context: .
       dockerfile: ./Dockerfile
   dev:
     container_name: fss_dev
-    image: py_deps:latest
+    image: py_deps:${version:-latest}
     stdin_open: true 
     tty: true 
     depends_on: 

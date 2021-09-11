@@ -100,6 +100,33 @@ In a ~/.bash_profile or equivalent
 
     pip install -r requirements.txt
 
+## Upgrade individual
+
+    pip3 install --upgrade tensorflow
+
+## Upgrading all
+
+    pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip3 install -U
+
+## Upgrade to a specific version (can use ==)
+
+    pip install typing-extensions~=3.7.4
+
+# Building new images
+
+To install a new OS dependency, or an image with new pip dependencies it is good to first test the
+build before modifying or messing with the latest. Only after it is working should it over ride the 
+latest. To attempt to add a new version - look-up the existing version adn then bump the version:
+
+    export version=0.0.2
+    docker-compose run dev
+
+This will attempt to use the version 0.0.2 image and because it doesn't exist it will have to be created.
+
+If you tried to do this without having the version set, then it would just use the latest image and it 
+wouldn't even try to build. 
+
+
 # Testing
 
 ## Sequential

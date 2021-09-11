@@ -488,6 +488,8 @@ class IntrinsicValueRunner(Runner):
                     future_datetime = future_start_time + it * interval.timedelta
                     indexes.append(future_datetime)
                     values.append(predict_value_type_linear(collection, self.symbol, column, future_datetime))
+                if column in [ValueType.SHORT_DEBT, ValueType.LONG_DEBT, ValueType.LIABILITIES]:  # if debt trending to negative, then zero it
+                    values = [value if value >= 0 else 0 for value in values]
                 insert_column(predictions_df, column, indexes, values)
                 # prediction = predict_value_type_linear(collection, self.symbol, value_type, future_time)
                 # predictions[value_type] = prediction
