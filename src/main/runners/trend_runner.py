@@ -25,9 +25,10 @@ import matplotlib.pyplot as plt
 import pandas
 from pytrends.request import TrendReq
 
-from main.application.adapter import insert_column, AssetType, Adapter, TimeInterval
+from main.application.adapter import insert_column, AssetType, Adapter
+from main.application.time_interval import TimeInterval
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
-from main.application.argument import Argument, ArgumentType
+from main.application.argument import Argument, ArgumentKey
 from main.application.value_type import ValueType
 from main.common.locations import Locations
 from main.common.report import Report
@@ -131,9 +132,9 @@ class TrendRunner(Runner):
         adapter: Adapter = self.adapter_class(self.symbol, asset_type)
         end_time = datetime.now()
         adapter.asset_type = asset_type
-        adapter.add_argument(Argument(ArgumentType.START_TIME, end_time - timedelta(weeks=52)))
-        adapter.add_argument(Argument(ArgumentType.END_TIME, end_time))
-        adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))
+        adapter.add_argument(Argument(ArgumentKey.START_TIME, end_time - timedelta(weeks=52)))
+        adapter.add_argument(Argument(ArgumentKey.END_TIME, end_time))
+        adapter.add_argument(Argument(ArgumentKey.INTERVAL, self.price_interval))
         adapter.request_value_types = [ValueType.CLOSE]
         collection: AdapterCollection = AdapterCollection()
         collection.add(adapter)

@@ -27,7 +27,8 @@ import pandas
 import pandas_datareader
 from pandas_datareader import DataReader
 
-from main.application.adapter import TimeInterval, AssetType, DataType, Adapter
+from main.application.adapter import AssetType, DataType, Adapter
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.common.time_zones import TimeZones
 

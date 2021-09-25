@@ -22,12 +22,13 @@ from typing import Optional, List, Dict
 
 import pandas
 
-from main.application.adapter import TimeInterval, AssetType, Adapter, sort_data
+from main.application.adapter import AssetType, Adapter, sort_data
+from main.application.time_interval import TimeInterval
 from main.application.converter import Converter
 from main.application.value_type import ValueType
 from main.application.adapter_collection import AdapterCollection
 
-from main.application.argument import ArgumentType, Argument
+from main.application.argument import ArgumentKey, Argument
 from main.common.locations import get_and_clean_timestamp_dir
 
 
@@ -199,8 +200,8 @@ class MockDataAdapter(Adapter):
     def get_generator(self) -> DataGenerator:
         # up/down
         periods = 20
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
-        end_time: datetime = self.get_argument_value(ArgumentType.END_TIME)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
+        end_time: datetime = self.get_argument_value(ArgumentKey.END_TIME)
         end_time = datetime.now() if end_time is None else end_time
         # end_time = self.cache_key_date
         assert interval is not None, "The interval argument was not specified, found: {}".format(interval)
@@ -285,10 +286,10 @@ def setup_symbol_adapter(symbol, interval: TimeInterval, asset_type: AssetType, 
     data_adapter: MockDataAdapter = MockDataAdapter(symbol, asset_type)
     data_adapter.request_value_types = value_types
     data_adapter.base_symbol = base_symbol
-    data_adapter.add_argument(Argument(ArgumentType.END_TIME, datetime.now()))
-    data_adapter.add_argument(Argument(ArgumentType.INTERVAL, interval))
+    data_adapter.add_argument(Argument(ArgumentKey.END_TIME, datetime.now()))
+    data_adapter.add_argument(Argument(ArgumentKey.INTERVAL, interval))
     # data_adapter.add_arg(Argument(ArgumentType.RSI_INTERVAL, interval))
-    data_adapter.add_argument(Argument(ArgumentType.RSI_PERIOD, 12.0))
+    data_adapter.add_argument(Argument(ArgumentKey.RSI_PERIOD, 12.0))
     return data_adapter
 
 

@@ -13,12 +13,14 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+from datetime import datetime
 from enum import Enum, auto
 from typing import Any
 
+from main.application.time_interval import TimeInterval
 
-class ArgumentType(Enum):
+
+class ArgumentKey(Enum):
     INTERVAL = auto()
     START_TIME = auto()
     END_TIME = auto()
@@ -32,10 +34,26 @@ class ArgumentType(Enum):
     BOOK = auto()
 
 
+def get_argument_type(argument_key: ArgumentKey):
+    types = {
+        ArgumentKey.INTERVAL: TimeInterval,
+        ArgumentKey.START_TIME: datetime,
+        ArgumentKey.END_TIME: datetime,
+        ArgumentKey.RSI_PERIOD: float,
+        ArgumentKey.SMA_PERIOD: float,
+        ArgumentKey.MACD_SLOW: float,
+        ArgumentKey.MACD_FAST: float,
+        ArgumentKey.MACD_SIGNAL: float,
+        ArgumentKey.BOOK: float,
+    }
+    return types.get(argument_key)
+
+
 class Argument:
     value: Any
-    argument_type: ArgumentType
+    argument_key: ArgumentKey
 
-    def __init__(self, argument_type: ArgumentType, value: Any):
-        self.argument_type = argument_type
+    def __init__(self, argument_key: ArgumentKey, value: Any):
+        self.argument_key = argument_key
+        assert isinstance(value, get_argument_type(argument_key))
         self.value = value

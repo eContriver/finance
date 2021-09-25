@@ -19,14 +19,21 @@ from unittest import TestCase
 
 from main.adapters.alpha_vantage import AlphaVantage, get_adjusted_ratio
 from main.application.adapter import request_limit_with_timedelta_delay, DataType
+from main.application.time_interval import TimeInterval
+from main.application.argument import Argument, ArgumentKey
+from main.application.value_type import ValueType
 
 
 class MockAlphaVantage(AlphaVantage):  # -> List(str), str
     def get_url_response(self, url: str, query, cache: bool = True, data_type: DataType = DataType.JSON,
                          delay: bool = True):
         data = []
+         # with tempfile.TemporaryDirectory() as tmpdirname:
         data_file = '/test/file'
         if query['function'] == 'LISTING_STATUS':
+            data.append(['title'])
+            data.append(['testvalue'])
+        elif query['function'] == 'TIME_SERIES_INTRADAY':
             data.append(['title'])
             data.append(['testvalue'])
         return data, data_file
@@ -71,8 +78,12 @@ class TestAlphaVantage(TestCase):
         self.assertEqual(equities[0], 'testvalue')
 
     # def test_get_prices_response(self):
-    #     self.fail()
-    #
+    #     adapter: AlphaVantage = MockAlphaVantage('TEST')
+    #     adapter.add_argument(Argument(ArgumentKey.INTERVAL, TimeInterval.HOUR))
+    #     adapter.get_prices_response(ValueType.CLOSE)
+    #     start_time = datetime.now()
+    #     self.assertEqual(adapter.get_value(start_time, ValueType.CLOSE), 1.0)
+
     # def test_get_stock_prices_response(self):
     #     self.fail()
     #

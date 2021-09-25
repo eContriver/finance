@@ -19,9 +19,10 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
 
-from main.application.adapter import TimeInterval, AssetType, Adapter
+from main.application.adapter import AssetType, Adapter
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from main.application.argument import Argument, ArgumentType
+from main.application.argument import Argument, ArgumentKey
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.common.locations import Locations
 from main.application.runner import Runner, validate_type, NoSymbolsSpecifiedException, get_adapter_class, \
@@ -64,9 +65,9 @@ class AlertRunner(Runner):
             adapter.base_symbol = 'USD'
             end_time = datetime.now()
             adapter.asset_type = asset_type
-            adapter.add_argument(Argument(ArgumentType.START_TIME, end_time - timedelta(days=1)))
-            adapter.add_argument(Argument(ArgumentType.END_TIME, end_time))
-            adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))
+            adapter.add_argument(Argument(ArgumentKey.START_TIME, end_time - timedelta(days=1)))
+            adapter.add_argument(Argument(ArgumentKey.END_TIME, end_time))
+            adapter.add_argument(Argument(ArgumentKey.INTERVAL, self.price_interval))
             adapter.request_value_types = [ValueType.CLOSE]
             collection.add(adapter)
         set_all_cache_key_dates(collection.adapters, datetime.now())

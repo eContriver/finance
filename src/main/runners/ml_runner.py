@@ -26,7 +26,8 @@ from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import LSTM, Dense
 
 from main.adapters.alpha_vantage import AlphaVantage
-from main.application.adapter import TimeInterval, Adapter
+from main.application.adapter import Adapter
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.common.time_zones import TimeZones
 from main.application.adapter_collection import AdapterCollection

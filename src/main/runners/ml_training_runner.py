@@ -26,9 +26,10 @@ from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import LSTM, Dense
 
 from main.adapters.alpha_vantage import AlphaVantage
-from main.application.adapter import TimeInterval, Adapter
+from main.application.adapter import Adapter
+from main.application.time_interval import TimeInterval
 from main.application.adapter_collection import AdapterCollection
-from main.application.argument import Argument, ArgumentType
+from main.application.argument import Argument, ArgumentKey
 from main.application.value_type import ValueType
 from main.common.locations import Locations
 from main.common.time_zones import TimeZones
@@ -64,7 +65,7 @@ class MLTrainingRunner(MLRunner):
             adapter.base_symbol = 'USD'
             adapter.interval = TimeInterval.DAY
             adapter.request_value_types = [ValueType.CLOSE]
-            adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))
+            adapter.add_argument(Argument(ArgumentKey.INTERVAL, self.price_interval))
             collection.add(adapter)
         # These can run in parallel as they do for Strategy.run() which is called in ParallelStrategyRunner when
         # Runners are called, if we can build each model separately and then later join them we could get the data

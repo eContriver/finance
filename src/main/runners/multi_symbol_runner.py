@@ -20,7 +20,8 @@ import sys
 from datetime import datetime
 from typing import List, Optional, Dict
 
-from main.application.adapter import TimeInterval, AssetType
+from main.application.adapter import AssetType
+from main.application.time_interval import TimeInterval
 from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir
 from main.executors.parallel_strategy_executor import ParallelStrategyExecutor

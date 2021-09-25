@@ -20,7 +20,8 @@ import logging
 from datetime import datetime
 from typing import List
 
-from main.application.adapter import AssetType, TimeInterval, Adapter
+from main.application.adapter import AssetType, Adapter
+from main.application.time_interval import TimeInterval
 from main.application.adapter_collection import AdapterCollection
 from main.adapters.alpha_vantage import AlphaVantage
 from main.application.value_type import ValueType

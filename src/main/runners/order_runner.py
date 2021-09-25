@@ -18,7 +18,8 @@ import logging
 from datetime import datetime
 
 from main.adapters.alpha_vantage import AlphaVantage
-from main.application.adapter import TimeInterval, AssetType
+from main.application.adapter import AssetType
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.application.order import Order
 from main.adapters.robinhood import Robinhood

@@ -24,7 +24,8 @@ from typing import Optional, Dict
 
 import robin_stocks as rs
 
-from main.application.adapter import TimeInterval, AssetType
+from main.application.adapter import AssetType
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.application.order import Order
 from main.portfolio.order import LimitOrder, OrderSide, StopOrder

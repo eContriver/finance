@@ -20,7 +20,8 @@ import os.path
 from enum import Enum, auto
 from typing import List, Dict, Optional
 
-from main.application.adapter import TimeInterval, AssetType
+from main.application.adapter import AssetType
+from main.application.time_interval import TimeInterval
 from main.adapters.iex_cloud import IexCloud
 from main.common.locations import get_and_clean_timestamp_dir, Locations
 from main.executors.parallel_executor import ParallelExecutor

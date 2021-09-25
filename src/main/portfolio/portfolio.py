@@ -19,7 +19,8 @@ from typing import Optional, List, Dict
 
 import pandas
 
-from main.application.adapter import TimeInterval, AssetType
+from main.application.adapter import AssetType
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from datetime import datetime, timedelta
 

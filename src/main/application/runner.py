@@ -36,6 +36,11 @@ from main.common.profiler import Profiler
 from main.common.report import Report
 
 
+class TooManySymbolsSpecifiedException(RuntimeError):
+    """
+    """
+    pass
+
 class NoSymbolsSpecifiedException(RuntimeError):
     """
     If the runner does not have any symbols specified then this exception can be thrown. This is intended for classes

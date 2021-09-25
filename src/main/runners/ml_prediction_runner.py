@@ -25,9 +25,10 @@ import pandas_datareader as web
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow import keras
 
-from main.application.adapter import Adapter, TimeInterval
+from main.application.adapter import Adapter
+from main.application.time_interval import TimeInterval
 from main.application.adapter_collection import AdapterCollection
-from main.application.argument import ArgumentType, Argument
+from main.application.argument import ArgumentKey, Argument
 from main.application.value_type import ValueType
 from main.common.locations import Locations
 from main.common.time_zones import TimeZones
@@ -79,7 +80,7 @@ class MLPredictionRunner(MLRunner):
         adapter.base_symbol = 'USD'
         adapter.interval = TimeInterval.DAY
         adapter.request_value_types = [ValueType.CLOSE]
-        adapter.add_argument(Argument(ArgumentType.INTERVAL, self.price_interval))
+        adapter.add_argument(Argument(ArgumentKey.INTERVAL, self.price_interval))
         collection.add(adapter)
         collection.retrieve_all_data()
         data: pandas.Series = collection.get_column(symbol, ValueType.CLOSE)

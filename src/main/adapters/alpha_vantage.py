@@ -18,11 +18,12 @@ from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
 
-from main.application.adapter import DataType, TimeInterval, AssetType, Adapter, get_response_value_or_none, \
+from main.application.adapter import DataType, AssetType, Adapter, get_response_value_or_none, \
     IntervalNotSupportedException, insert_column, request_limit_with_timedelta_delay
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.application.converter import Converter
-from main.application.argument import ArgumentType
+from main.application.argument import ArgumentKey
 from main.common.locations import file_link_format
 
 
@@ -139,10 +140,10 @@ class AlphaVantage(Adapter):
             "apikey": self.api_key,
             "symbol": self.symbol
         }
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
-        end_time: Optional[datetime] = self.get_argument_value(ArgumentType.END_TIME)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
+        end_time: Optional[datetime] = self.get_argument_value(ArgumentKey.END_TIME)
         end_time = datetime.now() if end_time is None else end_time
-        start_time: Optional[datetime] = self.get_argument_value(ArgumentType.START_TIME)
+        start_time: Optional[datetime] = self.get_argument_value(ArgumentKey.START_TIME)
         start_time = end_time - timedelta(days=1) if start_time is None else start_time
         record_count = (end_time - start_time) / interval.timedelta
         output_size = "compact" if record_count < 100 else "full"
@@ -175,7 +176,7 @@ class AlphaVantage(Adapter):
             "symbol": self.symbol,
             "market": self.base_symbol
         }
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         if interval == TimeInterval.DAY:
             query["function"] = "DIGITAL_CURRENCY_DAILY"
             key = 'Time Series (Digital Currency Daily)'
@@ -234,10 +235,10 @@ class AlphaVantage(Adapter):
             "apikey": self.api_key,
             "symbol": indicator_key,
             "function": "MACD",
-            "interval": self.get_argument_value(ArgumentType.INTERVAL).value,
-            "slowperiod": int(self.get_argument_value(ArgumentType.MACD_SLOW)),
-            "fastperiod": int(self.get_argument_value(ArgumentType.MACD_FAST)),
-            "signalperiod": int(self.get_argument_value(ArgumentType.MACD_SIGNAL)),
+            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "slowperiod": int(self.get_argument_value(ArgumentKey.MACD_SLOW)),
+            "fastperiod": int(self.get_argument_value(ArgumentKey.MACD_FAST)),
+            "signalperiod": int(self.get_argument_value(ArgumentKey.MACD_SIGNAL)),
             "series_type": "close"
         }
         raw_response, data_file = self.get_url_response(self.url, query)
@@ -250,8 +251,8 @@ class AlphaVantage(Adapter):
             "apikey": self.api_key,
             "symbol": indicator_key,
             "function": "SMA",
-            "interval": self.get_argument_value(ArgumentType.INTERVAL).value,
-            "time_period": int(self.get_argument_value(ArgumentType.SMA_PERIOD)),
+            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "time_period": int(self.get_argument_value(ArgumentKey.SMA_PERIOD)),
             "series_type": "close",
         }
         raw_response, data_file = self.get_url_response(self.url, query)
@@ -264,8 +265,8 @@ class AlphaVantage(Adapter):
             "apikey": self.api_key,
             "symbol": indicator_key,
             "function": "RSI",
-            "interval": self.get_argument_value(ArgumentType.INTERVAL).value,
-            "time_period": int(self.get_argument_value(ArgumentType.RSI_PERIOD)),
+            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "time_period": int(self.get_argument_value(ArgumentKey.RSI_PERIOD)),
             "series_type": "close"
         }
         raw_response, data_file = self.get_url_response(self.url, query)
@@ -274,7 +275,7 @@ class AlphaVantage(Adapter):
         self.translate(raw_response, value_type, key)
 
     def get_earnings_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
             "apikey": self.api_key,
             "symbol": self.symbol,
@@ -319,8 +320,8 @@ class AlphaVantage(Adapter):
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)
 
-    def get_income_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+    def get_income_response(self, value_type: ValueType) -> None:
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
             "apikey": self.api_key,
             "symbol": self.symbol,
@@ -339,7 +340,7 @@ class AlphaVantage(Adapter):
         self.translate_earnings(raw_response, value_type, key)
         # self.translate_income(raw_response, value_type, key)
 
-    def translate_income(self, response_data, key, data_date_format='%Y-%m-%d'):
+    def translate_income(self, response_data, key, data_date_format='%Y-%m-%d') -> Dict[datetime, Dict]:
         if key not in response_data:
             raise RuntimeError("Failed to find key in data: {}".format(key))
         if not response_data[key]:
@@ -358,7 +359,7 @@ class AlphaVantage(Adapter):
         return translated
 
     def get_balance_sheet_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
             "apikey": self.api_key,
             "symbol": self.symbol,
@@ -395,7 +396,7 @@ class AlphaVantage(Adapter):
         return translated
 
     def get_cash_flow_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
             "apikey": self.api_key,
             "symbol": self.symbol,

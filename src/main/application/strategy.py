@@ -22,7 +22,7 @@ from typing import Optional, Dict, Any
 
 from main.application.adapter import Adapter, AssetType
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
-from main.application.argument import Argument, ArgumentType
+from main.application.argument import Argument, ArgumentKey
 from main.application.order import Order
 from main.application.value_type import ValueType
 from main.common.time_zones import TimeZones
@@ -138,9 +138,9 @@ class Strategy:
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
-            adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
+            adapter.arguments.append(Argument(ArgumentKey.INTERVAL, self.portfolio.interval))
+            adapter.arguments.append(Argument(ArgumentKey.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentKey.END_TIME, self.portfolio.end_time))
             adapter.add_value_type(value_type)
 
     def add_sma_collection(self, symbol: str, period: str, cache_key_date: Optional[datetime] = None) -> None:
@@ -152,10 +152,10 @@ class Strategy:
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
-            adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
-            adapter.arguments.append(Argument(ArgumentType.SMA_PERIOD, period))
+            adapter.arguments.append(Argument(ArgumentKey.INTERVAL, self.portfolio.interval))
+            adapter.arguments.append(Argument(ArgumentKey.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentKey.END_TIME, self.portfolio.end_time))
+            adapter.arguments.append(Argument(ArgumentKey.SMA_PERIOD, period))
             adapter.add_value_type(value_type)
 
     def add_macd_collection(self, symbol, slow, fast, signal, cache_key_date: Optional[datetime] = None):
@@ -167,12 +167,12 @@ class Strategy:
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
-            adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
-            adapter.arguments.append(Argument(ArgumentType.MACD_SLOW, slow))
-            adapter.arguments.append(Argument(ArgumentType.MACD_FAST, fast))
-            adapter.arguments.append(Argument(ArgumentType.MACD_SIGNAL, signal))
+            adapter.arguments.append(Argument(ArgumentKey.INTERVAL, self.portfolio.interval))
+            adapter.arguments.append(Argument(ArgumentKey.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentKey.END_TIME, self.portfolio.end_time))
+            adapter.arguments.append(Argument(ArgumentKey.MACD_SLOW, slow))
+            adapter.arguments.append(Argument(ArgumentKey.MACD_FAST, fast))
+            adapter.arguments.append(Argument(ArgumentKey.MACD_SIGNAL, signal))
             adapter.add_value_type(value_type)
             # self.collection.adapters.append(adapter)
 
@@ -188,10 +188,10 @@ class Strategy:
             # adapter: Adapter = data_adpter_class(self.symbol, asset_type)
             # if cache_key_date is not None:
             #     adapter.cache_key_date = cache_key_date
-            adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
-            adapter.arguments.append(Argument(ArgumentType.RSI_PERIOD, period))
+            adapter.arguments.append(Argument(ArgumentKey.INTERVAL, self.portfolio.interval))
+            adapter.arguments.append(Argument(ArgumentKey.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentKey.END_TIME, self.portfolio.end_time))
+            adapter.arguments.append(Argument(ArgumentKey.RSI_PERIOD, period))
             adapter.add_value_type(value_type)
             # self.collection.adapters.append(adapter)
 
@@ -206,10 +206,10 @@ class Strategy:
             adapter: Adapter = adapter_class(symbol, asset_type)
             if cache_key_date is not None:
                 adapter.cache_key_date = cache_key_date
-            adapter.arguments.append(Argument(ArgumentType.INTERVAL, self.portfolio.interval))
-            adapter.arguments.append(Argument(ArgumentType.START_TIME, self.portfolio.start_time))
-            adapter.arguments.append(Argument(ArgumentType.END_TIME, self.portfolio.end_time))
-            adapter.arguments.append(Argument(ArgumentType.BOOK, period))
+            adapter.arguments.append(Argument(ArgumentKey.INTERVAL, self.portfolio.interval))
+            adapter.arguments.append(Argument(ArgumentKey.START_TIME, self.portfolio.start_time))
+            adapter.arguments.append(Argument(ArgumentKey.END_TIME, self.portfolio.end_time))
+            adapter.arguments.append(Argument(ArgumentKey.BOOK, period))
             adapter.add_value_type(value_type)
             # self.collection.adapters.append(adapter)
 

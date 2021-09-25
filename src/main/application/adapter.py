@@ -27,7 +27,7 @@ import time
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional, Dict, List, Any, Type
+from typing import Optional, Dict, List, Any
 from urllib.parse import urlparse
 
 import numpy
@@ -35,7 +35,7 @@ import numpy as np
 import pandas
 import requests
 
-from main.application.argument import Argument, ArgumentType
+from main.application.argument import Argument, ArgumentKey
 from main.application.converter import Converter
 from main.application.value_type import ValueType
 from main.common.locations import file_link_format
@@ -96,43 +96,6 @@ class DataType(Enum):
     JSON = 1
     CSV = 2
     DATA_FRAME = 3
-
-
-class TimeInterval(Enum):
-    """
-    The TimeInterval enumeration is intended to represent the time intervals between data. It is generally used when
-    querying an adapter for data as most APIs require an interval.
-
-    The TimeInterval class is also used when saving and reading configuration information from configuration files.
-
-    The string value can be used for messages, but it's purpose is for human readable files such as configuration files
-    etc. The timedelta value is intended to be used for calculations and comparisons between the time intervals.
-
-    Retrieve the values as:
-      TimeValue.SEC15.value -> '15sec'
-      TimeValue.SEC15.timedelta -> timedelta(seconds=15)
-    """
-    SEC15 = '15sec', timedelta(seconds=15)
-    MIN1 = '1min', timedelta(minutes=1)
-    MIN5 = '5min', timedelta(minutes=5)
-    MIN10 = '10min', timedelta(minutes=10)
-    MIN15 = '15min', timedelta(minutes=15)
-    MIN30 = '30min', timedelta(minutes=30)
-    HOUR = 'hourly', timedelta(hours=1)
-    HOUR6 = '6hour', timedelta(hours=6)
-    DAY = 'daily', timedelta(days=1)
-    WEEK = 'weekly', timedelta(weeks=1)
-    MONTH = 'monthly', timedelta(days=30)  # hmm?
-    QUARTER = 'quarterly', timedelta(weeks=13)
-    YEAR = 'yearly', timedelta(weeks=52)
-    YEAR2 = '2year', timedelta(weeks=52 * 2)
-    YEAR5 = '5year', timedelta(weeks=52 * 5)
-
-    def __new__(cls, value, delta):
-        member = object.__new__(cls)
-        member._value_ = value
-        member.timedelta = delta
-        return member
 
 
 def get_common_start_time(data: pandas.DataFrame) -> Optional[datetime]:
@@ -799,14 +762,14 @@ class Adapter(metaclass=ABCMeta):
         converter.get_response_callback()
 
     def add_argument(self, argument: Argument) -> None:
-        value = self.get_argument_value(argument.argument_type)
+        value = self.get_argument_value(argument.argument_key)
         assert value is None, \
             "Argument value is already specified for '{}', current value is '{}' was attempting to set as '{}'".format(
-                argument.argument_type.name, value, argument.value)
+                argument.argument_key.name, value, argument.value)
         self.arguments.append(argument)
 
-    def get_argument_value(self, arg_type: ArgumentType) -> Optional[Any]:
-        values = list(set([argument.value for argument in self.arguments if argument.argument_type == arg_type]))
+    def get_argument_value(self, arg_type: ArgumentKey) -> Optional[Any]:
+        values = list(set([argument.value for argument in self.arguments if argument.argument_key == arg_type]))
         return values[0] if len(values) == 1 else None
 
     def get_create_times(self) -> Dict[str, datetime]:

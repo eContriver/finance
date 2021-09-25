@@ -25,10 +25,11 @@ from typing import Optional, List
 
 import pandas
 
-from main.application.adapter import TimeInterval, AssetType, Adapter, insert_column
+from main.application.adapter import AssetType, Adapter, insert_column
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.application.converter import Converter
-from main.application.argument import ArgumentType
+from main.application.argument import ArgumentKey
 
 
 class NoDataReturnedException(RuntimeError):
@@ -126,9 +127,9 @@ class IexCloud(Adapter):
         return data
 
     def get_span(self, default: timedelta = timedelta(weeks=52)) -> timedelta:
-        start_time: datetime = self.get_argument_value(ArgumentType.START_TIME)
+        start_time: datetime = self.get_argument_value(ArgumentKey.START_TIME)
         start_time = start_time if start_time is not None else datetime.now()
-        end_time: datetime = self.get_argument_value(ArgumentType.END_TIME)
+        end_time: datetime = self.get_argument_value(ArgumentKey.END_TIME)
         end_time = end_time if end_time is not None else start_time + default
         delta: timedelta = end_time - start_time
         return delta
@@ -228,9 +229,9 @@ class IexCloud(Adapter):
 
     def get_macd_response(self, value_type: ValueType):
         series_range = self.get_span_as_str()
-        slow: float = self.get_argument_value(ArgumentType.MACD_SLOW)
-        fast: float = self.get_argument_value(ArgumentType.MACD_FAST)
-        signal: float = self.get_argument_value(ArgumentType.MACD_SIGNAL)
+        slow: float = self.get_argument_value(ArgumentKey.MACD_SLOW)
+        fast: float = self.get_argument_value(ArgumentKey.MACD_FAST)
+        signal: float = self.get_argument_value(ArgumentKey.MACD_SIGNAL)
         query = {
             "token": self.api_key,
             "range": series_range,
@@ -279,7 +280,7 @@ class IexCloud(Adapter):
 
     def get_rsi_response(self, value_type: ValueType):
         series_range = self.get_span_as_str()
-        period: float = self.get_argument_value(ArgumentType.RSI_PERIOD)
+        period: float = self.get_argument_value(ArgumentKey.RSI_PERIOD)
         query = {
             "token": self.api_key,
             "range": series_range,
@@ -339,7 +340,7 @@ class IexCloud(Adapter):
 
 
     def get_earnings_response(self):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = 'quarter'
         elif interval.timedelta <= TimeInterval.YEAR.timedelta:
@@ -384,7 +385,7 @@ class IexCloud(Adapter):
             insert_column(adapter.data, converter.value_type, indexes, values)
 
     def get_income_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = 'quarter'
         elif interval.timedelta <= TimeInterval.YEAR.timedelta:
@@ -445,7 +446,7 @@ class IexCloud(Adapter):
     #     return translated
     #
     def get_balance_sheet_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = 'quarter'
         elif interval.timedelta <= TimeInterval.YEAR.timedelta:
@@ -483,17 +484,17 @@ class IexCloud(Adapter):
             insert_column(adapter.data, converter.value_type, indexes, values)
 
     def get_reported_financials_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = '10-Q'
         elif interval.timedelta <= TimeInterval.YEAR.timedelta:
             period = '10-K'
         else:
             raise RuntimeError('Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
-        end_time: datetime = self.get_argument_value(ArgumentType.END_TIME)
+        end_time: datetime = self.get_argument_value(ArgumentKey.END_TIME)
         end_time = end_time if end_time is not None else datetime.now()
         default: timedelta = timedelta(weeks=52)
-        start_time: datetime = self.get_argument_value(ArgumentType.START_TIME)
+        start_time: datetime = self.get_argument_value(ArgumentKey.START_TIME)
         start_time = start_time if start_time is not None else end_time - default
         date_format = '%Y-%m-%d'
         query = {'token': self.api_key, 'from': start_time.strftime(date_format)}
@@ -591,7 +592,7 @@ class IexCloud(Adapter):
         self.data.loc[:, ValueType.EPS] = net_income_basic / diluted_shares
 
     def get_cash_flow_response(self, value_type: ValueType):
-        interval: TimeInterval = self.get_argument_value(ArgumentType.INTERVAL)
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
             period = 'quarter'
         elif interval.timedelta <= TimeInterval.YEAR.timedelta:

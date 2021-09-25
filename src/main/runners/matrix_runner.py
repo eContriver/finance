@@ -20,7 +20,8 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import List, Dict, Optional
 
-from main.application.adapter import TimeInterval, AssetType
+from main.application.adapter import AssetType
+from main.application.time_interval import TimeInterval
 from main.application.runner import Runner, get_adapter_class, get_asset_type_overrides, NoSymbolsSpecifiedException
 from main.application.strategy import Strategy
 from main.application.value_type import ValueType
