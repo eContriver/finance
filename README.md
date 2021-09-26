@@ -57,6 +57,62 @@ If you want to donate, then you can do that here:
 
 # Getting Started
 
+## Windows Development
+
+## Windows WSL2 Development (w/ X11 forwarding)
+
+Install an X11 display tool, some options are:
+
+* Xming X Server for Windows
+* MobaXterm
+
+First setup your ssh keys:
+
+    docker volume create root_home
+    docker run --rm -it -v root_home:/root python:3.8.8 ssh-keygen
+    docker run --rm -it -v root_home:/root python:3.8.8 cat /root/.ssh/id_rsa.pub
+
+Copy this output and add it to your GitHub SSH keys:
+
+> Top-right Profile Icon | Settings | SSH and GPG Keys | Add New SSH Key
+
+Title: `root@finance_<hostname>`
+Key: `<paste the content of the id_rsa.pub>`
+
+_NOTE: The contents of `root_home` can be viewed on Windows usign WSL2 at `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\root_home\_data` and on Linux at `/var/lib/docker/volumes/root_home`. This area can be used for multiple projects so that you don't have to have a separate ssh key for each project._
+
+### Cloning the repo
+
+Create a volume mount on the host machine (works for BASH, CSH, and PowerShell):
+
+    docker volume create --name finance --opt type=none --opt device=$PWD --opt o=bind
+ 
+ Or create a volume mount on NFS using a CIFS path:
+ 
+    docker volume create --name finance --opt type=cifs --opt device=//192.168.2.235/private/projects/finance --driver local --opt o=username=user,password=pw
+    
+On Windows either of these solutions may perform slowly, using a named volume uses a different file system and may be faster:
+
+    docker volume create finance
+
+If you make a mistake, then you can always clean these up with:
+
+    docker volume rm finance
+
+Now clone the repo into the `finance` volume:
+    
+    docker run --rm -it -v root_home:/root -v finance:/git alpine/git clone git@github.com:eContriver/finance.git .
+    
+_NOTE: The contents of `finance` can be viewed on Windows usign WSL2 at `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\finance\_data` and on Linux at `/var/lib/docker/volumes/finance`_
+
+# Run
+
+    cd <clone location>
+    docker compose run dev
+    ./src/main.py
+
+_NOTE: The above command only works if you have enable Docker Compose v2, if you have not then just add the `-` between docker and compose._
+
 In a ~/.bash_profile or equivalent
 
     export DISPLAY='192.168.1.1:0.0'
@@ -84,10 +140,7 @@ In a ~/.bash_profile or equivalent
     # Docs: https://iexcloud.io/docs/api/
     export IEX_CLOUD_API_KEY='?'
 
-# Run
 
-    docker-compose run dev
-    ./src/main.py
 
 # Adding python dependencies
 
