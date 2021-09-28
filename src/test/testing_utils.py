@@ -42,6 +42,7 @@ def configure_test_logging(log_level=logging.DEBUG):
 
 
 def get_test_output_dir():
+    #with tempfile.TemporaryDirectory() as tmpdirname:
     test_date_dir = get_and_clean_timestamp_dir(locations.get_cache_dir('tests'))
     script_dir = os.path.dirname(os.path.realpath(__file__))
     self.parent_cache_dir = os.path.realpath(os.path.join(script_dir, '..', '..', '..', '.cache'))

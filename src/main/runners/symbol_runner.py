@@ -27,7 +27,8 @@ from main.common.locations import get_and_clean_timestamp_dir, Locations
 from main.executors.parallel_executor import ParallelExecutor
 from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
-from main.application.runner import Runner, get_asset_type_overrides, get_adapter_class, NoSymbolsSpecifiedException
+from main.application.runner import Runner, get_asset_type_overrides, get_adapter_class
+from main.application.configurable_runner import NoSymbolsSpecifiedException
 from main.strategies.bounded_rsi import BoundedRsi
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing

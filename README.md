@@ -91,7 +91,7 @@ In a ~/.bash_profile or equivalent
 
 # Adding python dependencies
 
-    # Install the thing
+    # Install the thing, e.g. requests package
     pip install requests
     # Preserve it in Dockerfile image
     pip freeze | tee requirements.txt

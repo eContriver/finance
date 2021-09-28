@@ -25,8 +25,9 @@ from main.application.value_type import ValueType
 from main.application.argument import Argument, ArgumentKey
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.common.locations import Locations
-from main.application.runner import Runner, validate_type, NoSymbolsSpecifiedException, get_adapter_class, \
+from main.application.runner import Runner, validate_type, get_adapter_class, \
     get_asset_type_overrides
+from main.application.configurable_runner import NoSymbolsSpecifiedException
 
 
 class AlertRunner(Runner):

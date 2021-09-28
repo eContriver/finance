@@ -17,25 +17,27 @@ import logging
 import os
 from datetime import datetime
 from math import ceil
-from typing import Dict, Set, Optional, List, Any
+from typing import Dict, Set, Optional, List
 
 import numpy
 import pandas
 from numpy import median
-from scipy.optimize import curve_fit
 from sklearn import linear_model
 
 from main.application.adapter import AssetType, Adapter, get_common_start_time, get_common_end_time, \
     insert_column
-from main.application.time_interval import TimeInterval
 from main.application.adapter_collection import AdapterCollection, filter_adapters
 from main.application.argument import Argument, ArgumentKey
+from main.application.configurable_runner import ConfigurableRunner
+from main.application.configuration import Configuration
+from main.application.runner import get_asset_type_overrides, \
+    get_copyright_notice, \
+    get_adapter_class
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
+from main.common.report import Report
 from main.executors.parallel_executor import ParallelExecutor
-from main.application.runner import Runner, NoSymbolsSpecifiedException, validate_type, get_adapter_class, \
-    get_asset_type_overrides, get_copyright_notice, TooManySymbolsSpecifiedException
 from main.visual.visualizer import Visualizer
 
 
@@ -205,7 +207,7 @@ def report_order(df):
     return df_ordered
 
 
-class IntrinsicValueRunner(Runner):
+class IntrinsicValueRunner(ConfigurableRunner):
     HIGH_PE: str = 'High P/E'
     LOW_PE: str = 'Low P/E'
     ROE: str = 'ROE'
@@ -259,22 +261,14 @@ class IntrinsicValueRunner(Runner):
         }
         return config
 
-    def set_from_config(self, config, config_path):
-        self.asset_type_overrides = get_asset_type_overrides(config['asset_type_overrides'] if 'asset_type_overrides' in config else {})
-        self.symbol = config['symbol']
-        self.adapter_class = get_adapter_class(config['adapter_class'])
-        self.base_symbol = config['base_symbol']
-        self.fundamentals_interval = TimeInterval(config['fundamentals_interval'])
-        self.price_interval = TimeInterval(config['price_interval'] if 'price_interval' in config else 'monthly')
-        self.graph = config['graph'] if 'graph' in config else True
-        self.check_member_variables(config_path)
-
-    def check_member_variables(self, config_path: str):
-        validate_type('symbol', self.symbol, str, config_path)
-        if not self.symbol:
-            raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
-        # if len(self.symbol) > 1:
-        #     raise TooManySymbolsSpecifiedException(f"Please specify only one symbol in (found: {self.symbol}): {config_path}")
+    def set_from_config(self, config: Configuration):
+        self.asset_type_overrides = get_asset_type_overrides(config.get_or_default('asset_type_overrides', {}))
+        self.symbol = config.get_or_default('symbol', 'AAPL')
+        self.adapter_class = get_adapter_class(config.get_or_default('adapter_class', 'AlphaVantage'))
+        self.base_symbol = config.get_or_default('base_symbol', 'USD')
+        self.fundamentals_interval = TimeInterval(config.get_or_default('fundamentals_interval', 'yearly'))
+        self.price_interval = TimeInterval(config.get_or_default('price_interval', 'monthly'))
+        self.graph = config.get_or_default('graph', True)
 
     def get_run_name(self):
         return f"{self.symbol}_{self.fundamentals_interval.value}_{self.adapter_class.__name__}"
@@ -350,19 +344,19 @@ class IntrinsicValueRunner(Runner):
     #         collections[query_type.name] = self.get_collection(handles[query_type], base_symbol)
     #     return collections
 
-    @staticmethod
-    def func(x, a, b, c, d):
-        """
-        A quadratic function used to fit a curve
-        :param x:
-        :param a:
-        :param b:
-        :param c:
-        :param d:
-        :return:
-        """
-        return a * (x ** 3) + b * (x ** 2) + c * x + d
-
+    # @staticmethod
+    # def func(x, a, b, c, d):
+    #     """
+    #     A quadratic function used to fit a curve
+    #     :param x:
+    #     :param a:
+    #     :param b:
+    #     :param c:
+    #     :param d:
+    #     :return:
+    #     """
+    #     return a * (x ** 3) + b * (x ** 2) + c * x + d
+    #
     # @staticmethod
     # def extrapolate(s: pandas.DataFrame) -> pandas.DataFrame:
     #     # Initial parameter guess, just to kick off the optimization

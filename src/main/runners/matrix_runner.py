@@ -22,7 +22,8 @@ from typing import List, Dict, Optional
 
 from main.application.adapter import AssetType
 from main.application.time_interval import TimeInterval
-from main.application.runner import Runner, get_adapter_class, get_asset_type_overrides, NoSymbolsSpecifiedException
+from main.application.runner import Runner, get_adapter_class, get_asset_type_overrides
+from main.application.configurable_runner import NoSymbolsSpecifiedException
 from main.application.strategy import Strategy
 from main.application.value_type import ValueType
 from main.common.locations import get_and_clean_timestamp_dir, Locations

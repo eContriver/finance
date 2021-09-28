@@ -27,7 +27,8 @@ from main.common.locations import Locations, get_and_clean_timestamp_dir
 from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
 from main.executors.sequential_executor import SequentialExecutor
 from main.portfolio.portfolio import Portfolio
-from main.application.runner import Runner, NoSymbolsSpecifiedException, get_adapter_class
+from main.application.runner import Runner, get_adapter_class
+from main.application.configurable_runner import NoSymbolsSpecifiedException
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
 from main.application.strategy import Strategy

@@ -31,7 +31,8 @@ from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.common.time_zones import TimeZones
 from main.application.adapter_collection import AdapterCollection
-from main.application.runner import Runner, get_adapter_class, NoSymbolsSpecifiedException, get_asset_type_overrides
+from main.application.runner import Runner, get_adapter_class, get_asset_type_overrides
+from main.application.configurable_runner import NoSymbolsSpecifiedException
 
 
 class MLReportType(Enum):
