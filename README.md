@@ -61,6 +61,10 @@ If you want to donate, then you can do that here:
 
 ## Windows WSL2 Development (w/ X11 forwarding)
 
+If on Windows 10 Home you might need to add your user to the `docker-users` group:
+
+    net localgroup docker-users "your-user-id" /ADD
+
 Install an X11 display tool, some options are:
 
 * Xming X Server for Windows
@@ -568,7 +572,7 @@ Use the Ubuntu 20.04 LTS (solid black background):
 
 Launching via docker from within the WSL 2 shell:
 
-## IDEA IDE logs and fixes
+## PyCharm IDE logs and fixes
 
 ### Hyperlinks in console stop working
 
