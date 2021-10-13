@@ -529,13 +529,14 @@ Had to sync Windows host to get docker and wsl time to be accurate, but that was
 
 ## Install pycharm into /root persistent local volume
 
-    curl https://download-cf.jetbrains.com/python/pycharm-community-2020.3.3.tar.gz > /tmp/file_to_extract
+    curl https://download.jetbrains.com/python/pycharm-community-2021.2.2.tar.gz > /tmp/file_to_extract
     tar -xzf /tmp/file_to_extract -C /root/
     rm -rf /tmp/file_to_extract
+    mv /root/pycharm-community-*/ /root/pycharm-community/
 
 Run with:
 
-    /root/pycharm-community-2020.3.3/bin/pycharm.sh /app
+    /root/pycharm-community/bin/pycharm.sh /app
 
 Then locate the Dockerfile installed pip packages by switching the interpreter to:
 
