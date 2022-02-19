@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!python
 
 #  Copyright 2021 eContriver LLC
 #  This file is part of Finance from eContriver.

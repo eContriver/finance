@@ -2,9 +2,7 @@ Copyright 2021 eContriver LLC
 
 # Overview
 
-The python scripts provided in this project facilitates trying different buy and sell strategies for stock and crypto
-currencies. There are also scripts that provide different types of security analysis. Both technical analysis and
-fundamental analysis are considered.
+The python scripts provided in this project facilitates trying different buy and sell strategies for stock and crypto currencies. There are also scripts that provide different types of security analysis. Both technical analysis and fundamental analysis are considered.
 
 This software is intended for educational purposes only and nothing it produces should be taken as investment advice.
 It's accuracy is not guaranteed, the software may have bugs, or the data that it receives from 3rd parties may be
@@ -53,9 +51,45 @@ Monitor 5 stocks, when any are below RSI 40 buy, when it crosses 70 sell, buy th
 # Donations
 
 If you want to donate, then you can do that here:
-* 0x9046e392d4F12ec5950F058960aF48B3929eCad6 (ETH)
+* 0x9046e392d4F12ec5950F058960aF48B3929eCad6 (ETH/BNB/any EVM compatible chain address really)
 
 # Getting Started
+
+## Linux Development
+
+```
+git clone git@github.com:eContriver/finance.git .
+```
+
+setup environment
+```
+poetry shell
+```
+
+install dependencies
+```
+
+sudo apt update
+
+# this fails and so is it even needed?
+#pip install -r requirements.txt
+#sudo apt -y install libgtk-3-dev python-wxtools unzip wget libnss3 
+#pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/ wxPython
+#pip install --no-cache-dir -r requirements.txt
+
+sudo apt -y install python-wxtools unzip wget libnss3 
+# This will get the binaries instead of build from source which takes FOREVER
+pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/ wxPython
+pip install -r requirements.txt
+```
+
+### for side project
+
+to build the new environment start with:
+
+```
+poetry init
+```
 
 ## Windows Development
 

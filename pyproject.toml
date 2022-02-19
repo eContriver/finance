@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "finance"
+version = "0.1.0"
+description = "The python scripts provided in this project facilitates trying different buy and sell strategies for stock and crypto currencies. There are also scripts that provide different types of security analysis. Both technical analysis and fundamental analysis are considered."
+authors = ["Nik Cimino <nik@econtriver.com>"]
+license = "Copyright 2021 eContriver LLC"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
