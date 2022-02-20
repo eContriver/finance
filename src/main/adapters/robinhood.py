@@ -59,6 +59,9 @@ class Robinhood(Order):
                 break
         return contains
 
+    def delay_requests(self, data_file: str) -> None:
+        pass
+
     def get_is_listed(self) -> bool:
         data, data_file = self.get_api_response(rs.robinhood.get_stock_quote_by_symbol, {'symbol': self.symbol})
         return 'trading_halted' in data and not data['trading_halted']

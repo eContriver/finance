@@ -35,9 +35,11 @@ It's easy to add more, so this list will continue to grow.
 
 Monitor 5 stocks, when any are below RSI 40 buy, when it crosses 70 sell, buy the next of the five to cross 40, rinse and repeat
 
-## Use different values with one stock to find the optimal - then do this across multiples
+## Strategy optimization
 
-* First part is done, but now we need to use it to determine the optimal strategy across several symbols
+Each investment strategy has different variables (e.g. RSI has period, upper, lower) and these can be tuned via back testing for a given securities.
+
+Once an optimized set of parameters is determined for one security, then those parameters can be back tested across many different securities.
 
 ## Build table of RSI and MACD and use it to predict the next relative price movement of a stock
 
@@ -47,18 +49,259 @@ Monitor 5 stocks, when any are below RSI 40 buy, when it crosses 70 sell, buy th
 
 * Separate groups of data are used for training the model and another for testing/prediction
 
-
 # Donations
 
 If you want to donate, then you can do that here:
 * 0x9046e392d4F12ec5950F058960aF48B3929eCad6 (ETH/BNB/any EVM compatible chain address really)
+
+# Running Tools
+
+_NOTE: If this is your first run, then see the [Getting Started](#getting-started) section first, also there is a [Tool List](#tool-list) which explains each of the different tools in this repository._
+
+Let's run the intrinsic value runner which does a discounted cash flow analysis of securities.
+
+First you must add a file at `~/.eContriver/intrinsic_value.yaml` with the contents:
+
+```
+adapter_class: AlphaVantage
+base_symbol: USD
+price_interval: monthly
+fundamentals_interval: yearly
+graph: false
+symbol: AAPL
+```
+
+To run it:
+```
+(.venv) ➜  finance git:(main) ✗ ./src/intrinsic_value.py
+Finance from eContriver (C) 2021 eContriver LLC
+This program comes with ABSOLUTELY NO WARRANTY; for details see the GNU GPL v3.
+This is free software, and you are welcome to redistribute it under certain conditions.
+Last time: 2021-09-30  First time: 2017-09-30
+Data table for intrinsic value calculation using TimeInterval.YEAR...
+             Shares   Assets Liabilities   Equity Long Debt Short Debt    Eps  Revenue Cash Flow Net Income Dividends Low P/E High P/E      ROE
+2017-09-30  5126.2m  $375.3b     $241.3b  $134.0b   $112.6b     $12.0b  $2.30  $229.2b    $64.2b     $48.4b    $12.8b   15.43    17.06   36.07%
+2018-09-30  4755.0m  $365.7b     $258.6b  $107.1b   $112.0b     $12.0b  $2.97  $265.6b    $77.4b     $59.5b    $13.7b   17.51    18.68   55.56%
+2019-09-30  4443.2m  $338.5b     $248.0b   $90.5b   $117.8b   $5980.0m  $2.98  $256.6b    $69.4b     $55.3b    $14.1b   16.81    18.64   61.06%
+2020-09-30    17.0b  $323.9b     $258.5b   $65.3b   $125.9b   $4996.0m  $3.27  $271.6b    $80.7b     $57.4b    $14.1b   31.24    41.81   87.87%
+2021-09-30    16.4b  $351.0b     $287.9b   $63.1b   $118.7b   $6000.0m  $5.62  $363.2b   $104.0b     $94.7b    $14.5b   25.07    27.91  150.07%
+Data table of intrinsic value predictions using TimeInterval.YEAR...
+           Shares   Assets Liabilities   Equity Long Debt Short Debt    Eps  Revenue Cash Flow Net Income Dividends Low P/E High P/E      ROE
+2022-09-29  16.4b  $323.8b     $286.8b   $37.0b   $125.2b   $2513.8m  $5.51  $359.3b   $104.0b     $90.2b    $15.0b   31.11    38.25  156.13%
+2023-09-28  16.4b  $314.8b     $296.1b   $18.7b   $127.8b    $628.4m  $6.20  $386.6b   $112.2b     $99.2b    $15.3b   34.40    42.72  182.07%
+2024-09-26  16.4b  $305.8b     $305.4b  $356.7m   $130.4b      $0.00  $6.89  $413.9b   $120.5b    $108.2b    $15.7b   37.69    47.19  208.01%
+2025-09-25  16.4b  $296.7b     $314.7b  $-18.0b   $133.0b      $0.00  $7.58  $441.2b   $128.8b    $117.2b    $16.1b   40.98    51.66  233.95%
+2026-09-24  16.4b  $287.7b     $324.0b  $-36.3b   $135.6b      $0.00  $8.27  $468.5b   $137.0b    $126.3b    $16.5b   44.27    56.13  259.89%
+book value: current=$63.1b (on 2021-09-30) | prediction=$-36.3b (for 2026-09-24)
+dividend: payout=$14.5b (on 2021-09-30) | div/share(DPS)=$0.88 | DPS/EPS=15.67% | retained=84.33%
+book: value(BVPS)=$3.84 (on 2021-09-30) | EPS/BVPS(yield)=146.33% | yield*retained(growth)=123.40%
+dividends: 2022-09-29: $0.86  2023-09-28: $0.97  2024-09-26: $1.08  2025-09-25: $1.19  2026-09-24: $1.30  
+P/Es: max=73.05 avg=46.03 med=36.19 min=32.49 | ROE=259.89%
+future prices (P/Es * future EPS $8.27): max=$604.41 avg=$380.84 med=$299.38 min=$268.83 (62.23%) | ROE= (2026-09-24)
+last IRR from $141.11 (2021-09-30): max=27.8338% avg=18.4508% med=13.8482% min=11.8506% on 2026-09-24
+current IRR from $167.30 (2022-02-18): max=24.224% avg=15.1001% med=10.6243% min=8.6815% on 2026-09-24
+fair prices (P/Es * current EPS $5.62): max=$410.56 avg=$258.69 med=$203.36 min=$182.61 (91.62%) (2022-02-18)
+price/book=43.56 | price/earnings=29.77 | price/cash flow=26.42
+debt/equity=197.65% | liabilities/assets=82.03% | debt/assets=35.53%
+-- End report for AAPL
+Report file: file:///home/nikc/projects/finance/output/intrinsic_value_runner/AAPL_yearly_AlphaVantage.log
+>> Running took: 0:01:10.004127s
+```
+
+# Tool List
+
+## Intrinsic Value Runner
+
+Add `~/.eContriver/intrinsic_value.yaml`:
+
+```yaml
+adapter_class: AlphaVantage
+base_symbol: USD
+price_interval: monthly
+fundamentals_interval: yearly
+#fundamentals_interval: quarterly
+asset_type_overrides:
+  ETH: DIGITAL_CURRENCY
+  LTC: DIGITAL_CURRENCY
+  NET: EQUITY
+  GEO: EQUITY
+  BLK: EQUITY
+  WDC: EQUITY
+  NOBL: EQUITY
+  AI: EQUITY
+graph: false
+symbol:
+
+```
+
+Run:
+```shell
+(.venv) ➜  finance git:(main) ✗ ./src/intrinsic_value.py
+```
+
+## Alert Runner
+
+Add `~/.eContriver/alert.yaml`:
+
+```yaml
+base_symbol: USD
+adapter_class: AlphaVantage
+#price_interval: hourly
+price_interval: daily
+asset_type_overrides:
+  ETH: DIGITAL_CURRENCY
+  LTC: DIGITAL_CURRENCY
+  GEO: EQUITY
+  BLK: EQUITY
+close_boundaries:
+  AAPL: [105.00, 120.00]
+  AMZN: [2700.00, 2800.00]
+  GOOG: [2000.00, 2200.00]
+  DIS: [150.00, 190.00]
+  PYPL: [260.00, 300.00]
+  TSLA: [600.00, 700.00]
+  ETSY: [150.00, 200.00]
+  ENPH: [150.00, 170.00]
+  RDFN: [60.00, 70.00]
+  ABNB: [150.00, 170.00]
+  PLTR: [22.00, 23.00]
+```
+
+Run:
+```
+(.venv) ➜  finance git:(main) ✗ ./src/alert.py
+```
+
+## Multi-Symbol Runner
+
+Add `~/.eContriver/multi_symbol.yaml`:
+
+```yaml
+adapter_class: AlphaVantage
+base_symbol: USD
+price_interval: daily
+graph: false
+start_time: 2019-07-23
+#end_time: 2021-07-23
+asset_type_overrides:
+  ETH: DIGITAL_CURRENCY
+  LTC: DIGITAL_CURRENCY
+  GEO: EQUITY
+  BLK: EQUITY
+symbols:
+  # Crypto dance...
+#  - BTC
+#  - ETH
+  - XLK  # Technology
+  - XLE  # Energy
+```
+
+Run:
+```
+(.venv) ➜  finance git:(main) ✗ ./src/multi_symbol.py
+```
+
+## Symbol Runner
+
+
+Add `~/.eContriver/symbol.yaml`:
+
+```yaml
+base_symbol: USD
+adapter_class: AlphaVantage
+#price_interval: hourly
+price_interval: daily
+asset_type_overrides:
+  ETH: DIGITAL_CURRENCY
+  LTC: DIGITAL_CURRENCY
+  DASH: EQUITY
+  GEO: EQUITY
+  BLK: EQUITY
+graph: false
+#graph: true
+report_types:
+  - BUY_AND_HOLD
+  - LAST_BOUNCE
+  - BUY_DOWN_SELL_UP_TRAILING
+  - BUY_UP_SELL_DOWN_TRAILING
+  - SOLDIERS_AND_CROWS
+  - BOUNDED_RSI
+  - MACD_CROSSING
+symbol: BTC
+```
+
+Run:
+```
+(.venv) ➜  finance git:(main) ✗ ./src/symbol.py
+```
+
+## Trend Runner
+
+
+Add `~/.eContriver/trend.yaml`:
+
+```yaml
+base_symbol: USD
+adapter_class: AlphaVantage
+price_interval: hourly
+#price_interval: daily
+asset_type_overrides:
+  ETH: DIGITAL_CURRENCY
+  LTC: DIGITAL_CURRENCY
+  DASH: EQUITY
+  GEO: EQUITY
+  BLK: EQUITY
+report_types:
+  - INTEREST_OVER_TIME
+#  - HISTORICAL_INTEREST
+#  - REGION
+#  - TRENDING
+#  - TOP_CHARTS
+#  - KEYWORD_SUGGESTION
+  - RELATED_QUERY
+  - RELATED_TOPIC
+graph: true
+terms: ['hood stock price']
+symbol: HOOD
+```
+
+Run:
+```
+(.venv) ➜  finance git:(main) ✗ ./src/trend.py
+```
+
+# Adapter List
+
+_WARNING: The code has changed a lot recently and not all of the adapters have been updated yet!_
+
+The adapters that were working at one point are:
+
+* `AlphaVantage`
+* `Binance`
+* `CoinbasePro`
+* `FinancialModelingPrep`
+* `IexCloud`
+* `Kraken`
+* `Quandl`
+* `Robinhood`
+* `TDAmeritrade`
+* `Yahoo`
+
+Only the brokerage/exchange endpoints support orders i.e.
+
+* `Binance`
+* `CoinbasePro`
+* `Kraken`
+* `Robinhood`
+* `TDAmeritrade`
 
 # Getting Started
 
 ## Linux Development
 
 ```
-git clone git@github.com:eContriver/finance.git .
+git clone git@github.com:eContriver/finance.git
+cd finance
 ```
 
 setup environment
@@ -68,24 +311,19 @@ poetry shell
 
 install dependencies
 ```
-
 sudo apt update
 
-# this fails and so is it even needed?
-#pip install -r requirements.txt
-#sudo apt -y install libgtk-3-dev python-wxtools unzip wget libnss3 
-#pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/ wxPython
-#pip install --no-cache-dir -r requirements.txt
-
 sudo apt -y install python-wxtools unzip wget libnss3 
+
 # This will get the binaries instead of build from source which takes FOREVER
 pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/ wxPython
+
 pip install -r requirements.txt
 ```
 
-### for side project
+### For new projects
 
-to build the new environment start with:
+To build the new environment start with:
 
 ```
 poetry init
@@ -143,15 +381,19 @@ Now clone the repo into the `finance` volume:
     
 _NOTE: The contents of `finance` can be viewed on Windows usign WSL2 at `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\finance\_data` and on Linux at `/var/lib/docker/volumes/finance`_
 
-# Run
+### Running from Docker
 
     cd <clone location>
     docker compose run dev
-    ./src/main.py
+    ./src/intrinsic_value.py
 
-_NOTE: The above command only works if you have enable Docker Compose v2, if you have not then just add the `-` between docker and compose._
+# Managing Secrets
 
-In a ~/.bash_profile or equivalent
+_NOTE: The above command only work if you have enable Docker Compose v2, if you have not then just add the `-` between docker and compose._
+
+You only need to provide the secrets that you intend to use. These secrets are currently handled with environment variables.
+
+In a `~/.bash_profile`, `~/.zshrc`, etc.
 
     export DISPLAY='192.168.1.1:0.0'
     export ALPHA_VANTAGE_API_KEY='?'
@@ -178,13 +420,11 @@ In a ~/.bash_profile or equivalent
     # Docs: https://iexcloud.io/docs/api/
     export IEX_CLOUD_API_KEY='?'
 
-
-
 # Adding python dependencies
 
     # Install the thing
     pip install requests
-    # Preserve it in Dockerfile image
+    # Preserve the dependencies
     pip freeze | tee requirements.txt
 
 ## Install all dependencies

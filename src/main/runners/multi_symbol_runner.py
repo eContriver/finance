@@ -162,7 +162,7 @@ class MultiSymbolRunner(Runner):
             20,
             # 25, 30, 35
         ]
-        periods = [20]
+        periods = [20.0]
         for period in periods:
             for delta in deltas:
                 for look_back in look_backs:

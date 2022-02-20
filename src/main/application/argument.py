@@ -55,5 +55,5 @@ class Argument:
 
     def __init__(self, argument_key: ArgumentKey, value: Any):
         self.argument_key = argument_key
-        assert isinstance(value, get_argument_type(argument_key))
+        assert isinstance(value, get_argument_type(argument_key)), f"Expected {argument_key} value {value} to be {get_argument_type(argument_key)}, but got {type(value)}"
         self.value = value

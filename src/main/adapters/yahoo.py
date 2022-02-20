@@ -19,7 +19,7 @@
 #
 import os.path
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, Optional
 
 import robin_stocks as rs
 
@@ -37,8 +37,8 @@ class Yahoo(Adapter):
     span: timedelta
     name: str = 'yahoo'
 
-    def __init__(self, symbol: str):
-        super().__init__(symbol)
+    def __init__(self, symbol: str, asset_type: Optional[AssetType] = None):
+        super().__init__(symbol, asset_type)
         script_dir = os.path.dirname(os.path.realpath(__file__))
         self.cache_dir = os.path.join(script_dir, '..', '..', '..', '.cache', Yahoo.name)
         # self.span = '5year'
@@ -54,6 +54,9 @@ class Yahoo(Adapter):
                 contains = True
                 break
         return contains
+
+    def delay_requests(self, data_file: str) -> None:
+        pass
 
     def get_is_listed(self) -> bool:
         today: datetime = datetime.now(TimeZones.get_tz())
