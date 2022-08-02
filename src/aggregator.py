@@ -1,3 +1,5 @@
+#!python
+
 #  Copyright 2021 eContriver LLC
 #  This file is part of Finance from eContriver.
 #
@@ -14,3 +16,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
+from main.application.runner import launch_runner
+from main.runners.aggregator_runner import AggregatorRunner
+
+if __name__ == "__main__":
+    return_code = launch_runner(program='aggregator', config_filename='aggregator.yaml', runner_class=AggregatorRunner)
+    exit(return_code)

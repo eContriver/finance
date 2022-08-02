@@ -48,3 +48,7 @@ class SingleSymbolStrategy(Strategy):
 
     def build_book_collection(self, period, cache_key_date: Optional[datetime] = None):
         self.add_book_collection(self.symbol, period, cache_key_date)
+
+    #     TODO: add supertrend ATR (satr)
+    # def build_satr_collection(self, slow, fast, signal, cache_key_date: Optional[datetime] = None):
+    #     self.add_satr_collection(self.symbol, slow, fast, signal, cache_key_date)

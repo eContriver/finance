@@ -14,9 +14,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-# Start here:
-#  https://developer.tdameritrade.com/content/authentication-faq
-
 from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
@@ -32,7 +29,7 @@ from main.common.locations import file_link_format
 
 def get_adjusted_ratio(time_data: Dict[str, str]) -> float:
     """
-    TDA provides the stock values as they were and an adjusted close value. This is to
+    Alpaca provides the stock values as they were and an adjusted close value. This is to
     account for stock splits. To fix these close/adjusted_close = ratio and then ratio * price to
     get the correct price to account for current splits etc.
     :param time_data:
@@ -54,10 +51,9 @@ def get_adjusted_ratio(time_data: Dict[str, str]) -> float:
 #     return contains
 
 
-class TDA(Adapter):
-    name: str = 'tda'
-    # NOTE: https://api.tdameritrade.com/v1/marketdata/{symbol}/pricehistory
-    url: str = 'https://api.tdameritrade.com/v1/marketdata/'
+class Alpaca(Adapter):
+    name: str = 'alpaca'
+    url: str = 'https://www.alphavantage.co/query'
 
     def __init__(self, symbol: str, asset_type: Optional[AssetType] = None):
         if environ.get('ALPHA_VANTAGE_API_KEY') is None:
@@ -68,7 +64,7 @@ class TDA(Adapter):
         super().__init__(symbol, asset_type)
         self.api_key = api_key
         # script_dir = os.path.dirname(os.path.realpath(__file__))
-        # cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', TDA.name)
+        # cache_dir = os.path.join(script_dir, '..', '..', '..', '..', '.cache', Alpaca.name)
         # self.cache_root_dir = os.path.realpath(cache_dir)
         self.converters: List[Converter] = [
             # we allow for multiple strings to be converted into the value type, first match is used

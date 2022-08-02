@@ -26,9 +26,11 @@ from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir
 from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
 from main.executors.sequential_executor import SequentialExecutor
+from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
 from main.application.runner import Runner, NoSymbolsSpecifiedException, get_adapter_class
 from main.strategies.buy_and_hold import BuyAndHold
+from main.strategies.macd_crossing import MacdCrossing
 from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
 from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
@@ -50,7 +52,7 @@ class MultiSymbolRunner(Runner):
         self.adapter_class = None
         self.base_symbol = 'USD'
         self.graph = True
-        self.price_interval = TimeInterval.DAY
+        self.price_interval = TimeInterval.MIN10
         self.start_time = None
         self.end_time = None
         self.asset_type_overrides = {}
@@ -138,8 +140,11 @@ class MultiSymbolRunner(Runner):
         # Strategies
         strategies: List[Strategy] = []
         for symbol in self.symbols:
-            strategies.append(BuyAndHold(symbol, copy.deepcopy(template)))
+            # strategies.append(BuyAndHold(symbol, copy.deepcopy(template)))
             pass
+
+        for symbol in self.symbols:
+            strategies.append(MacdCrossing(symbol, copy.deepcopy(template), 13.0, 34.0, 8.0))
 
         deltas = [
             1.1,
@@ -166,15 +171,15 @@ class MultiSymbolRunner(Runner):
         for period in periods:
             for delta in deltas:
                 for look_back in look_backs:
-                    strategies.append(
-                        MultiRelativeSmaSwapUp(self.symbols, copy.deepcopy(template), period, delta, look_back))
+                    # strategies.append(
+                    #     MultiRelativeSmaSwapUp(self.symbols, copy.deepcopy(template), period, delta, look_back))
                     # strategies.append(
                     #     MultiRelativeSmaSwapDown(self.symbols, copy.deepcopy(template), period, delta, look_back))
                     pass
 
         key = "_".join(self.symbols)
-        # executor = SequentialStrategyExecutor(strategy_date_dir)
-        executor = ParallelStrategyExecutor(strategy_date_dir)
+        executor = SequentialStrategyExecutor(strategy_date_dir)
+        # executor = ParallelStrategyExecutor(strategy_date_dir)
         for strategy in strategies:
             executor.add_strategy(strategy.run, (), key, str(strategy).replace(' ', '_'))
         success = executor.start()

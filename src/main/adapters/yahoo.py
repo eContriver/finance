@@ -14,12 +14,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-#
-#
-#
 import os.path
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 import robin_stocks as rs
 
@@ -27,14 +24,17 @@ import pandas
 import pandas_datareader
 from pandas_datareader import DataReader
 
+from main.application.adapter import get_response_value_or_none, IntervalNotSupportedException
 from main.application.adapter import AssetType, DataType, Adapter
+from main.application.converter import Converter
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
+from main.application.argument import ArgumentKey
 from main.common.time_zones import TimeZones
 
 
 class Yahoo(Adapter):
-    span: timedelta
+    # span: timedelta
     name: str = 'yahoo'
 
     def __init__(self, symbol: str, asset_type: Optional[AssetType] = None):
@@ -44,7 +44,102 @@ class Yahoo(Adapter):
         # self.span = '5year'
         # 'hour', 'day', 'week', 'month', '3month', 'year', '5year'
         years = 10
-        self.span = timedelta(weeks=52*years)
+        # self.span = timedelta(weeks=52*years)
+        self.converters: List[Converter] = [
+            # we allow for multiple strings to be converted into the value type, first match is used
+            Converter(ValueType.OPEN, self.get_prices_response, ['1. open', '1a. open (USD)'], adjust_values=True),
+            Converter(ValueType.HIGH, self.get_prices_response, ['2. high', '2a. high (USD)'], adjust_values=True),
+            Converter(ValueType.LOW, self.get_prices_response, ['3. low', '3a. low (USD)'], adjust_values=True),
+            Converter(ValueType.CLOSE, self.get_prices_response, ['4. close', '4a. close (USD)'], adjust_values=True),
+            Converter(ValueType.VOLUME, self.get_prices_response, ['5. volume']),
+            # Converter(ValueType.RSI, self.get_rsi_response, ['RSI']),
+            # Converter(ValueType.MACD, self.get_macd_response, ['MACD']),
+            # Converter(ValueType.MACD_HIST, self.get_macd_response, ['MACD_Hist']),
+            # Converter(ValueType.MACD_SIGNAL, self.get_macd_response, ['MACD_Signal']),
+            # Converter(ValueType.SMA, self.get_sma_response, ['SMA']),
+            # Converter(ValueType.EPS, self.get_earnings_response, ['reportedEPS']),
+            # Converter(ValueType.REVENUE, self.get_income_response, ['totalRevenue']),
+            # ESTIMATED_EPS = auto()
+            # SURPRISE_EPS = auto()
+            # SURPRISE_PERCENTAGE_EPS = auto()
+            # GROSS_PROFIT = auto()
+            # TOTAL_REVENUE = auto()
+            # OPERATING_CASH_FLOW = auto()
+            # Converter(ValueType.DEPRECIATION, self.get_cash_flow_response, ['depreciationDepletionAndAmortization']),
+            # Converter(ValueType.RECEIVABLES, self.get_cash_flow_response, ['changeInReceivables']),
+            # Converter(ValueType.INVENTORY, self.get_cash_flow_response, ['changeInInventory']),
+            # Converter(ValueType.PAYABLES, self.get_cash_flow_response, ['operatingCashflow']),
+            # Converter(ValueType.CAPITAL_EXPENDITURES, self.get_cash_flow_response, ['capitalExpenditures']),
+            # Converter(ValueType.FREE_CASH_FLOW, self.get_cash_flow_response, ['operatingCashflow']),
+
+            # Converter(ValueType.CASH_FLOW, self.get_cash_flow_response, ['operatingCashflow']),
+            # Converter(ValueType.DIVIDENDS, self.get_cash_flow_response, ['dividendPayout']),
+            # Converter(ValueType.NET_INCOME, self.get_cash_flow_response, ['netIncome']),
+            # Converter(ValueType.ASSETS, self.get_balance_sheet_response, ['totalAssets']),
+            # Converter(ValueType.LIABILITIES, self.get_balance_sheet_response, ['totalLiabilities']),
+            # Converter(ValueType.SHORT_DEBT, self.get_balance_sheet_response, ['shortTermDebt']),
+            # Converter(ValueType.LONG_DEBT, self.get_balance_sheet_response, ['longTermDebt']),
+            # This value was very wrong for BRK-A, it says something like 3687360528 shares outstanding, while there
+            # are actually only something like 640000
+            # Converter(ValueType.SHARES, self.get_balance_sheet_response, ['commonStockSharesOutstanding']),
+            # This is not quite right...
+            # https://www.fool.com/investing/stock-market/basics/earnings-per-share/
+
+            # Let's walk through an example EPS calculation using Netflix (NASDAQ:NFLX). For its most recent fiscal
+            # year, the company reported a net income of $2,761,395,000 and total shares outstanding of 440,922,
+            # 000. The company's balance sheet indicates Netflix has not issued any preferred stock, so we don't need
+            # to subtract out preferred dividends. Dividing $2,761,395,000 into 440,922,000 produces an EPS value of
+            # $6.26. (this is what we get, and even then the number of outstanding shares differs slightly)
+            #
+            # Let's calculate the diluted EPS for Netflix. The company has granted 13,286,000 stock options to
+            # employees, which raises the total outstanding share count to 454,208,000. Dividing the same $2,761,395,
+            # 000 of net income into 454,208,000 equals an EPS value of $6.08.
+            # Converter(ValueType.DILUTED_SHARES, self.get_balance_sheet_response, ['commonStockSharesOutstanding']),
+            # Converter(ValueType.EQUITY, self.get_balance_sheet_response, ['totalShareholderEquity']),
+        ]
+
+    def get_prices_response(self, value_type: ValueType) -> None:
+        if self.asset_type is AssetType.DIGITAL_CURRENCY:
+            self.get_digital_currency_response(value_type)
+        else:
+            self.get_stock_prices_response(value_type)
+
+    def get_stock_prices_response(self, value_type: ValueType) -> None:
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
+        end_time: Optional[datetime] = self.get_argument_value(ArgumentKey.END_TIME)
+        end_time = datetime.now() if end_time is None else end_time
+        start_time: Optional[datetime] = self.get_argument_value(ArgumentKey.START_TIME)
+        start_time = end_time - timedelta(days=1) if start_time is None else start_time
+        query = {
+            'name': self.symbol,
+            'data_source': Yahoo.name,
+            'start': start_time,
+            'end': end_time
+        }
+        record_count = (end_time - start_time) / interval.timedelta
+        output_size = "compact" if record_count < 100 else "full"
+        if interval == TimeInterval.HOUR:
+            query["function"] = "TIME_SERIES_INTRADAY"
+            query["interval"] = '60min'
+            query["adjusted"] = True
+            query["outputsize"] = output_size
+            key = 'Time Series (60min)'
+        elif interval == TimeInterval.DAY:
+            query["function"] = "TIME_SERIES_DAILY_ADJUSTED"
+            query["outputsize"] = output_size
+            key = 'Time Series (Daily)'
+        elif interval == TimeInterval.WEEK:
+            query["function"] = "TIME_SERIES_WEEKLY_ADJUSTED"
+            key = 'Weekly Adjusted Time Series'
+        elif interval == TimeInterval.MONTH:
+            query["function"] = "TIME_SERIES_MONTHLY_ADJUSTED"
+            key = 'Monthly Adjusted Time Series'
+        else:
+            raise IntervalNotSupportedException(f"Specified interval is not supported: '{interval}' "
+                                                f"(for: {self.__class__.__name__})")
+        raw_response, data_file = self.get_url_response(self.url, query)
+        self.validate_json_response(data_file, raw_response)
+        self.translate(raw_response, value_type, key)
 
     @staticmethod
     def find_symbol_in_data(data, entry):

@@ -309,6 +309,11 @@ setup environment
 poetry shell
 ```
 
+start IDE
+```
+pushd ~/.pycharm/ && (nohup /opt/pycharm-community-2022.1.3/bin/pycharm.sh ~/projects/finance &); popd
+```
+
 install dependencies
 ```
 sudo apt update

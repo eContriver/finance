@@ -14,9 +14,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
-#
-#
-#
 import csv
 import inspect
 import json
@@ -119,7 +116,12 @@ def get_common_start_time(data: pandas.DataFrame) -> Optional[datetime]:
     # TODO: Is this best to sort here? Can we presort? Where should that happen? What are our entry points?
     sort_data(data)
     for column in data:
-        valid_start_times.append(data[column].first_valid_index())
+        date = data[column].first_valid_index()
+        if not date:
+            raise Exception(f"column {column} has no data")
+        # if date:
+        #     valid_start_times.append(date)
+        valid_start_times.append(date)
     return None if len(valid_start_times) == 0 else max(valid_start_times)
 
 

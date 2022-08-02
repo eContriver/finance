@@ -193,7 +193,7 @@ class IexCloud(Adapter):
                 value = None
                 for response_key, response_value in entry.items():
                     if response_key in converter.response_keys:
-                        value = 0.0 if response_value == 'None' else float(response_value)
+                        value = 0.0 if response_value is None else float(response_value)
                         break
                 if value is not None:
                     indexes.append(datetime.strptime(entry['date'], data_date_format))

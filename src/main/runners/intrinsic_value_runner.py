@@ -189,8 +189,14 @@ def convert_formats(df):
     df[ValueType.HIGH] = df[ValueType.HIGH].apply(to_dollars)
     df[ValueType.LOW] = df[ValueType.LOW].apply(to_dollars)
     df[ValueType.CLOSE] = df[ValueType.CLOSE].apply(to_dollars)
+    # if IntrinsicValueRunner.LOW_PE not in df.index:
+    #     df[IntrinsicValueRunner.LOW_PE] = numpy.nan
     df[IntrinsicValueRunner.LOW_PE] = df[IntrinsicValueRunner.LOW_PE].apply(to_abbrev)
+    # if IntrinsicValueRunner.HIGH_PE not in df.index:
+    #     df[IntrinsicValueRunner.HIGH_PE] = numpy.nan
     df[IntrinsicValueRunner.HIGH_PE] = df[IntrinsicValueRunner.HIGH_PE].apply(to_abbrev)
+    # if IntrinsicValueRunner.ROE not in df.index:
+    #     df[IntrinsicValueRunner.ROE] = numpy.nan
     df[IntrinsicValueRunner.ROE] = df[IntrinsicValueRunner.ROE].apply(to_percent)
 
 
@@ -465,7 +471,13 @@ class IntrinsicValueRunner(Runner):
 
             unbound_df: pandas.DataFrame = collection.get_columns(self.symbol, value_types)
 
+            # report.log("BEFORE...\n{}".format(unbound_df.to_string()))
+
+            # udf: pandas.DataFrame = self.report_format(unbound_df)
+            # report.log("BEFORE...\n{}".format(udf.to_string()))
+
             unbound_df.interpolate(method='time', inplace=True, limit_area='inside')
+            # unbound_df.interpolate(method='time', inplace=True, limit_area='outside')
 
             first_time = get_common_start_time(unbound_df)
             last_time = get_common_end_time(unbound_df)

@@ -9,30 +9,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/application/time_interval.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/aggregator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/adapters/alpaca.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/runners/aggregator_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/app.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copyright/eContriver_GPL.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copyright/eContriver_GPL.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/alert.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/alert.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/iex_cloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/iex_cloud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/robinhood.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/robinhood.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/adapters/td_ameritrade.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/td_ameritrade.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/yahoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/yahoo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/application/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/argument.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/argument.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/application/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/strategy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/alert_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/alert_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/application/single_symbol_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/single_symbol_strategy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/matrix_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/matrix_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/ml_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/ml_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/ml_training_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/ml_training_runner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/multi_symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/multi_symbol_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/order_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/order_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbol_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/trend_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/trend_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/adapters/test_alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/adapters/test_alpha_vantage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/add_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/add_adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/testing_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/testing_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,21 +53,34 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/src/main/runners/symbol_runner.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/.eContriver/alert.yaml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/.eContriver/intrinsic_value.yaml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/.cache/IexCloud/20220702/data.stable_stock_PYPL_chart_1d.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/README.md" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/executors/sequential_executor.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/alert.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/finance.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/application/strategy.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/executors/sequential_strategy_executor.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/strategies/bounded_rsi.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/adapters/iex_cloud.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/adapters/td_ameritrade.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/adapters/yahoo.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/application/adapter.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/visual/extra.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/visual/annotation.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/visual/visualizer.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/application/adapter_collection.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/application/runner.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/application/strategy.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/executors/executor.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/executors/parallel_strategy_executor.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/executors/sequential_executor.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/executors/sequential_strategy_executor.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/runners/alert_runner.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/runners/symbol_runner.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/strategies/bounded_rsi.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/visual/annotation.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/visual/extra.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/visual/visualizer.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="1p8jnYhlKp95SEy4ODAArnzgYas" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -82,15 +90,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="full.screen.before.presentation.mode" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/.eContriver/intrinsic_value.yaml" />
-    <property name="run.code.analysis.last.selected.profile" value="aDefault" />
-    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
-  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/sooth/projects/finance/src/main/adapters&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;
+  }
+}</component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings module-name="app" is-module-sdk="true">
@@ -104,11 +111,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$USER_HOME$/.eContriver" />
-      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/src/main/adapters" />
       <recent name="$PROJECT_DIR$/src/main/runners" />
+      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$USER_HOME$/.eContriver" />
       <recent name="$PROJECT_DIR$/src/main/services" />
-      <recent name="$PROJECT_DIR$/src/test/adapters" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/test/application" />
@@ -118,7 +125,7 @@
       <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.intrinsic_value">
+  <component name="RunManager" selected="Python.multi_symbol">
     <configuration name="alert" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -126,9 +133,9 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="/usr/local/bin/python" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/alert.py" />
@@ -147,9 +154,9 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="/usr/local/bin/python" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="/usr/local/bin/unittest-parallel" />
@@ -165,14 +172,17 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="/usr/local/bin/python" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/intrinsic_value.py" />
       <option name="PARAMETERS" value="-d" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -249,14 +259,14 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="/usr/local/bin/python" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/multi_symbol.py" />
       <option name="PARAMETERS" value="-d" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -270,14 +280,14 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="/usr/local/bin/python" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/symbol.py" />
       <option name="PARAMETERS" value="-d" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -493,6 +503,9 @@
     </task>
     <servers />
   </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.log" />
+  </component>
   <component name="Vcs.Log.History.Properties">
     <option name="COLUMN_ID_ORDER">
       <list>
@@ -513,95 +526,144 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/test/application/test_adapter.py</url>
           <line>79</line>
           <option name="timeStamp" value="26" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/test/adapters/test_alpha_vantage.py</url>
           <line>29</line>
           <option name="timeStamp" value="41" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/portfolio/portfolio.py</url>
           <line>304</line>
           <option name="timeStamp" value="46" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/matrix_runner.py</url>
           <line>179</line>
           <option name="timeStamp" value="53" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/strategies/macd_crossing.py</url>
           <line>43</line>
           <option name="timeStamp" value="54" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/portfolio/portfolio.py</url>
           <line>283</line>
           <option name="timeStamp" value="55" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/application/strategy.py</url>
           <line>64</line>
           <option name="timeStamp" value="56" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/portfolio/portfolio.py</url>
           <line>258</line>
           <option name="timeStamp" value="58" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py</url>
           <line>164</line>
           <option name="timeStamp" value="62" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py</url>
           <line>157</line>
           <option name="timeStamp" value="63" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
-          <line>197</line>
-          <option name="timeStamp" value="64" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/test/runners/test_intrinsic_value_runner.py</url>
           <line>69</line>
           <option name="timeStamp" value="77" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/test/runners/test_intrinsic_value_runner.py</url>
           <line>61</line>
           <option name="timeStamp" value="80" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>523</line>
+          <line>535</line>
           <option name="timeStamp" value="86" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>404</line>
+          <line>410</line>
           <option name="timeStamp" value="88" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>393</line>
+          <line>399</line>
           <option name="timeStamp" value="90" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
+          <line>199</line>
+          <option name="timeStamp" value="93" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>475</line>
-          <option name="timeStamp" value="91" />
+          <line>193</line>
+          <option name="timeStamp" value="94" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
+          <line>478</line>
+          <option name="timeStamp" value="95" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/application/adapter_collection.py</url>
+          <line>159</line>
+          <option name="timeStamp" value="97" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/runners/alert_runner.py</url>
+          <line>72</line>
+          <option name="timeStamp" value="100" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/adapters/iex_cloud.py</url>
+          <line>192</line>
+          <option name="timeStamp" value="102" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/application/strategy.py</url>
+          <line>132</line>
+          <option name="timeStamp" value="103" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/adapters/alpha_vantage.py</url>
+          <line>466</line>
+          <option name="timeStamp" value="106" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/adapters/alpha_vantage.py</url>
+          <line>154</line>
+          <option name="timeStamp" value="107" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/portfolio/portfolio.py</url>
+          <line>299</line>
+          <option name="timeStamp" value="108" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/strategies/macd_crossing.py</url>
+          <line>37</line>
+          <option name="timeStamp" value="109" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/application/argument.py</url>
+          <line>57</line>
+          <option name="timeStamp" value="110" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
