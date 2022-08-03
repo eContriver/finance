@@ -23,7 +23,7 @@ from typing import Optional
 
 def get_parent_cache_dir() -> str:
     """
-    Get the default cache cache directory, it is considered a parent because subfolders are created inside of it.
+    Get the default cache directory, it is considered a parent because subfolders are created inside it.
     :return: The parent cache directory
     """
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -33,7 +33,7 @@ def get_parent_cache_dir() -> str:
 
 def get_parent_output_dir() -> str:
     """
-    Get the default output output directory, it is considered a parent because subfolders are created inside of it.
+    Get the default output directory, it is considered a parent because subfolders are created inside it.
     :return: The parent output directory
     """
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -43,7 +43,7 @@ def get_parent_output_dir() -> str:
 
 def get_parent_user_dir() -> str:
     """
-    Get the default user user directory, it is considered a parent because subfolders are created inside of it.
+    Get the default user directory, it is considered a parent because subfolders are created inside it.
     :return: The parent user directory
     """
     parent_user_dir = os.path.realpath(os.path.join(str(Path.home()), '.eContriver'))
@@ -60,7 +60,7 @@ class Locations:
 
     def get_cache_dir(self, name: str) -> str:
         """
-        Get the default cache cache directory, it is considered a parent because subfolders are created inside of it.
+        Get the default cache directory, it is considered a parent because subfolders are created inside it.
         :return: The parent cache directory
         """
         cache_dir = os.path.join(self.parent_cache_dir, name)
@@ -68,7 +68,7 @@ class Locations:
 
     def get_output_dir(self, name):
         """
-        Get the default output output directory, it is considered a parent because subfolders are created inside of it.
+        Get the default output directory, it is considered a parent because subfolders are created inside it.
         :return: The parent output directory
         """
         output_dir = os.path.join(self.parent_output_dir, name)
@@ -76,7 +76,7 @@ class Locations:
 
     def get_parent_user_dir(self):
         """
-        Get the default user user directory, it is considered a parent because subfolders are created inside of it.
+        Get the default user directory, it is considered a parent because subfolders are created inside it.
         :return: The parent user directory
         """
         return self.parent_user_dir

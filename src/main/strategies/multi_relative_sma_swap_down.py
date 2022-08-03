@@ -56,9 +56,9 @@ class MultiRelativeSmaSwapDown(MultiSymbolStrategy):
         relative_smas: Dict[str, float] = {}
         for symbol in self.symbols:
             sma = self.collection.get_value(symbol, last_time, ValueType.SMA)
-            all_before = self.collection.get_symbol_handle(symbol).get_column_on_or_before(symbol, last_time,
-                                                                                           ValueType.SMA)
-            all_before = sorted(all_before)
+            sma_df = self.collection.get_all_items_on_or_before(symbol, last_time, ValueType.SMA)
+            assert sma_df.index.is_monotonic_increasing
+            all_before = sma_df.index
             look_back_time = all_before[0] if len(all_before) < self.look_back else all_before[-self.look_back]
             look_back_sma = self.collection.get_value(symbol, look_back_time, ValueType.SMA)
             relative_smas[symbol] = sma / look_back_sma

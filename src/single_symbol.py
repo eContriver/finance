@@ -21,6 +21,5 @@ from main.runners.single_symbol_runner import SingleSymbolRunner
 
 
 if __name__ == "__main__":
-    print("DEPRECATION WARNING: Use `single_symbol.py` instead of `symbol.py` (it will be removed soon). ")
-    return_code = launch_runner(program='single', config_filename='single.yaml', runner_class=SingleSymbolRunner)
+    return_code = launch_runner(program='single_symbol', config_filename='single_symbol.yaml', runner_class=SingleSymbolRunner)
     exit(return_code)

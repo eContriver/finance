@@ -25,9 +25,19 @@ class Report:
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
         self.file_handle = open(report_path, "w")
+        self.has_closing = False
+        self.closing_message = None
+        self.closing_level = None
 
     def __del__(self):
+        if self.has_closing:
+            logging.log(self.closing_level, self.closing_message)
         self.file_handle.close()
+
+    def add_closing(self, message: str, level: int = logging.INFO):
+        self.has_closing = True
+        self.closing_message = message
+        self.closing_level = level
 
     def log(self, message: str, level: int = logging.INFO):
         logging.log(level, message)

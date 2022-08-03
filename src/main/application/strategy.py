@@ -20,6 +20,8 @@ import logging
 from datetime import datetime
 from typing import Optional, Dict, Any
 
+import pandas
+
 from main.application.adapter import Adapter, AssetType
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.application.argument import Argument, ArgumentKey
@@ -42,12 +44,11 @@ class Strategy:
         self.collection: AdapterCollection = AdapterCollection()
         self.portfolio = portfolio
         self.title = title
-        # self.title += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
-        # self.title += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
-        # self.title += "" if self.portfolio.interval is None else " {}".format(self.portfolio.interval.value)
         self.portfolio.title = self.get_title_with_times()
 
     def __str__(self):
+        # df: pandas.DataFrame = pandas.DataFrame()
+        # return self.collection.report().ToDataFrame()
         return self.get_title_with_times()
 
     def get_title_with_times(self) -> str:

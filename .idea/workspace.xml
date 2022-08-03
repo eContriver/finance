@@ -9,25 +9,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/aggregator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/adapters/alpaca.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/runners/aggregator_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/app.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copyright/eContriver_GPL.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copyright/eContriver_GPL.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/runners/single_symbol_runner.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/strategies/strategy_type.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/single_symbol.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/alert.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/alert.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/iex_cloud.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/iex_cloud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/td_ameritrade.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/td_ameritrade.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/yahoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/yahoo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/single_symbol_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/single_symbol_strategy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/application/strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/strategy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/locations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/locations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/common/report.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/common/report.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/runners/multi_symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/multi_symbol_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/symbol_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/strategies/multi_relative_sma_swap_down.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/multi_relative_sma_swap_down.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/symbol.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/symbol.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +65,7 @@
     <setting file="file://$PROJECT_DIR$/src/main/executors/sequential_strategy_executor.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/runners/alert_runner.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/main/runners/symbol_runner.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/runners/single_symbol_runner.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/strategies/bounded_rsi.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/visual/annotation.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/visual/extra.py" root0="FORCE_HIGHLIGHTING" />
@@ -90,14 +82,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/sooth/projects/finance/src/main/adapters&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "/home/sooth/projects/finance/src",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
-}</component>
+}]]></component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings module-name="app" is-module-sdk="true">
@@ -111,11 +103,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/main/adapters" />
-      <recent name="$PROJECT_DIR$/src/main/runners" />
       <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/output/multi_symbol_runner" />
+      <recent name="$PROJECT_DIR$/src/main/runners" />
+      <recent name="$PROJECT_DIR$/src/main/adapters" />
       <recent name="$USER_HOME$/.eContriver" />
-      <recent name="$PROJECT_DIR$/src/main/services" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/test/application" />
@@ -125,7 +117,7 @@
       <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.multi_symbol">
+  <component name="RunManager" selected="Python.single_symbol">
     <configuration name="alert" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -273,7 +265,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="symbol" type="PythonConfigurationType" factoryName="Python">
+    <configuration name="single_symbol" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -285,7 +277,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/symbol.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/single_symbol.py" />
       <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -471,7 +463,7 @@
       <item itemvalue="Python.ml_predictor" />
       <item itemvalue="Python.ml_trainer" />
       <item itemvalue="Python.multi_symbol" />
-      <item itemvalue="Python.symbol" />
+      <item itemvalue="Python.single_symbol" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.trend" />
       <item itemvalue="Python.unittest-parallel" />
@@ -562,7 +554,7 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/application/strategy.py</url>
-          <line>64</line>
+          <line>65</line>
           <option name="timeStamp" value="56" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -637,7 +629,7 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/application/strategy.py</url>
-          <line>132</line>
+          <line>133</line>
           <option name="timeStamp" value="103" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -664,6 +656,16 @@
           <url>file://$PROJECT_DIR$/src/main/application/argument.py</url>
           <line>57</line>
           <option name="timeStamp" value="110" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/application/runner.py</url>
+          <line>83</line>
+          <option name="timeStamp" value="112" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/runners/single_symbol_runner.py</url>
+          <line>132</line>
+          <option name="timeStamp" value="113" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

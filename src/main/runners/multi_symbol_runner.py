@@ -16,8 +16,10 @@
 
 import copy
 import logging
+import os
 import sys
 from datetime import datetime
+from enum import Enum, auto
 from typing import List, Optional, Dict
 
 from main.application.adapter import AssetType
@@ -29,22 +31,32 @@ from main.executors.sequential_executor import SequentialExecutor
 from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
 from main.application.runner import Runner, NoSymbolsSpecifiedException, get_adapter_class
+from main.runners.symbol_runner import SymbolRunner
+from main.strategies.last_bounce import LastBounce
+from main.strategies.strategy_type import StrategyType, add_last_bounce_strategies, add_macd_crossing_strategies, \
+    add_bounded_rsi_strategies, add_buy_up_sell_down_trailing_strategies, add_buy_and_hold_strategies, \
+    add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_multi_delta_swap_strategies, \
+    add_multi_relative_sma_swap_up_strategies, add_multi_relative_sma_swap_dowm_strategies
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.macd_crossing import MacdCrossing
+from main.strategies.multi_delta_swap import MultiDeltaSwap
+from main.strategies.multi_relative_sma_swap_down import MultiRelativeSmaSwapDown
 from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
 from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
 
-class MultiSymbolRunner(Runner):
+class MultiSymbolRunner(SymbolRunner):
     symbols: List[str]
     adapter_class: Optional[type]
     base_symbol: str
     graph: bool
+    parallel: bool
     price_interval: TimeInterval
     start_time: Optional[datetime]
     end_time: Optional[datetime]
     asset_type_overrides: Dict[str, AssetType]
+    report_types: List[StrategyType]
 
     def __init__(self):
         super().__init__()
@@ -52,45 +64,54 @@ class MultiSymbolRunner(Runner):
         self.adapter_class = None
         self.base_symbol = 'USD'
         self.graph = True
-        self.price_interval = TimeInterval.MIN10
+        self.parallel = True
+        self.price_interval = TimeInterval.DAY
         self.start_time = None
         self.end_time = None
         self.asset_type_overrides = {}
+        self.report_types = []
 
-    @staticmethod
-    def summarize(title, strategies: List[Strategy]):
-        """
-        Summarizes the results of a multi-symbol run
-        :param title: The title of the run, printed as a header of the output
-        :param strategies: A list of the different strategies (that were run) to report on
-        """
-        logging.info('== {}'.format(title))
-        for strategy in strategies:
-            if strategy is None:
-                logging.info("{:>100}".format("Failed to retrieve strategy data, perhaps an error occurred."))
-            else:
-                date_format: str = '%Y-%m-%d'
-                start_time: Optional[datetime] = strategy.portfolio.start_time
-                start_string = 'unset' if start_time is None else datetime.strftime(start_time, date_format)
-                end_time: Optional[datetime] = strategy.portfolio.start_time
-                end_string = 'unset' if end_time is None else datetime.strftime(end_time, date_format)
-                logging.info("{:>100}:  {}  ({} to {})".format(
-                    #strategy.title,
-                    #strategy.portfolio.title,
-                    str(strategy),
-                    strategy.portfolio,
-                    start_string,
-                    end_string))
-
+    # @staticmethod
+    # def summarize(title, strategies: List[Strategy], report: Report):
+    #     """
+    #     Summarizes the results of a multi-symbol run
+    #     :param report: the report object that will be used to create the on-disk report
+    #     :param title: The title of the run, printed as a header of the output
+    #     :param strategies: A list of the different strategies (that were run) to report on
+    #     """
+    #     report.log('== {}'.format(title))
+    #     # logging.info('== {}'.format(title))
+    #     for strategy in strategies:
+    #         if strategy is None:
+    #             # logging.info("{:>100}".format("Failed to retrieve strategy data, perhaps an error occurred."))
+    #             report.log("{:>100}".format("Failed to retrieve strategy data, perhaps an error occurred."))
+    #         else:
+    #             date_format: str = '%Y-%m-%d'
+    #             start_time: Optional[datetime] = strategy.portfolio.start_time
+    #             start_string = 'unset' if start_time is None else datetime.strftime(start_time, date_format)
+    #             end_time: Optional[datetime] = strategy.portfolio.end_time
+    #             end_string = 'unset' if end_time is None else datetime.strftime(end_time, date_format)
+    #             report.log("{:>120}:  {}  ({} to {})".format(
+    #             # logging.info("{:>120}:  {}  ({} to {})".format(
+    #                     #strategy.title,
+    #                 #strategy.portfolio.title,
+    #                 str(strategy),
+    #                 strategy.portfolio,
+    #                 start_string,
+    #                 end_string))
+    #
     def get_config(self) -> Dict:
         config = {
+            'symbols': self.symbols,
             'adapter_class': self.adapter_class.__name__,
             'base_symbol': self.base_symbol,
-            'symbols': self.symbols,
             'graph': self.graph,
+            'parallel': self.parallel,
             'price_interval': self.price_interval.value,
             'start_time': self.start_time,
             'end_time': self.end_time,
+            # 'asset_type_overrides': asset_type_overrides, ??? TODO: needed?
+            'report_types': [report_type.name for report_type in self.report_types],
         }
         return config
 
@@ -99,12 +120,16 @@ class MultiSymbolRunner(Runner):
         if not self.symbols:
             raise NoSymbolsSpecifiedException(f"Please specify at least one symbol in: {config_path}")
         self.adapter_class = get_adapter_class(config['adapter_class'])
+        report_types: List[str] = config['report_types']
+        self.report_types = [StrategyType[report_type] for report_type in report_types]
         if 'base_symbol' in config:
             self.base_symbol = config['base_symbol']
         if 'price_interval' in config:
             self.price_interval = TimeInterval(config['price_interval'])
         if 'graph' in config:
             self.graph = config['graph']
+        if 'parallel' in config:
+            self.parallel = config['parallel']
         if 'start_time' in config:
             self.start_time = datetime.combine(config['start_time'], datetime.min.time())
         if 'end_time' in config:
@@ -139,54 +164,36 @@ class MultiSymbolRunner(Runner):
 
         # Strategies
         strategies: List[Strategy] = []
-        for symbol in self.symbols:
-            # strategies.append(BuyAndHold(symbol, copy.deepcopy(template)))
-            pass
-
-        for symbol in self.symbols:
-            strategies.append(MacdCrossing(symbol, copy.deepcopy(template), 13.0, 34.0, 8.0))
-
-        deltas = [
-            1.1,
-            # 1.05,
-            # 1.025,
-        ]
-        for delta in deltas:
-            # strategies.append(MultiDeltaSwap(self.symbols, copy.deepcopy(template), delta=delta))
-            pass
-
-        deltas = [
-            # 0.8, 0.9,
-            # 0.95, 0.975,
-            1.0,
-            # 1.05, 1.025,
-            # 1.2, 1.1,
-        ]
-        look_backs = [
-            # 5, 10, 15,
-            20,
-            # 25, 30, 35
-        ]
-        periods = [20.0]
-        for period in periods:
-            for delta in deltas:
-                for look_back in look_backs:
-                    # strategies.append(
-                    #     MultiRelativeSmaSwapUp(self.symbols, copy.deepcopy(template), period, delta, look_back))
-                    # strategies.append(
-                    #     MultiRelativeSmaSwapDown(self.symbols, copy.deepcopy(template), period, delta, look_back))
-                    pass
+        strategies += add_buy_and_hold_strategies(self.report_types, self.symbols, template)
+        strategies += add_macd_crossing_strategies(self.report_types, self.symbols, template)
+        strategies += add_bounded_rsi_strategies(self.report_types, self.symbols, template)
+        strategies += add_last_bounce_strategies(self.report_types, self.symbols, template)
+        strategies += add_soldiers_and_crows_strategies(self.report_types, self.symbols, template)
+        strategies += add_buy_up_sell_down_trailing_strategies(self.report_types, self.symbols, template)
+        strategies += add_buy_down_sell_up_trailing_strategies(self.report_types, self.symbols, template)
+        strategies += add_multi_delta_swap_strategies(self.report_types, self.symbols, template)
+        strategies += add_multi_relative_sma_swap_up_strategies(self.report_types, self.symbols, template)
+        strategies += add_multi_relative_sma_swap_dowm_strategies(self.report_types, self.symbols, template)
 
         key = "_".join(self.symbols)
-        executor = SequentialStrategyExecutor(strategy_date_dir)
-        # executor = ParallelStrategyExecutor(strategy_date_dir)
+
+        executor = ParallelStrategyExecutor(strategy_date_dir) if self.parallel else SequentialStrategyExecutor(
+            strategy_date_dir)
+
         for strategy in strategies:
             executor.add_strategy(strategy.run, (), key, str(strategy).replace(' ', '_'))
         success = executor.start()
         report_on = executor.processed_strategies[key] if key in executor.processed_strategies else [None]
 
+        output_dir = locations.get_output_dir(Report.camel_to_snake(self.__class__.__name__))
+        report_name = f"{self.get_run_name()}.md"
+        report_path = os.path.join(output_dir, report_name)
+        report: Report = Report(report_path)
+        report.log("```")
+        report.add_closing("```")
+
         title = f'Multi-Symbol Runner - Strategy Comparison {self.symbols}'
-        self.summarize(title, report_on)
+        self.summarize(title, report_on, report)
 
         if self.graph:
             visual_date_dir = get_and_clean_timestamp_dir(locations.get_output_dir('visuals'))
