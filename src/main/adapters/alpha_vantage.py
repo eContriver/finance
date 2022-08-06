@@ -140,11 +140,11 @@ class AlphaVantage(Adapter):
             "apikey": self.api_key,
             "symbol": self.symbol
         }
-        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         end_time: Optional[datetime] = self.get_argument_value(ArgumentKey.END_TIME)
         end_time = datetime.now() if end_time is None else end_time
         start_time: Optional[datetime] = self.get_argument_value(ArgumentKey.START_TIME)
         start_time = end_time - timedelta(days=1) if start_time is None else start_time
+        interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         record_count = (end_time - start_time) / interval.timedelta
         output_size = "compact" if record_count < 100 else "full"
         if interval == TimeInterval.HOUR:

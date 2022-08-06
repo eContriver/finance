@@ -469,11 +469,13 @@ wouldn't even try to build.
 
 The built in unittest runner can be invoked here
 
-    python -m unittest discover ./test/
+    PYTHONPATH=~/projects/finance/src python -m unittest discover ./src/test
+
+_NOTE: That when using PyCharm the root source path is automatically added to `PYTHONPATH`._
 
 The built in unittest runner can also be invoked here with custom configuration:
 
-    /app/src/test.py
+    pushd ./src/ && ./test.py; popd
 
 ## Parallel
 

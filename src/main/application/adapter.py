@@ -69,6 +69,14 @@ class IntervalNotSupportedException(RuntimeError):
     pass
 
 
+class IncorrectAdapterDatetimeType(RuntimeError):
+    """
+    After adapters parse the data from an API call, the data.index should be a List[datetime] and if it is not, then
+    this exception is throws.
+    """
+    pass
+
+
 class AssetType(Enum):
     """
     The AssetType class is used to differentiate the different asset types. For instance if the symbol BTC is used, then
@@ -182,7 +190,8 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
         for key, request_time in historic_requests.items():
             if (now - request_time) < max_timeframe:
                 wait_list.append(key)
-        logging.info('-- Waiting on...\n{}'.format("\n".join([f"{item}: {historic_requests[item]}" for item in wait_list])))
+        logging.info(
+            '-- Waiting on...\n{}'.format("\n".join([f"{item}: {historic_requests[item]}" for item in wait_list])))
         # wait_list = []
         # now: datetime = datetime.now()
         # closest = now + max_timeframe
@@ -314,7 +323,7 @@ def get_key_for_api_request(function: Any, args: Dict[Any, Any]) -> str:
     :return: The key (string) representing the function and arguments
     """
     args_string = "" if len(args) == 0 else "." + "_".join(
-        [str(arg).replace(':', '_').replace('/', '_').replace('.', '_') .replace(' ', '_') for arg in args.values()])
+        [str(arg).replace(':', '_').replace('/', '_').replace('.', '_').replace(' ', '_').replace(',', '_').replace('[', '').replace('\'', '').replace(']', '') for arg in args.values()])
     cls: str = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
     key: str = '{}{}{}'.format(cls, function.__name__, args_string)
     return key
@@ -507,7 +516,7 @@ class Adapter(metaclass=ABCMeta):
         logging.debug(f"Adding data for '{value_type}' using cache key date: '{self.cache_key_date}'")
         # self.cache_key_date = datetime(year=2021, month=6, day=29)
         # raise MissingCacheKeyException("The cache key should be set on each Adapter or on the Collection so that "
-        #                                "the default makes since for the adapter type, but should also allow the "
+        #                                "the default makes sense for the adapter type, but should also allow the "
         #                                "user to pin a cache key date so that they can work without downloading "
         #                                "more data if they are working on a large dataset.")
         self.calculate_asset_type()  # we chose to delay the asset calculation, until we are already talking to the
@@ -517,9 +526,9 @@ class Adapter(metaclass=ABCMeta):
         # function per type, which might be a good thing, so perhaps we leave it? e.g.
         # converter.get_response_callback(converter)
         converter.get_response_callback(value_type)
-        assert value_type in self.data, "Parsing response data failed, was adding column for value type '{}', but " \
-                                        "no data was present after getting and parsing the response. Does the " \
-                                        "converter have the correct keys/locations for the raw data?".format(value_type)
+        assert value_type in self.data, "Parsing response data failed, was adding column for value type " \
+                                        f"'{value_type}', but no data was present after getting and parsing the " \
+                                        "response. Does the converter have the correct keys/locations for the raw data?"
 
     def get_converter(self, value_type):
         converters = [converter for converter in self.converters if value_type == converter.value_type]
@@ -784,4 +793,3 @@ class Adapter(metaclass=ABCMeta):
             cache_requests[file_path] = datetime.fromtimestamp(os.stat(file_path).st_ctime)
             # modTimesinceEpoc = os.path.getmtime(file_path)
         return cache_requests
-

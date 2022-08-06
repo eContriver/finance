@@ -60,7 +60,8 @@ class Strategy:
         return string
 
     def run(self):
-        key_date = self.portfolio.end_time if self.portfolio.end_time is not None else datetime.now(TimeZones.get_tz())
+        key_date = datetime.now(TimeZones.get_tz())
+        # key_date = self.portfolio.end_time if self.portfolio.end_time is not None else datetime.now(TimeZones.get_tz())
         set_all_cache_key_dates(self.collection.adapters, key_date)
         self.collection.retrieve_all_data()
         self.portfolio.set_remaining_times(self.collection)

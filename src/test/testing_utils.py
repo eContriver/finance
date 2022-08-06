@@ -313,7 +313,7 @@ class TestDigitalCurrencyAdapter(Adapter):
         return False
 
 
-def get_test_adapter_data(start: datetime = datetime(year=3000, month=2, day=1), increments: int = 3,
+def get_test_adapter_data(start: datetime = datetime(year=2100, month=2, day=1), increments: int = 3,
                           value_type: ValueType = ValueType.CLOSE, data_offset: float = 1.0) -> pandas.DataFrame:
     """
     Produces data that is set in the collection as well as can be used to validate the output of the APIs

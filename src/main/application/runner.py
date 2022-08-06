@@ -253,7 +253,7 @@ def get_current_copyright_year() -> int:
     just makes it so we can update all copyright references from one place.
     :return: The current year
     """
-    return 2021
+    return 2022
 
 
 def check_environment() -> None:

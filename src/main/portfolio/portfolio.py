@@ -216,7 +216,7 @@ class Portfolio:
         portfolio = "Portfolio {}  Value = {:12.2f}".format(str(self),
                                                             get_current_value(instance, collection, self.quantities,
                                                                               ValueType.CLOSE))
-        logging.info("{:<215} {:<1}".format(order_message, portfolio))
+        logging.info("{:<205}{}".format(order_message, portfolio))
         self.open_orders.remove(order)
         self.closed_orders.append(order)
 

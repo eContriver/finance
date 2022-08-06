@@ -78,18 +78,18 @@ def add_macd_crossing_strategies(report_types, symbols, template):
         # Fast (Exponential) Moving Average in number of intervals (days if daily, months if monthly etc.)
         macd_fasts = [
             # 6.0,
-            12.0,
+            12.0, 13.0,
             # 18.0, 24.0,
         ]
         # Slow (Exponential) Moving Average
         macd_slows = [
             # 24.0,
-            26.0,
+            26.0, 34.0,
             # 52.0, 104.0, 208.0,
         ]
         # MACD = Fast EMA - Slow EMA, a trigger to buy is when MACD goes above Signal e.g. 9 day EMA
         macd_signals = [
-            # 7.0, 8.0,
+            7.0, 8.0,
             9.0,
             # 10.0, 11.0,
         ]

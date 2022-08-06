@@ -323,6 +323,7 @@ class IntrinsicValueRunner(Runner):
         """
         adapter = self.adapter_class(symbol, asset_type=None)
         adapter.base_symbol = self.base_symbol
+        # This was being used during testing, so that every day the cache was the same...
         # end_date = datetime(year=2021, month=7, day=3)
         end_date = datetime.now()
         adapter.add_argument(Argument(ArgumentKey.START_TIME, end_date - 10 * TimeInterval.YEAR.timedelta))
