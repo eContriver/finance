@@ -4,7 +4,7 @@
     "type": "split",
     "children": [
       {
-        "id": "7b745358feb763ec",
+        "id": "2d75b91007797dc4",
         "type": "leaf",
         "state": {
           "type": "markdown",
@@ -199,11 +199,11 @@
     "width": 440.5,
     "collapsed": true
   },
-  "active": "7b745358feb763ec",
+  "active": "2d75b91007797dc4",
   "lastOpenFiles": [
+    "Bitcoin Node.md",
     "Investing Notes.md",
     "Getting Started.md",
-    "Bitcoin Node.md",
     "Nik/Machines/OfficeM Setup.md",
     "Nik/Crypto/Setup and Config/Project Setup.md",
     "PyxelChain/Tokens/Tokenomics Planning Meeting.md",

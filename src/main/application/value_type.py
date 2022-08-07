@@ -51,6 +51,9 @@ class ValueType(Enum):
 
             short + long - cash = 0.504 + 40.994 - 7.618 =
     """
+    # for Chain
+    BALANCE = auto()
+    # for Stock
     CLOSE = auto()
     OPEN = auto()
     HIGH = auto()

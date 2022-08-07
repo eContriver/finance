@@ -9,9 +9,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/add_chain_adapter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/adapters/bitcoin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notes/.obsidian/workspace" beforeDir="false" afterPath="$PROJECT_DIR$/notes/.obsidian/workspace" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notes/Bitcoin Node.md" beforeDir="false" afterPath="$PROJECT_DIR$/notes/Bitcoin Node.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/add_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/add_adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/add_chain_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/add_chain_adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/application/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/application/value_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/value_type.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,6 +64,7 @@
     <setting file="file://$PROJECT_DIR$/src/main/runners/alert_runner.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/runners/ml_prediction_runner.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/runners/single_symbol_runner.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/runners/symbol_runner.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/strategies/bounded_rsi.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/visual/annotation.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/main/visual/extra.py" root0="FORCE_HIGHLIGHTING" />
@@ -81,7 +88,8 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/sooth/projects/finance/src",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/home/sooth/projects/finance/src/main/adapters",
     "run.code.analysis.last.selected.profile": "aDefault",
     "settings.editor.selected.configurable": "copyright.profiles"
   }
@@ -99,9 +107,9 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/adapters" />
       <recent name="$PROJECT_DIR$/src" />
       <recent name="$PROJECT_DIR$/src/main/runners" />
-      <recent name="$PROJECT_DIR$/src/main/adapters" />
       <recent name="$PROJECT_DIR$/src/main/application" />
       <recent name="$PROJECT_DIR$/output/multi_symbol_runner" />
     </key>
@@ -113,7 +121,7 @@
       <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.single_symbol">
+  <component name="RunManager" selected="Python.add_chain_adapter">
     <configuration name="add_adapter" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -126,7 +134,30 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/add_adapter.py" />
+      <option name="PARAMETERS" value="-d" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="add_chain_adapter" type="PythonConfigurationType" factoryName="Python">
+      <module name="app" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/add_chain_adapter.py" />
       <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -147,6 +178,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/alert.py" />
       <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="true" />
@@ -168,29 +200,9 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="/usr/local/bin/unittest-parallel" />
       <option name="PARAMETERS" value="-t ./src/ -s ./src/test/ --coverage --coverage-rcfile .coveragerc --coverage-html ./coverage" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="data_socket" type="PythonConfigurationType" factoryName="Python">
-      <module name="app" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/data_socket.py" />
-      <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -210,6 +222,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/intrinsic_value.py" />
       <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -231,6 +244,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/matrix.py" />
       <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="true" />
@@ -252,6 +266,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/ml_predictor.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
@@ -273,6 +288,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/ml_trainer.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
@@ -294,6 +310,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/multi_symbol.py" />
       <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -307,11 +324,15 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/single_symbol.py" />
       <option name="PARAMETERS" value="-d" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -325,11 +346,15 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="$PROJECT_DIR$/.venv/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
@@ -351,6 +376,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trend.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
@@ -372,6 +398,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="/usr/local/bin/unittest-parallel" />
       <option name="PARAMETERS" value="-t ./src/ -s ./src/test/ -v" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -385,11 +412,15 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="/usr/local/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="unittest" />
       <option name="PARAMETERS" value="discover ./src/test" />
       <option name="SHOW_COMMAND_LINE" value="true" />
@@ -408,6 +439,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_adapter.TestAdapter.test_get_key_for_api_request&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
@@ -422,6 +454,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_alpha_vantage.TestAlphaVantage&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
@@ -436,6 +469,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_alpha_vantage.TestAlphaVantage.test_delay_requests&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
@@ -450,6 +484,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_alpha_vantage.TestAlphaVantage.test_get_prices_response&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
@@ -464,6 +499,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_intrinsic_value_runner.TestIntrinsicValueRunner.test_predict_future_value_linear_handles_na&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
@@ -478,6 +514,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_intrinsic_value_runner.TestIntrinsicValueRunner.test_predict_value_linear_is_accurate&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
@@ -492,6 +529,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_pattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test.runners.test_intrinsic_value_runner.TestIntrinsicValueRunner.test_predict_value_linear_is_accurate&quot;" />
@@ -508,7 +546,7 @@
       <item itemvalue="Python.multi_symbol" />
       <item itemvalue="Python.single_symbol" />
       <item itemvalue="Python.add_adapter" />
-      <item itemvalue="Python.data_socket" />
+      <item itemvalue="Python.add_chain_adapter" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.trend" />
       <item itemvalue="Python.unittest-parallel" />
@@ -539,8 +577,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1614571781079</updated>
+      <workItem from="1659895581784" duration="6568000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.log" />
@@ -641,7 +683,7 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
-          <line>208</line>
+          <line>209</line>
           <option name="timeStamp" value="93" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -706,7 +748,7 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
-          <line>360</line>
+          <line>369</line>
           <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -741,12 +783,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/add_adapter.py</url>
-          <line>152</line>
+          <line>153</line>
           <option name="timeStamp" value="135" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
-          <line>528</line>
+          <line>562</line>
           <option name="timeStamp" value="136" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -765,16 +807,20 @@
           <option name="timeStamp" value="148" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
-          <line>582</line>
-          <option name="timeStamp" value="149" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/single_symbol_runner.py</url>
           <line>106</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/adapters/bitcoin.py</url>
+          <line>94</line>
+          <option name="timeStamp" value="154" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/finance$add_chain_adapter.coverage" NAME="add_chain_adapter Coverage Results" MODIFIED="1659905339106" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/finance$add_adapter.coverage" NAME="add_adapter Coverage Results" MODIFIED="1659904762941" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
   </component>
 </project>

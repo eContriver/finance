@@ -51,7 +51,7 @@ def next_step(portfolio: Portfolio, collection: AdapterCollection, symbol: str, 
 #     return adapter
 #
 
-def add_adapter():
+def main():
     """
     This program can be used to add a data adapter
     We don't want this running regularly, because it would have to communicate with external sites every run.
@@ -67,7 +67,7 @@ def add_adapter():
     symbol: str = 'NVDA'
     adapter_class = Alpaca
     # adapter_class = AlphaVantage
-    price_interval = TimeInterval.WEEK
+    price_interval = TimeInterval.DAY
     asset_type = AssetType.EQUITY
 
     end_time: datetime = datetime.now()
@@ -77,7 +77,7 @@ def add_adapter():
     collection: AdapterCollection = AdapterCollection()
     adapter = adapter_class(symbol, asset_type)
     adapter.base_symbol = base_symbol
-    adapter.asset_type = asset_type
+    # adapter.asset_type = asset_type
     adapter.request_value_types = [
         ValueType.CLOSE,
         ValueType.LOW,
@@ -96,7 +96,8 @@ def add_adapter():
     collection.retrieve_all_data()
 
     portfolio: Portfolio = Portfolio("Test", {'USD': 1000.0, symbol: 0.0}, start_time, end_time)
-    portfolio.interval = TimeInterval.WEEK
+    portfolio.interval = price_interval
+    # portfolio.interval = TimeInterval.WEEK
     portfolio.add_adapter_class(adapter_class)
     # portfolio.asset_type_overrides = asset_type_overrides
     portfolio.set_remaining_times(collection)
@@ -200,5 +201,5 @@ def add_adapter():
 
 
 if __name__ == "__main__":
-    success = add_adapter()
+    success = main()
     exit(0 if success else -1)

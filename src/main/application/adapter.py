@@ -31,6 +31,7 @@ import numpy
 import numpy as np
 import pandas
 import requests
+from requests.auth import HTTPBasicAuth
 
 from main.application.argument import Argument, ArgumentKey
 from main.application.converter import Converter
@@ -323,10 +324,18 @@ def get_key_for_api_request(function: Any, args: Dict[Any, Any]) -> str:
     :return: The key (string) representing the function and arguments
     """
     args_string = "" if len(args) == 0 else "." + "_".join(
-        [str(arg).replace(':', '_').replace('/', '_').replace('.', '_').replace(' ', '_').replace(',', '_').replace('[', '').replace('\'', '').replace(']', '') for arg in args.values()])
+        [str(arg) for arg in args.values()])
+    args_string = sanitize_cache_dir(args_string)
     cls: str = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
     key: str = '{}{}{}'.format(cls, function.__name__, args_string)
     return key
+
+
+def sanitize_cache_dir(args_string):
+    args_string = args_string.replace(':', '_').replace('/', '_').replace('.', '_').replace(' ', '_').replace(',',
+                                                                                                              '_').replace(
+        '[', '').replace('\'', '').replace(']', '')
+    return args_string
 
 
 # def merge(a, b, path=None):
@@ -383,6 +392,31 @@ def write_url_response_to_file(data_file: str, query: Dict[Any, Any], url) -> No
     url = '{}{}'.format(url, url_query)
     logging.debug('Requesting data from: {}'.format(url))
     response = requests.get(url)
+    logging.debug('Received response: {}'.format(response))
+    response.raise_for_status()
+    with open(data_file, 'w') as fd:
+        fd.write(response.text)
+
+
+def write_rpc_response_to_file(data_file: str, query: Dict[Any, Any], url, user, password) -> None:
+    """
+    Write a URL request's response to a file location on disk.
+    :param data_file: The location of the file to save the URL request's response to
+    :param query: The query parameters to be passed with the URL request
+    :param url: The full URL with protocol and end-point
+    :return:
+    """
+    # url_query = '' if not query else '?' + '&'.join(['%s=%s' % (key, value) for (key, value) in query.items()])
+    # url = '{}{}'.format(url, url_query)
+    logging.debug('Requesting data from: {}'.format(url))
+    logging.debug('Payload: {}'.format(query))
+    headers = {
+        'Content-type': 'application/json',
+        'Authorization': 'text/plain',
+    }
+    auth = HTTPBasicAuth(user, password)
+    logging.debug('Headers: {}'.format(headers))
+    response = requests.post(url, json=query, headers=headers, auth=auth)
     logging.debug('Received response: {}'.format(response))
     response.raise_for_status()
     with open(data_file, 'w') as fd:
@@ -602,12 +636,36 @@ class Adapter(metaclass=ABCMeta):
         self.validate_data(data)
         return data, cache_file
 
+    def get_rpc_response(self, url, query, user, password, cache: bool = True, data_type: DataType = DataType.JSON, delay: bool = True):
+        data_key = self.get_key_for_url_request(query, url)
+        add_timestamp = not cache
+        cache_file, lock_dir = self.get_lock_dir_and_data_file(data_key, add_timestamp, data_type)
+        acquired_lock = False
+        try:
+            acquired_lock = False if os.path.exists(cache_file) else acquire_lock(lock_dir)
+            if not os.path.exists(cache_file):  # only download files once per data_id - includes cache_key (e.g.daily)
+                if delay:
+                    self.delay_requests(cache_file)
+                write_rpc_response_to_file(cache_file, query, url, user, password)
+                logging.debug('Data saved to: {} ({})'.format(file_link_format(cache_file), datetime.now()))
+            else:
+                logging.debug('Using cached file: {}'.format(file_link_format(cache_file)))
+        except Exception:
+            raise
+        finally:
+            if acquired_lock and os.path.exists(lock_dir):
+                os.rmdir(lock_dir)
+        data = self.read_cache_file(cache_file, data_type, cache)
+        self.validate_data(data)
+        return data, cache_file
+
     def get_key_for_url_request(self, query, url):
         lower_values = []
         for key, value in query.items():
             if key not in self.cache_key_filter:
                 lower_values.append(str(value).lower())
         name = '' if not lower_values else '_' + '_'.join(lower_values)
+        name = sanitize_cache_dir(name).strip('_')
         path = urlparse(url).path
         path = path.strip('/').replace('/', '_')
         key = "{}{}".format(path, name)
@@ -690,7 +748,6 @@ class Adapter(metaclass=ABCMeta):
     def validate_data(self, data_file: str):
         pass
 
-    @abstractmethod
     def delay_requests(self, data_file: str) -> None:
         """
         Some APIs limit number of requests, this enables client requests for specific providers to match those limits.
