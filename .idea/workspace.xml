@@ -9,8 +9,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/notes/bitcoin_node.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/add_chain_adapter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notes/Bitcoin Node.md" beforeDir="false" afterPath="$PROJECT_DIR$/notes/Bitcoin Node.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +81,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/sooth/.eContriver/single_symbol.yaml",
+    "last_opened_file_path": "/home/sooth/projects/finance/src",
     "run.code.analysis.last.selected.profile": "aDefault",
     "settings.editor.selected.configurable": "copyright.profiles"
   }
@@ -98,8 +99,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/main/runners" />
       <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/src/main/runners" />
       <recent name="$PROJECT_DIR$/src/main/adapters" />
       <recent name="$PROJECT_DIR$/src/main/application" />
       <recent name="$PROJECT_DIR$/output/multi_symbol_runner" />
