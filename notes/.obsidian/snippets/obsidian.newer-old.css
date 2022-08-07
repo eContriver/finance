@@ -1,0 +1,165 @@
+/* minimal doesn't indent files, so we do here... */
+.nav-file {
+  padding-left: 8px;
+}
+
+.cm-header.cm-header-1 {
+  color: red;
+}
+
+.cm-header.cm-header-2 {
+  color: #c40;
+}
+
+.cm-header.cm-header-3 {
+  color: #94f;
+}
+
+.cm-header {
+  color: #f70;
+}
+
+.obsidian-search-match-highlight {
+  color: red;
+  /* background: red; */
+  background-color: red;
+}
+
+/* .cm-s-yonce .cm-searching { background: rgba(243, 155, 53, .3) !important; outline: 1px solid #F39B35; }
+.cm-s-yonce .cm-searching.CodeMirror-selectedtext { background: rgba(243, 155, 53, .7) !important; color: white; } */
+
+/* .obsidian-search-match-highlight .cm-hmd-codeblock .cm-qualifier{
+  color: rgb(255, 65, 65) !important;
+  background: rgb(255, 255, 255) !important;
+  background-color: #fff !important;
+}
+
+.cm-s-obsidian span.obsidian-search-match-highlight {
+  color: rgb(255, 65, 65) !important;
+  background: rgb(255, 255, 255) !important;
+  background-color: #fff !important;
+} */
+
+.cm-s-obsidian span.cm-inline-code {
+  /* .cm-inline-code { */
+  /* color: rgb(0, 238, 255); */
+  color: rgba(65, 160, 255, 0.743);
+}
+
+.markdown-source-view {
+  color: #aaa;
+  /*rgba(65, 160, 255, 0.743);*/
+}
+
+.cm-hmd-codeblock {
+  color: #bd5901;
+}
+
+.cm-line {
+  /* color: red; */
+}
+
+.cm-active {
+  color: rgb(255, 255, 255);
+}
+
+.nav-file-title {
+  /* font-size: 18px; */
+}
+
+.nav-folder-title {
+  /* font-size: 20px; */
+}
+
+.outline {
+  /* font-size: 20px; */
+}
+
+body {
+  /* text-rendering: optimizeLegibility;
+  font-family: var(--font-interface); */
+  /* line-height: 1em; */
+
+  /* font-size: 18px; */
+
+  /* background-color: var(--background-primary);
+  color: var(--text-normal);
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0); */
+}
+
+/* table {
+  table-layout: auto !important;
+  width: unset !important;
+  max-width: 100%;
+} */
+
+/* .smalltable table {
+    max-width: 50%;  
+} */
+
+/* table {
+    max-width: 50%;  
+} */
+
+/* html,
+body {
+  --h1: 1em;
+  --h2: 0.8em;
+  --h3: 0.7em;
+  --h4: 0.6em;
+  --h5: 0.6em;
+  --h6: 0.6em;
+  --font-text-size: 7px;
+  font-size: 7px;
+} */
+
+/* .HyperMD-header-1 {
+  font-size: 1em;
+} */
+
+.theme-dark {
+  /* --h1: 2em;
+  --h2: 1.6em;
+  --h3: 1.37em;
+  --h4: 1.25em;
+  --h5: 1.12em;
+  --h6: 1.12em; */
+  /* --font-text-size: 7px;
+  font-size: 7px; */
+
+  --background-primary: #202020;
+  --background-primary-alt: #1a1a1a;
+  --background-secondary: #161616;
+  --background-secondary-alt: #000000;
+  --background-modifier-border: #333;
+  --background-modifier-form-field: rgba(0, 0, 0, 0.3);
+  --background-modifier-form-field-highlighted: rgba(0, 0, 0, 0.22);
+  --background-modifier-box-shadow: rgba(0, 0, 0, 0.3);
+  --background-modifier-success: #197300;
+  --background-modifier-error: #3d0000;
+  --background-modifier-error-rgb: 61, 0, 0;
+  --background-modifier-error-hover: #470000;
+  --background-modifier-cover: rgba(0, 0, 0, 0.8);
+  --text-accent: #ff7700;
+  --text-accent-hover: #ff7800;
+  --text-normal: #ccc;
+  --text-muted: #636363;
+  --text-muted-rgb: 99, 99, 99;
+  --text-faint: #666;
+  --text-error: #ff3333;
+  --text-error-hover: #990000;
+  --text-highlight-bg: rgba(255, 255, 0, 0.4);
+  --text-highlight-bg-active: rgba(255, 128, 0, 0.4);
+  --text-selection: rgba(23, 48, 77, 0.99);
+  --text-on-accent: #dcddde;
+  --interactive-normal: #2a2a2a;
+  --interactive-hover: #303030;
+  --interactive-accent: #9742ff;
+  --interactive-accent-rgb: 151, 66, 255;
+  --interactive-accent-hover: #9944ff;
+  --interactive-success: #197300;
+  --scrollbar-active-thumb-bg: rgba(255, 255, 255, 0.2);
+  --scrollbar-bg: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb-bg: rgba(255, 255, 255, 0.1);
+  --highlight-mix-blend-mode: lighten;
+}

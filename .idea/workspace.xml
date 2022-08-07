@@ -9,11 +9,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/notes/bitcoin_node.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/add_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/add_adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/alpaca.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/alpaca.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/single_symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/single_symbol_runner.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

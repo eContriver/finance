@@ -1,0 +1,24 @@
+{
+  "legacyEditor": false,
+  "livePreview": true,
+  "trashOption": "local",
+  "attachmentFolderPath": "./",
+  "fileSortOrder": "byModifiedTime",
+  "promptDelete": false,
+  "vimMode": false,
+  "autoPairBrackets": false,
+  "autoPairMarkdown": false,
+  "pdfExportSettings": {
+    "pageSize": "Letter",
+    "landscape": false,
+    "margin": "0",
+    "downscalePercent": 100
+  },
+  "alwaysUpdateLinks": true,
+  "defaultViewMode": "source",
+  "spellcheck": true,
+  "showFrontmatter": true,
+  "showLineNumber": true,
+  "showUnsupportedFiles": true,
+  "readableLineLength": false
+}

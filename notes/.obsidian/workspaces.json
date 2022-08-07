@@ -1,0 +1,1079 @@
+{
+  "workspaces": {
+    "geth gas": {
+      "main": {
+        "id": "0e6b3713470f64dd",
+        "type": "split",
+        "children": [
+          {
+            "id": "e72db2c651da88a8",
+            "type": "leaf",
+            "dimension": 48.506246605105915,
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Crypto/geth/geth PoA local.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "3dadf240576e833c",
+            "type": "leaf",
+            "dimension": 51.493753394894085,
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Server/geth install.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "direction": "vertical"
+      },
+      "left": {
+        "id": "09277f5fc87df6cf",
+        "type": "split",
+        "children": [
+          {
+            "id": "0bd27423e2fb7091",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "7ce2d4d42f6cdd3f",
+                "type": "leaf",
+                "state": {
+                  "type": "file-explorer",
+                  "state": {}
+                }
+              },
+              {
+                "id": "5f01567306159840",
+                "type": "leaf",
+                "state": {
+                  "type": "search",
+                  "state": {
+                    "query": "systemctl",
+                    "matchingCase": false,
+                    "explainSearch": false,
+                    "collapseAll": true,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical"
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          }
+        ],
+        "direction": "horizontal",
+        "width": 370.0074996948242
+      },
+      "right": {
+        "id": "a1f43ad4df409ac5",
+        "type": "split",
+        "children": [
+          {
+            "id": "a51d54649aeb8d7e",
+            "type": "tabs",
+            "dimension": 57.04467353951891,
+            "children": [
+              {
+                "id": "6e2780aa1ae3a97a",
+                "type": "leaf",
+                "state": {
+                  "type": "outline",
+                  "state": {
+                    "file": "Nik/Server/geth install.md"
+                  }
+                }
+              },
+              {
+                "id": "ef1172dde8aadce1",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Nik/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true
+                }
+              },
+              {
+                "id": "c1e22a061a7c409c",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Pyxelchain/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "e2f9b777402a0a04",
+            "type": "tabs",
+            "dimension": 21.477663230240545,
+            "children": [
+              {
+                "id": "ff98fa3ee1753587",
+                "type": "leaf",
+                "state": {
+                  "type": "backlink",
+                  "state": {
+                    "file": "Nik/Server/geth install.md",
+                    "collapseAll": false,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical",
+                    "showSearch": false,
+                    "searchQuery": "",
+                    "backlinkCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "c102f911f3570053",
+            "type": "tabs",
+            "dimension": 21.477663230240545,
+            "children": [
+              {
+                "id": "429614a052540a34",
+                "type": "leaf",
+                "state": {
+                  "type": "tag",
+                  "state": {
+                    "sortOrder": "frequency",
+                    "useHierarchy": true
+                  }
+                }
+              },
+              {
+                "id": "acdc7cbf9c605f6a",
+                "type": "leaf",
+                "state": {
+                  "type": "localgraph",
+                  "state": {
+                    "file": "Nik/Server/geth install.md",
+                    "options": {
+                      "collapse-filter": true,
+                      "search": "",
+                      "localJumps": 1,
+                      "localBacklinks": true,
+                      "localForelinks": true,
+                      "localInterlinks": false,
+                      "showTags": false,
+                      "showAttachments": false,
+                      "hideUnresolved": false,
+                      "collapse-color-groups": true,
+                      "colorGroups": [],
+                      "collapse-display": true,
+                      "showArrow": false,
+                      "textFadeMultiplier": 0,
+                      "nodeSizeMultiplier": 1,
+                      "lineSizeMultiplier": 1,
+                      "collapse-forces": true,
+                      "centerStrength": 0.518713248970312,
+                      "repelStrength": 10,
+                      "linkStrength": 1,
+                      "linkDistance": 250,
+                      "scale": 0.13947294345978004,
+                      "close": true
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal",
+        "width": 494.8075256347656
+      },
+      "active": "3dadf240576e833c"
+    },
+    "DigiBitties": {
+      "main": {
+        "id": "0e6b3713470f64dd",
+        "type": "split",
+        "children": [
+          {
+            "id": "a3a0c2c2f4d27d30",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Dev/AWS/Perpetuator.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "5cb93c43662a3d9c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Crypto/NFTs/IPFS setup.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "59ca4c76da1b2f1f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Dev/AWS/LetsEncrypt + Nginx via Docker.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "fa67bd28ce9c1f03",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Dev/Tools/IPFS.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "direction": "vertical"
+      },
+      "left": {
+        "id": "09277f5fc87df6cf",
+        "type": "split",
+        "children": [
+          {
+            "id": "0bd27423e2fb7091",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "7ce2d4d42f6cdd3f",
+                "type": "leaf",
+                "state": {
+                  "type": "file-explorer",
+                  "state": {}
+                }
+              },
+              {
+                "id": "5f01567306159840",
+                "type": "leaf",
+                "state": {
+                  "type": "search",
+                  "state": {
+                    "query": "image_hashes",
+                    "matchingCase": false,
+                    "explainSearch": false,
+                    "collapseAll": true,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal",
+        "width": 303.0055618286133
+      },
+      "right": {
+        "id": "a1f43ad4df409ac5",
+        "type": "split",
+        "children": [
+          {
+            "id": "a51d54649aeb8d7e",
+            "type": "tabs",
+            "dimension": 46.35499207606973,
+            "children": [
+              {
+                "id": "6e2780aa1ae3a97a",
+                "type": "leaf",
+                "state": {
+                  "type": "outline",
+                  "state": {
+                    "file": "Nik/Dev/AWS/Perpetuator.md"
+                  }
+                }
+              },
+              {
+                "id": "ef1172dde8aadce1",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Nik/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true
+                }
+              },
+              {
+                "id": "c1e22a061a7c409c",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Pyxelchain/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "c102f911f3570053",
+            "type": "tabs",
+            "dimension": 31.61648177496038,
+            "children": [
+              {
+                "id": "429614a052540a34",
+                "type": "leaf",
+                "state": {
+                  "type": "tag",
+                  "state": {
+                    "sortOrder": "alphabetical",
+                    "useHierarchy": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "f57491f41124f1e1",
+            "type": "tabs",
+            "dimension": 22.028526148969892,
+            "children": [
+              {
+                "id": "ff98fa3ee1753587",
+                "type": "leaf",
+                "state": {
+                  "type": "backlink",
+                  "state": {
+                    "file": "Nik/Dev/AWS/Perpetuator.md",
+                    "collapseAll": false,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical",
+                    "showSearch": false,
+                    "searchQuery": "",
+                    "backlinkCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              },
+              {
+                "id": "acdc7cbf9c605f6a",
+                "type": "leaf",
+                "state": {
+                  "type": "localgraph",
+                  "state": {
+                    "file": "Nik/Dev/AWS/Perpetuator.md",
+                    "options": {
+                      "collapse-filter": true,
+                      "search": "",
+                      "localJumps": 1,
+                      "localBacklinks": true,
+                      "localForelinks": true,
+                      "localInterlinks": false,
+                      "showTags": false,
+                      "showAttachments": false,
+                      "hideUnresolved": false,
+                      "collapse-color-groups": true,
+                      "colorGroups": [],
+                      "collapse-display": true,
+                      "showArrow": false,
+                      "textFadeMultiplier": 0,
+                      "nodeSizeMultiplier": 1,
+                      "lineSizeMultiplier": 1,
+                      "collapse-forces": true,
+                      "centerStrength": 0.518713248970312,
+                      "repelStrength": 10,
+                      "linkStrength": 1,
+                      "linkDistance": 250,
+                      "scale": 0.13947294345978004,
+                      "close": true
+                    }
+                  }
+                }
+              },
+              {
+                "id": "e756f9e15549fe1f",
+                "type": "leaf",
+                "state": {
+                  "type": "outgoing-link",
+                  "state": {
+                    "file": "Nik/Dev/AWS/Perpetuator.md",
+                    "linksCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          }
+        ],
+        "direction": "horizontal",
+        "width": 362.49993896484375,
+        "collapsed": true
+      },
+      "active": "a3a0c2c2f4d27d30"
+    },
+    "IPFS": {
+      "main": {
+        "id": "0e6b3713470f64dd",
+        "type": "split",
+        "children": [
+          {
+            "id": "a3a0c2c2f4d27d30",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Crypto/NFTs/IPFS setup.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "fa67bd28ce9c1f03",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Dev/Tools/IPFS.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "direction": "vertical"
+      },
+      "left": {
+        "id": "09277f5fc87df6cf",
+        "type": "split",
+        "children": [
+          {
+            "id": "0bd27423e2fb7091",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "7ce2d4d42f6cdd3f",
+                "type": "leaf",
+                "state": {
+                  "type": "file-explorer",
+                  "state": {}
+                }
+              },
+              {
+                "id": "5f01567306159840",
+                "type": "leaf",
+                "state": {
+                  "type": "search",
+                  "state": {
+                    "query": "ipfs",
+                    "matchingCase": false,
+                    "explainSearch": false,
+                    "collapseAll": true,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal",
+        "width": 303.0055618286133,
+        "collapsed": true
+      },
+      "right": {
+        "id": "a1f43ad4df409ac5",
+        "type": "split",
+        "children": [
+          {
+            "id": "a51d54649aeb8d7e",
+            "type": "tabs",
+            "dimension": 46.35499207606973,
+            "children": [
+              {
+                "id": "6e2780aa1ae3a97a",
+                "type": "leaf",
+                "state": {
+                  "type": "outline",
+                  "state": {
+                    "file": "Nik/Crypto/NFTs/IPFS setup.md"
+                  }
+                }
+              },
+              {
+                "id": "ef1172dde8aadce1",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Nik/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true
+                }
+              },
+              {
+                "id": "c1e22a061a7c409c",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Pyxelchain/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "c102f911f3570053",
+            "type": "tabs",
+            "dimension": 31.61648177496038,
+            "children": [
+              {
+                "id": "429614a052540a34",
+                "type": "leaf",
+                "state": {
+                  "type": "tag",
+                  "state": {
+                    "sortOrder": "alphabetical",
+                    "useHierarchy": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "f57491f41124f1e1",
+            "type": "tabs",
+            "dimension": 22.028526148969892,
+            "children": [
+              {
+                "id": "ff98fa3ee1753587",
+                "type": "leaf",
+                "state": {
+                  "type": "backlink",
+                  "state": {
+                    "file": "Nik/Crypto/NFTs/IPFS setup.md",
+                    "collapseAll": false,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical",
+                    "showSearch": false,
+                    "searchQuery": "",
+                    "backlinkCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              },
+              {
+                "id": "acdc7cbf9c605f6a",
+                "type": "leaf",
+                "state": {
+                  "type": "localgraph",
+                  "state": {
+                    "file": "Nik/Crypto/NFTs/IPFS setup.md",
+                    "options": {
+                      "collapse-filter": true,
+                      "search": "",
+                      "localJumps": 1,
+                      "localBacklinks": true,
+                      "localForelinks": true,
+                      "localInterlinks": false,
+                      "showTags": false,
+                      "showAttachments": false,
+                      "hideUnresolved": false,
+                      "collapse-color-groups": true,
+                      "colorGroups": [],
+                      "collapse-display": true,
+                      "showArrow": false,
+                      "textFadeMultiplier": 0,
+                      "nodeSizeMultiplier": 1,
+                      "lineSizeMultiplier": 1,
+                      "collapse-forces": true,
+                      "centerStrength": 0.518713248970312,
+                      "repelStrength": 10,
+                      "linkStrength": 1,
+                      "linkDistance": 250,
+                      "scale": 0.13947294345978004,
+                      "close": true
+                    }
+                  }
+                }
+              },
+              {
+                "id": "e756f9e15549fe1f",
+                "type": "leaf",
+                "state": {
+                  "type": "outgoing-link",
+                  "state": {
+                    "file": "Nik/Crypto/NFTs/IPFS setup.md",
+                    "linksCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          }
+        ],
+        "direction": "horizontal",
+        "width": 362.49993896484375,
+        "collapsed": true
+      },
+      "active": "a3a0c2c2f4d27d30"
+    },
+    "invest": {
+      "main": {
+        "id": "0e6b3713470f64dd",
+        "type": "split",
+        "children": [
+          {
+            "id": "a3a0c2c2f4d27d30",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Investing/Valuation.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "59ca4c76da1b2f1f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Investing/Option Strategy - QUICK.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "direction": "vertical"
+      },
+      "left": {
+        "id": "09277f5fc87df6cf",
+        "type": "split",
+        "children": [
+          {
+            "id": "0bd27423e2fb7091",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "7ce2d4d42f6cdd3f",
+                "type": "leaf",
+                "state": {
+                  "type": "file-explorer",
+                  "state": {}
+                }
+              },
+              {
+                "id": "5f01567306159840",
+                "type": "leaf",
+                "state": {
+                  "type": "search",
+                  "state": {
+                    "query": "aws",
+                    "matchingCase": false,
+                    "explainSearch": false,
+                    "collapseAll": true,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal",
+        "width": 303.0055618286133
+      },
+      "right": {
+        "id": "a1f43ad4df409ac5",
+        "type": "split",
+        "children": [
+          {
+            "id": "a51d54649aeb8d7e",
+            "type": "tabs",
+            "dimension": 46.35499207606973,
+            "children": [
+              {
+                "id": "6e2780aa1ae3a97a",
+                "type": "leaf",
+                "state": {
+                  "type": "outline",
+                  "state": {
+                    "file": "Nik/Investing/Valuation.md"
+                  }
+                }
+              },
+              {
+                "id": "ef1172dde8aadce1",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Nik/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true
+                }
+              },
+              {
+                "id": "c1e22a061a7c409c",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Pyxelchain/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "c102f911f3570053",
+            "type": "tabs",
+            "dimension": 31.61648177496038,
+            "children": [
+              {
+                "id": "429614a052540a34",
+                "type": "leaf",
+                "state": {
+                  "type": "tag",
+                  "state": {
+                    "sortOrder": "alphabetical",
+                    "useHierarchy": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "f57491f41124f1e1",
+            "type": "tabs",
+            "dimension": 22.028526148969892,
+            "children": [
+              {
+                "id": "ff98fa3ee1753587",
+                "type": "leaf",
+                "state": {
+                  "type": "backlink",
+                  "state": {
+                    "file": "Nik/Investing/Valuation.md",
+                    "collapseAll": false,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical",
+                    "showSearch": false,
+                    "searchQuery": "",
+                    "backlinkCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              },
+              {
+                "id": "acdc7cbf9c605f6a",
+                "type": "leaf",
+                "state": {
+                  "type": "localgraph",
+                  "state": {
+                    "file": "Nik/Investing/Valuation.md",
+                    "options": {
+                      "collapse-filter": true,
+                      "search": "",
+                      "localJumps": 1,
+                      "localBacklinks": true,
+                      "localForelinks": true,
+                      "localInterlinks": false,
+                      "showTags": false,
+                      "showAttachments": false,
+                      "hideUnresolved": false,
+                      "collapse-color-groups": true,
+                      "colorGroups": [],
+                      "collapse-display": true,
+                      "showArrow": false,
+                      "textFadeMultiplier": 0,
+                      "nodeSizeMultiplier": 1,
+                      "lineSizeMultiplier": 1,
+                      "collapse-forces": true,
+                      "centerStrength": 0.518713248970312,
+                      "repelStrength": 10,
+                      "linkStrength": 1,
+                      "linkDistance": 250,
+                      "scale": 0.13947294345978004,
+                      "close": true
+                    }
+                  }
+                }
+              },
+              {
+                "id": "e756f9e15549fe1f",
+                "type": "leaf",
+                "state": {
+                  "type": "outgoing-link",
+                  "state": {
+                    "file": "Nik/Investing/Valuation.md",
+                    "linksCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          }
+        ],
+        "direction": "horizontal",
+        "width": 362.49993896484375,
+        "collapsed": true
+      },
+      "active": "a3a0c2c2f4d27d30"
+    },
+    "Go": {
+      "main": {
+        "id": "0e6b3713470f64dd",
+        "type": "split",
+        "children": [
+          {
+            "id": "36f420cf990e88cc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Nik/Dev/Go/hello world.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "direction": "vertical"
+      },
+      "left": {
+        "id": "09277f5fc87df6cf",
+        "type": "split",
+        "children": [
+          {
+            "id": "0bd27423e2fb7091",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "7ce2d4d42f6cdd3f",
+                "type": "leaf",
+                "state": {
+                  "type": "file-explorer",
+                  "state": {}
+                }
+              },
+              {
+                "id": "5f01567306159840",
+                "type": "leaf",
+                "state": {
+                  "type": "search",
+                  "state": {
+                    "query": "tokenomics",
+                    "matchingCase": false,
+                    "explainSearch": false,
+                    "collapseAll": true,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal",
+        "width": 303.0055618286133
+      },
+      "right": {
+        "id": "a1f43ad4df409ac5",
+        "type": "split",
+        "children": [
+          {
+            "id": "a51d54649aeb8d7e",
+            "type": "tabs",
+            "dimension": 46.35499207606973,
+            "children": [
+              {
+                "id": "6e2780aa1ae3a97a",
+                "type": "leaf",
+                "state": {
+                  "type": "outline",
+                  "state": {
+                    "file": "Nik/Dev/Go/hello world.md"
+                  }
+                }
+              },
+              {
+                "id": "ef1172dde8aadce1",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Nik/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true
+                }
+              },
+              {
+                "id": "c1e22a061a7c409c",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Pyxelchain/My Priorities.md",
+                    "mode": "source",
+                    "source": false
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "c102f911f3570053",
+            "type": "tabs",
+            "dimension": 31.61648177496038,
+            "children": [
+              {
+                "id": "429614a052540a34",
+                "type": "leaf",
+                "state": {
+                  "type": "tag",
+                  "state": {
+                    "sortOrder": "alphabetical",
+                    "useHierarchy": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "f57491f41124f1e1",
+            "type": "tabs",
+            "dimension": 22.028526148969892,
+            "children": [
+              {
+                "id": "ff98fa3ee1753587",
+                "type": "leaf",
+                "state": {
+                  "type": "backlink",
+                  "state": {
+                    "file": "Nik/Dev/Go/hello world.md",
+                    "collapseAll": false,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical",
+                    "showSearch": false,
+                    "searchQuery": "",
+                    "backlinkCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              },
+              {
+                "id": "acdc7cbf9c605f6a",
+                "type": "leaf",
+                "state": {
+                  "type": "localgraph",
+                  "state": {
+                    "file": "Nik/Dev/Go/hello world.md",
+                    "options": {
+                      "collapse-filter": true,
+                      "search": "",
+                      "localJumps": 1,
+                      "localBacklinks": true,
+                      "localForelinks": true,
+                      "localInterlinks": false,
+                      "showTags": false,
+                      "showAttachments": false,
+                      "hideUnresolved": false,
+                      "collapse-color-groups": true,
+                      "colorGroups": [],
+                      "collapse-display": true,
+                      "showArrow": false,
+                      "textFadeMultiplier": 0,
+                      "nodeSizeMultiplier": 1,
+                      "lineSizeMultiplier": 1,
+                      "collapse-forces": true,
+                      "centerStrength": 0.518713248970312,
+                      "repelStrength": 10,
+                      "linkStrength": 1,
+                      "linkDistance": 250,
+                      "scale": 0.13947294345978004,
+                      "close": true
+                    }
+                  }
+                }
+              },
+              {
+                "id": "e756f9e15549fe1f",
+                "type": "leaf",
+                "state": {
+                  "type": "outgoing-link",
+                  "state": {
+                    "file": "Nik/Dev/Go/hello world.md",
+                    "linksCollapsed": false,
+                    "unlinkedCollapsed": true
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          }
+        ],
+        "direction": "horizontal",
+        "width": 362.49993896484375,
+        "collapsed": true
+      },
+      "active": "36f420cf990e88cc"
+    }
+  },
+  "active": "Go"
+}

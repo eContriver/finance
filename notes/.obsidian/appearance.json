@@ -1,0 +1,10 @@
+{
+  "baseFontSize": 25,
+  "theme": "obsidian",
+  "enabledCssSnippets": [
+    "obsidian"
+  ],
+  "monospaceFontFamily": "Source Code Pro",
+  "cssTheme": "Minimal",
+  "translucency": true
+}
