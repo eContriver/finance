@@ -21,7 +21,6 @@ from datetime import datetime
 from typing import Dict, Any
 
 from main.adapters.alpaca import Alpaca
-from main.adapters.alpha_vantage import AlphaVantage
 from main.application.adapter import AssetType, Adapter
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.application.argument import Argument, ArgumentKey
@@ -66,8 +65,8 @@ def add_adapter():
 
     base_symbol: str = 'USD'
     symbol: str = 'NVDA'
-    # adapter_class = Alpaca
-    adapter_class = AlphaVantage
+    adapter_class = Alpaca
+    # adapter_class = AlphaVantage
     price_interval = TimeInterval.WEEK
     asset_type = AssetType.EQUITY
 
@@ -84,7 +83,9 @@ def add_adapter():
         ValueType.LOW,
         ValueType.HIGH,
         ValueType.OPEN,
-    ] # NOTE: prints in this order, but reversed (following OHLC here)
+
+        ValueType.VOLUME,
+    ]  # NOTE: prints in this order, but reversed (following OHLC here)
     adapter.add_argument(Argument(ArgumentKey.START_TIME, start_time))
     adapter.add_argument(Argument(ArgumentKey.END_TIME, end_time))
     adapter.add_argument(Argument(ArgumentKey.INTERVAL, price_interval))
@@ -107,7 +108,9 @@ def add_adapter():
         ValueType.OPEN,
         ValueType.HIGH,
         ValueType.LOW,
-        ValueType.CLOSE
+        ValueType.CLOSE,
+
+        ValueType.VOLUME
     ]  # NOTE: this order does _not_ effect display
     adapters: Dict[ValueType, Any] = {}
     for value_type in value_types:
@@ -148,6 +151,8 @@ def add_adapter():
         portfolio.run_to(collection, current_time)
         next_step(portfolio, collection, symbol, current_time)
     portfolio.summarize()
+    logging.info("-- Portfolio dump")
+    print(portfolio.data)
 
     # asset_type: AssetType = AssetType.EQUITY
     # # 1:

@@ -9,19 +9,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/add_adapter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/add_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/add_adapter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/adapters/alpaca.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/alpaca.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/strategy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/portfolio/portfolio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/strategies/strategy_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/strategies/strategy_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/testing_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/testing_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/single_symbol_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/single_symbol_runner.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +83,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/sooth/projects/finance/src/main/runners",
+    "last_opened_file_path": "/home/sooth/.eContriver/single_symbol.yaml",
     "run.code.analysis.last.selected.profile": "aDefault",
     "settings.editor.selected.configurable": "copyright.profiles"
   }
@@ -123,7 +115,7 @@
       <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.add_adapter">
+  <component name="RunManager" selected="Python.single_symbol">
     <configuration name="add_adapter" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -317,9 +309,6 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -754,7 +743,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/add_adapter.py</url>
-          <line>149</line>
+          <line>152</line>
           <option name="timeStamp" value="135" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -764,12 +753,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/adapters/alpaca.py</url>
-          <line>269</line>
+          <line>147</line>
           <option name="timeStamp" value="141" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/adapters/alpaca.py</url>
-          <line>174</line>
+          <line>108</line>
           <option name="timeStamp" value="147" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -781,6 +770,11 @@
           <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
           <line>582</line>
           <option name="timeStamp" value="149" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/runners/single_symbol_runner.py</url>
+          <line>106</line>
+          <option name="timeStamp" value="150" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

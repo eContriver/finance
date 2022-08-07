@@ -253,11 +253,7 @@ asset_type_overrides:
   BLK: EQUITY
 report_types:
   - INTEREST_OVER_TIME
-#  - HISTORICAL_INTEREST
-#  - REGION
-#  - TRENDING
-#  - TOP_CHARTS
-#  - KEYWORD_SUGGESTION
+
   - RELATED_QUERY
   - RELATED_TOPIC
 graph: true
@@ -384,7 +380,7 @@ Now clone the repo into the `finance` volume:
     
     docker run --rm -it -v root_home:/root -v finance:/git alpine/git clone git@github.com:eContriver/finance.git .
     
-_NOTE: The contents of `finance` can be viewed on Windows usign WSL2 at `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\finance\_data` and on Linux at `/var/lib/docker/volumes/finance`_
+_NOTE: The contents of `finance` can be viewed on Windows using WSL2 at `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\finance\_data` and on Linux at `/var/lib/docker/volumes/finance`_
 
 ### Running from Docker
 
@@ -810,14 +806,25 @@ Had to sync Windows host to get docker and wsl time to be accurate, but that was
 
 ## Install pycharm into /root persistent local volume
 
-    curl https://download.jetbrains.com/python/pycharm-community-2021.2.2.tar.gz > /tmp/file_to_extract
+Start and connect to docker container with root home mounted:
+
+    docker run --rm -it -v root_home:/root python sh
+
+Then install pycharm there:
+
+    curl https://download.jetbrains.com/python/pycharm-community-2022.1.3.tar.gz > /tmp/file_to_extract
     tar -xzf /tmp/file_to_extract -C /root/
     rm -rf /tmp/file_to_extract
     mv /root/pycharm-community-*/ /root/pycharm-community/
 
-Run with:
+To test PyCharm run with:
 
-    /root/pycharm-community/bin/pycharm.sh /app
+    /root/pycharm-community/bin/pycharm.sh
+
+If that fails with messages about `libXtst`, then do this:
+
+    sudo apt-get update
+    sudo apt-get install libxtst6
 
 Then locate the Dockerfile installed pip packages by switching the interpreter to:
 

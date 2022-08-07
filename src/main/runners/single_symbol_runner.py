@@ -133,7 +133,7 @@ class SingleSymbolRunner(SymbolRunner):
         template: Portfolio = Portfolio('Single Symbol Portfolio Value', {'USD': 20000.0, self.symbol: 0.0},
                                         self.start_time, end_time)
         # template.interval = TimeInterval.DAY
-        template.interval = TimeInterval.WEEK
+        template.interval = self.price_interval
         template.add_adapter_class(self.adapter_class)
         template.asset_type_overrides = self.asset_type_overrides
 
