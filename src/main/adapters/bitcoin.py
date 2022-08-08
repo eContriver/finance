@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+import logging
 from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
@@ -39,35 +39,60 @@ class Bitcoin(Adapter):
     url: str = 'http://127.0.0.1:18332'
 
     def __init__(self, symbol: str, asset_type: Optional[AssetType] = None):
-        api_user = 'sooth'
-        # if environ.get('BITCOIN_RPC_USER') is None:
-        #     raise RuntimeError("The BITCOIN_RPC_USER environment variable is not set - this needs to be set to the RPC user")
-        # api_user = environ.get('BITCOIN_RPC_USER')
-        api_key = 'my_veruy_super_secret_and_super_long_password_nody_can_guess'
-        # if environ.get('BITCOIN_RPC_PASSWORD') is None:
-        #     raise RuntimeError("The BITCOIN_RPC_PASSWORD environment variable is not set - this needs to be set to the RPC password")
-        # api_key = environ.get('BITCOIN_RPC_PASSWORD')
+        # api_user = 'sooth'
+        if environ.get('BITCOIN_RPC_USER') is None:
+            raise RuntimeError("The BITCOIN_RPC_USER environment variable is not set - this needs to be set to the RPC user")
+        api_user = environ.get('BITCOIN_RPC_USER')
+        # api_key = 'my_veruy_super_secret_and_super_long_password_nody_can_guess'
+        if environ.get('BITCOIN_RPC_PASSWORD') is None:
+            raise RuntimeError("The BITCOIN_RPC_PASSWORD environment variable is not set - this needs to be set to the RPC password")
+        api_key = environ.get('BITCOIN_RPC_PASSWORD')
         super().__init__(symbol, asset_type)
         self.api_user = api_user
         self.api_key = api_key
+        time = datetime.now()
+        self.shared_index = datetime(year=time.year, month=time.month, day=time.day)
         self.converters: List[Converter] = [
             # we allow for multiple strings to be converted into the value type, first match is used
-            Converter(ValueType.BALANCE, self.get_wallet_response, ['balance']),
+            Converter(ValueType.CONNECTION_COUNT, self.get_connection_count_response, []),
+            Converter(ValueType.BALANCE, self.get_balance_response, ['balance']),
+            Converter(ValueType.CHAIN_NAME, self.get_blockchain_info_response, ['chain']),
         ]
 
-    def get_wallet_response(self, value_type: ValueType) -> None:
+    def get_connection_count_response(self, value_type: ValueType) -> None:
+        query = {
+            "jsonrpc": "1.0",
+            # "id": "curltest",
+            "method": "getconnectioncount",
+            "params": [],
+        }
+        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        self.translate(raw_response, value_type, 'result')
+
+    def get_blockchain_info_response(self, value_type: ValueType) -> None:
+        query = {
+            "jsonrpc": "1.0",
+            # "id": "curltest",
+            "method": "getblockchaininfo",
+            "params": [],
+        }
+        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        self.translate(raw_response, value_type, 'result')
+
+    def get_balance_response(self, value_type: ValueType) -> None:
         # curl --user sooth --data-binary '{"jsonrpc": "1.0", "id": "curltest", "method": "getconnectioncount", "params": []}' -H 'content-type: text/plain;' http://127.0.0.1:18332/
         # Enter host password for user 'sooth':
         # {"result":10,"error":null,"id":"curltest"}
         query = {
             "jsonrpc": "1.0",
-            "id": "curltest",
-            "method": "getconnectioncount",
-            "params": [],
-            # "method": "getbalance",
-            # "params": ["*", 6],
+            # "id": "curltest",
+            "method": "getbalance",
+            "params": ["*", 6],
         }
-        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key)
+        logging.debug("test")
+        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
         self.translate(raw_response, value_type, 'result')
 
@@ -90,8 +115,13 @@ class Bitcoin(Adapter):
                 continue  # if we've already added this value type, then don't do it again
             if converter.value_type != value_type:
                 continue
-            indexes = [datetime.now()]
-            values = [response_data[key]]
+            indexes = [self.shared_index]
+            if value_type == ValueType.BALANCE:
+                values = [response_data[key]]
+            elif value_type == ValueType.CONNECTION_COUNT:
+                values = [response_data[key]]
+            elif value_type == ValueType.CHAIN_NAME:
+                values = [response_data[key]["chain"]]
             # for entry_datetime, response_entry in response_data[key].items():
             #     value = None
             #     for response_key, response_value in response_entry.items():
@@ -114,8 +144,16 @@ class Bitcoin(Adapter):
             raise RuntimeError(
                 "Error message in response - {}\n  See: {}".format(raw_response["error"],
                                                                    file_link_format(data_file)))
+        if "warnings" in raw_response and raw_response["warnings"]:
+            logging.warning(
+                "Warning message in response - {}\n  See: {}".format(raw_response["warnings"],
+                                                                   file_link_format(data_file)))
         if expects_result and "result" not in raw_response:
             raise RuntimeError("Failed to find the result in response: {}".format(file_link_format(data_file)))
+        if expects_result and isinstance(raw_response["result"], dict) and "warnings" in raw_response["result"] and raw_response["result"]["warnings"]:
+            logging.warning(
+                "Warning messages in response - {}\n  See: {}".format(raw_response["result"]["warnings"],
+                                                                     file_link_format(data_file)))
 
     # def delay_requests(self, data_file: Vstr) -> None:
     #     pass

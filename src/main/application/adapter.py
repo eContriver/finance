@@ -39,6 +39,12 @@ from main.application.value_type import ValueType
 from main.common.locations import file_link_format
 
 
+class ColumnAlreadyExistsException(RuntimeError):
+    """
+    When data is added with duplicate indices to an adapters data table this exception will be thrown.
+    """
+    pass
+
 class DuplicateRawIndexesException(RuntimeError):
     """
     When data is added with duplicate indices to an adapters data table this exception will be thrown.
@@ -323,19 +329,31 @@ def get_key_for_api_request(function: Any, args: Dict[Any, Any]) -> str:
     :param args: A key value pair (dictionary) of arguments who's values will be added into the key
     :return: The key (string) representing the function and arguments
     """
-    args_string = "" if len(args) == 0 else "." + "_".join(
+    args_string = "" if len(args) == 0 else "_".join(
         [str(arg) for arg in args.values()])
-    args_string = sanitize_cache_dir(args_string)
+    args_string = "." + sanitize_response(args_string)
     cls: str = function.__self__.__class__.__name__ + "." if hasattr(function, '__self__') else ""
     key: str = '{}{}{}'.format(cls, function.__name__, args_string)
     return key
 
 
-def sanitize_cache_dir(args_string):
-    args_string = args_string.replace(':', '_').replace('/', '_').replace('.', '_').replace(' ', '_').replace(',',
-                                                                                                              '_').replace(
-        '[', '').replace('\'', '').replace(']', '')
-    return args_string
+def sanitize_response(args_string):
+    """
+    Removes special characters etc. from arguments used to create a cache key
+    We could just create a hash of the data, but the nice thing about using
+    the values is that the file names tell you what was run.
+    :param args_string: The args string to sanitize
+    :return: The sanitized string
+    """
+    args_string = args_string.replace(':', '_')\
+        .replace('/', '_')\
+        .replace('.', '_')\
+        .replace(' ', '_')\
+        .replace(',', '_')\
+        .replace('[', '')\
+        .replace('\'', '')\
+        .replace(']', '')
+    return args_string.strip('_')
 
 
 # def merge(a, b, path=None):
@@ -464,9 +482,9 @@ def insert_column(data: pandas.DataFrame, column: Any,
     """
     Inserts a new column of data into the underlying DataFrame
     :param data: The DataFrame that will have the column inserted into it
-    :param column: The column will be insert under this ValueType label (i.e. column name)
+    :param column: The column will be inserted under this ValueType label (i.e. column name)
     :param indexes: The indices of the data, these do not have to match with the existing indexes
-    :param values: The value of the new column, these are expected to be index aligned with the indexes
+    :param values: The value of the new column, these are expected to be index-aligned with the indexes
     :return:
     """
     column_values = pandas.Series(values, index=indexes)
@@ -665,7 +683,7 @@ class Adapter(metaclass=ABCMeta):
             if key not in self.cache_key_filter:
                 lower_values.append(str(value).lower())
         name = '' if not lower_values else '_' + '_'.join(lower_values)
-        name = sanitize_cache_dir(name).strip('_')
+        name = sanitize_response(name)
         path = urlparse(url).path
         path = path.strip('/').replace('/', '_')
         key = "{}{}".format(path, name)

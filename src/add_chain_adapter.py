@@ -63,15 +63,17 @@ async def main():
     asset_type = AssetType.DIGITAL_CURRENCY
 
     end_time: datetime = datetime.now()
-    end_time = datetime(end_time.year, end_time.month, end_time.day)
+    # end_time = datetime(end_time.year, end_time.month, end_time.day)
 
     collection: AdapterCollection = AdapterCollection()
     adapter = adapter_class(symbol, asset_type)
     # adapter.base_symbol = base_symbol
     # adapter.asset_type = asset_type
-    adapter.request_value_types = [ # The data to request from the adapter
-        ValueType.BALANCE,
-    ]  # NOTE: prints in this order, but reversed (following OHLC here)
+    adapter.request_value_types = [  # The data to request from the adapter
+        ValueType.CONNECTION_COUNT,
+        # ValueType.BALANCE,
+        ValueType.CHAIN_NAME,
+    ]  # NOTE: prints in this order, but reversed
     # adapter.add_argument(Argument(ArgumentKey.START_TIME, start_time))
     # adapter.add_argument(Argument(ArgumentKey.END_TIME, end_time))
     # adapter.add_argument(Argument(ArgumentKey.INTERVAL, price_interval))
