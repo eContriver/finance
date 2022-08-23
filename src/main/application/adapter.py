@@ -19,6 +19,7 @@ import inspect
 import json
 import logging
 import os.path
+import re
 import shutil
 import time
 from abc import ABCMeta, abstractmethod
@@ -44,6 +45,7 @@ class ColumnAlreadyExistsException(RuntimeError):
     When data is added with duplicate indices to an adapters data table this exception will be thrown.
     """
     pass
+
 
 class DuplicateRawIndexesException(RuntimeError):
     """
@@ -345,14 +347,22 @@ def sanitize_response(args_string):
     :param args_string: The args string to sanitize
     :return: The sanitized string
     """
-    args_string = args_string.replace(':', '_')\
-        .replace('/', '_')\
-        .replace('.', '_')\
-        .replace(' ', '_')\
-        .replace(',', '_')\
-        .replace('[', '')\
-        .replace('\'', '')\
-        .replace(']', '')
+    args_string = args_string \
+        .replace(':', '_') \
+        .replace('/', '_') \
+        .replace('.', '_') \
+        .replace(' ', '_') \
+        .replace(',', '_') \
+        .replace('#', '_') \
+        .replace('*', '_') \
+        .replace('[', '_') \
+        .replace('{', '_') \
+        .replace('(', '_') \
+        .replace('\'', '_') \
+        .replace(')', '_') \
+        .replace('}', '_') \
+        .replace(']', '_')
+    args_string = re.sub('_+', '_', args_string)
     return args_string.strip('_')
 
 
@@ -435,7 +445,12 @@ def write_rpc_response_to_file(data_file: str, query: Dict[Any, Any], url, user,
     auth = HTTPBasicAuth(user, password)
     logging.debug('Headers: {}'.format(headers))
     response = requests.post(url, json=query, headers=headers, auth=auth)
-    logging.debug('Received response: {}'.format(response))
+    logging.debug('Received response: {} ({}, {})'.format(response,
+                                                          response.reason,
+                                                          response.json()))
+    json_response = response.json()
+    if 'error' in json_response and json_response['error'] and 'message' in json_response['error']:
+        logging.error(f"Found error in response: {json_response['error']['message']}")
     response.raise_for_status()
     with open(data_file, 'w') as fd:
         fd.write(response.text)
@@ -654,7 +669,8 @@ class Adapter(metaclass=ABCMeta):
         self.validate_data(data)
         return data, cache_file
 
-    def get_rpc_response(self, url, query, user, password, cache: bool = True, data_type: DataType = DataType.JSON, delay: bool = True):
+    def get_rpc_response(self, url, query, user, password, cache: bool = True, data_type: DataType = DataType.JSON,
+                         delay: bool = True):
         data_key = self.get_key_for_url_request(query, url)
         add_timestamp = not cache
         cache_file, lock_dir = self.get_lock_dir_and_data_file(data_key, add_timestamp, data_type)
@@ -686,7 +702,7 @@ class Adapter(metaclass=ABCMeta):
         name = sanitize_response(name)
         path = urlparse(url).path
         path = path.strip('/').replace('/', '_')
-        key = "{}{}".format(path, name)
+        key = "{}_{}".format(path, name) if len(path) and len(name) else "{}{}".format(path, name)
         return key
 
     def read_cache_file(self, data_file, data_type, cache: bool = True):

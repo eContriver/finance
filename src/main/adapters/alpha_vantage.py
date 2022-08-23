@@ -52,6 +52,36 @@ def get_adjusted_ratio(time_data: Dict[str, str]) -> float:
 
 
 class AlphaVantage(Adapter):
+    """
+    For AlphaVantage balance_sheet example using AVGO on 8/28/2021 period: 2020-11-01...
+    Assets:
+            "totalAssets":                       "75933000000", 75.9b
+            "totalNonCurrentAssets":             "64038000000", 64.0b
+            "intangibleAssets":                  "60229000000", 60.2b
+            "intangibleAssetsExcludingGoodwill": "16782000000", 16.8b
+            "totalCurrentAssets":                "11895000000", 11.9b
+            "otherNonCurrrentAssets":             "1300000000",  1.3b
+            "otherCurrentAssets":                  "977000000",  977m
+    Liabilities:
+            "totalLiabilities":           "52032000000", 52.0b
+            "totalNonCurrentLiabilities": "46532000000", 46.5b
+            "totalCurrentLiabilities":     "6371000000",  6.4b
+            "otherNonCurrentLiabilities":  "5426000000",  5.4b
+            "otherCurrentLiabilities":     "3831000000",  3.8b
+    Debt:
+            "shortLongTermDebtTotal":     "41498000000", 41.5b
+            "longTermDebt":               "40994000000", 41.0b
+            "longTermDebtNoncurrent":     "40235000000", 40.2b
+            "currentDebt":                  "847000000", 847m
+            "currentLongTermDebt":          "827000000", 827m
+            "shortTermDebt":                "504000000", 504m
+    Cash:
+            "cashAndCashEquivalentsAtCarryingValue": "7618000000", 7.6b
+
+            short + long - cash = 0.504 + 40.994 - 7.618 =
+
+    Remember: Not all liabilities are debt, but all debt is a liability.
+    """
     name: str = 'alphaVantage'
     url: str = 'https://www.alphavantage.co/query'
 

@@ -33,6 +33,9 @@ class ArgumentKey(Enum):
     MACD_SIGNAL = auto()
     BOOK = auto()
 
+    ADDRESS = auto()
+    WALLET_NAME = auto()
+    SCAN_START = auto()  # defines how far back a chain should scan (e.g. for bitcoin, 0 is to the beginning and "now" is latest)
 
 def get_argument_type(argument_key: ArgumentKey):
     types = {
@@ -45,6 +48,9 @@ def get_argument_type(argument_key: ArgumentKey):
         ArgumentKey.MACD_FAST: float,
         ArgumentKey.MACD_SIGNAL: float,
         ArgumentKey.BOOK: float,
+        ArgumentKey.ADDRESS: str,
+        ArgumentKey.WALLET_NAME: str,
+        ArgumentKey.SCAN_START: str,
     }
     return types.get(argument_key)
 

@@ -5,7 +5,7 @@ Copyright 2021 eContriver LLC
 The python scripts provided in this project facilitates trying different buy and sell strategies for stock and crypto currencies. There are also scripts that provide different types of security analysis. Both technical analysis and fundamental analysis are considered.
 
 This software is intended for educational purposes only and nothing it produces should be taken as investment advice.
-It's accuracy is not guaranteed, the software may have bugs, or the data that it receives from 3rd parties may be
+Its accuracy is not guaranteed, the software may have bugs, or the data that it receives from 3rd parties may be
 inaccurate. You are responsible for verifying the results that are produced.
 
 # Features
@@ -21,7 +21,7 @@ Some of these features are:
 
 ## Single Stock Strategies
 
-Some of the already added strategies are:
+Some already added strategies are:
 
 * Buy and Hold strategy
 * Buy low Sell High
@@ -262,13 +262,13 @@ symbol: HOOD
 ```
 
 Run:
-```
+```shell
 (.venv) ➜  finance git:(main) ✗ ./src/trend.py
 ```
 
 # Adapter List
 
-_WARNING: The code has changed a lot recently and not all of the adapters have been updated yet!_
+_WARNING: The code has changed a lot recently and not all the adapters have been updated yet!_
 
 The adapters that were working at one point are:
 
@@ -295,23 +295,24 @@ Only the brokerage/exchange endpoints support orders i.e.
 
 ## Linux Development
 
-```
+```shell
 git clone git@github.com:eContriver/finance.git
 cd finance
 ```
 
-setup environment
-```
+setup environment (using poetry to have per project python version support)
+```shell
+sudo apt update
+sudo apt install python3 python3-pip
+pip install poetry
+
 poetry shell
 ```
-
-start IDE
-```
-pushd ~/.pycharm/ && (nohup /opt/pycharm-community-2022.1.3/bin/pycharm.sh ~/projects/finance &); popd
-```
+_NOTE: Some dependencies have been found to not build with Python 3.10.+ and 3.9 has not been tested. Currently, Python 
+3.8 is known to be working with all dependencies._
 
 install dependencies
-```
+```shell
 sudo apt update
 
 sudo apt -y install python-wxtools unzip wget libnss3 
@@ -321,6 +322,12 @@ pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20
 
 pip install -r requirements.txt
 ```
+
+start IDE
+```shell
+pushd ~/.pycharm/ && (nohup /opt/pycharm-community-2022.1.3/bin/pycharm.sh ~/projects/finance &); popd
+```
+
 
 ### For new projects
 
@@ -633,7 +640,7 @@ Used to test a set of strategies with settings across a bunch of different secur
 
 ## Graphical
 
-![BTC to USD Example](doc/images/btc_example.png)
+...images to come soon...
 
 # Proposal for new Adapter design
 

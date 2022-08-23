@@ -16,14 +16,12 @@
 import logging
 from datetime import datetime, timedelta
 from os import environ
-from typing import Dict, List, Optional
+from typing import List, Optional, Any
 
-from main.application.adapter import DataType, AssetType, Adapter, get_response_value_or_none, \
-    IntervalNotSupportedException, insert_column, request_limit_with_timedelta_delay
-from main.application.time_interval import TimeInterval
-from main.application.value_type import ValueType
-from main.application.converter import Converter
 from main.application.argument import ArgumentKey
+from main.application.adapter import AssetType, Adapter, insert_column
+from main.application.converter import Converter
+from main.application.value_type import ValueType
 from main.common.locations import file_link_format
 
 
@@ -36,16 +34,22 @@ class UnknownAssetTypeException(RuntimeError):
 
 class Bitcoin(Adapter):
     name: str = 'bitcoin'
-    url: str = 'http://127.0.0.1:18332'
+    url: str = 'http://192.168.1.184:8332'
 
     def __init__(self, symbol: str, asset_type: Optional[AssetType] = None):
+        logging.warning(
+            "The Bitcoin Adapter class is under development and cannot be used for anything more than checking an "
+            "addresses balance. This adapter also requires that you point to a bitcoin node that has RPC exposed. "
+            "Since this is a security risk, it is likely you will need to run your own node locally.")
         # api_user = 'sooth'
         if environ.get('BITCOIN_RPC_USER') is None:
-            raise RuntimeError("The BITCOIN_RPC_USER environment variable is not set - this needs to be set to the RPC user")
+            raise RuntimeError(
+                "The BITCOIN_RPC_USER environment variable is not set - this needs to be set to the RPC user")
         api_user = environ.get('BITCOIN_RPC_USER')
         # api_key = 'my_veruy_super_secret_and_super_long_password_nody_can_guess'
         if environ.get('BITCOIN_RPC_PASSWORD') is None:
-            raise RuntimeError("The BITCOIN_RPC_PASSWORD environment variable is not set - this needs to be set to the RPC password")
+            raise RuntimeError(
+                "The BITCOIN_RPC_PASSWORD environment variable is not set - this needs to be set to the RPC password")
         api_key = environ.get('BITCOIN_RPC_PASSWORD')
         super().__init__(symbol, asset_type)
         self.api_user = api_user
@@ -59,6 +63,32 @@ class Bitcoin(Adapter):
             Converter(ValueType.CHAIN_NAME, self.get_blockchain_info_response, ['chain']),
         ]
 
+    # def create_wallet(self, address: str) -> Wallet:
+    #     """
+    #     Creates a wallet for tracking an accounts balance
+    #     :param private: a private key or a mnemonic passphrase
+    #     :param address: a public address or name for the account
+    #     :return:
+    #     """
+    #     wallet = Wallet(address, None)
+    #     if wallet.wallet_type != WalletType.READ_ONLY:
+    #         raise UnknownWalletTypeException(f"Unsupported wallet type: {wallet.wallet_type}")
+    #     self.import_address_response(address)
+    #     return wallet
+
+    # def create_spender_wallet(self, address: str, private: str) -> Wallet:
+    #     """
+    #     Creates a wallet for tracking an accounts balance
+    #     :param private: a private key or a mnemonic passphrase
+    #     :param address: a public address or name for the account
+    #     :return:
+    #     """
+    #     raise UnknownWalletTypeException(f"Unsupported wallet type: {WalletType.WRITE_CAPABLE}")
+    #     # wallet = Wallet(address, private)
+    #     # if wallet.wallet_type == WalletType.WRITE_CAPABLE:
+    #     #     self.import_address_response(address)
+    #     # raise UnknownWalletTypeException(f"Unsupported wallet type: {wallet.wallet_type}")
+
     def get_connection_count_response(self, value_type: ValueType) -> None:
         query = {
             "jsonrpc": "1.0",
@@ -69,6 +99,17 @@ class Bitcoin(Adapter):
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
         self.translate(raw_response, value_type, 'result')
+
+    def get_dump_priv_key(self) -> None:
+        query = {
+            "jsonrpc": "1.0",
+            # "id": "curltest",
+            "method": "dumpwallet",
+            "params": [],
+        }
+        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
 
     def get_blockchain_info_response(self, value_type: ValueType) -> None:
         query = {
@@ -82,19 +123,145 @@ class Bitcoin(Adapter):
         self.translate(raw_response, value_type, 'result')
 
     def get_balance_response(self, value_type: ValueType) -> None:
+        logging.info("-- get_balance_response.list_wallet_dir_response")
+        wallet_dir = self.list_wallet_dir_response()
+        wallet_name = self.get_argument_value(ArgumentKey.WALLET_NAME)
+        wallet_names = [wallet['name'] for wallet in wallet_dir['wallets']]
+        logging.info("-- get_balance_response.list_wallets_response")
+        loaded_wallets = self.list_wallets_response()
+        if wallet_name in loaded_wallets:
+            logging.info("-- wallet already loaded - noop")
+        elif wallet_name in wallet_names:
+            logging.info("-- get_balance_response.load_wallet_response")
+            self.load_wallet_response()
+        else:
+            logging.info("-- get_balance_response.create_wallet_response")
+            self.create_wallet_response()
+        logging.info("-- get_balance_response.get_wallet_info_response")
+        self.get_wallet_info_response()
+        logging.info("-- get_balance_response.get_descriptor_info_response")
+        descriptor_info = self.get_descriptor_info_response()
+        # self.get_dump_priv_key()
+
+        logging.info("-- get_balance_response.import_descriptor_response")
+        self.import_descriptor_response(descriptor_info)
+        # logging.info("-- get_balance_response.import_address_response")
+        # self.import_address_response()
+
         # curl --user sooth --data-binary '{"jsonrpc": "1.0", "id": "curltest", "method": "getconnectioncount", "params": []}' -H 'content-type: text/plain;' http://127.0.0.1:18332/
         # Enter host password for user 'sooth':
         # {"result":10,"error":null,"id":"curltest"}
+        name = self.get_argument_value(ArgumentKey.WALLET_NAME)
+        query = {
+            "jsonrpc": "1.0",
+            "id": name,
+            "method": "getbalance",
+            "params": ["*", 1, True],
+        }
+        url = f"{self.url}/wallet/{name}"
+        raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        self.translate(raw_response, value_type, 'result')
+
+    def list_wallet_dir_response(self) -> Any:
+        query = {
+            "jsonrpc": "1.0",
+            "method": "listwalletdir",
+            "params": [],
+        }
+        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
+        return raw_response['result']
+
+    def list_wallets_response(self) -> List[str]:
+        query = {
+            "jsonrpc": "1.0",
+            "method": "listwallets",
+            "params": [],
+        }
+        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
+        return raw_response['result']
+
+    def load_wallet_response(self) -> None:
+        wallet_name = self.get_argument_value(ArgumentKey.WALLET_NAME)
         query = {
             "jsonrpc": "1.0",
             # "id": "curltest",
-            "method": "getbalance",
-            "params": ["*", 6],
+            "method": "loadwallet",
+            "params": [wallet_name],
         }
-        logging.debug("test")
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
-        self.translate(raw_response, value_type, 'result')
+        # self.translate(raw_response, value_type, 'result')
+
+    def create_wallet_response(self) -> None:
+        wallet_name = self.get_argument_value(ArgumentKey.WALLET_NAME)
+        query = {
+            "jsonrpc": "1.0",
+            # "id": "curltest",
+            "method": "createwallet",
+            "params": [wallet_name, True],
+        }
+        raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
+
+    def get_wallet_info_response(self) -> None:
+        name = self.get_argument_value(ArgumentKey.WALLET_NAME)
+        query = {
+            "jsonrpc": "1.0",
+            "method": "getwalletinfo",
+            "params": [],
+        }
+        url = f"{self.url}/wallet/{name}"
+        raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
+        return raw_response['result']
+
+    def get_descriptor_info_response(self) -> Any:
+        name = self.get_argument_value(ArgumentKey.WALLET_NAME)
+        query = {
+            "jsonrpc": "1.0",
+            "method": "getdescriptorinfo",
+            "params": [f"addr({self.get_argument_value(ArgumentKey.ADDRESS)})"],
+        }
+        url = f"{self.url}/wallet/{name}"
+        raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
+        return raw_response['result']
+
+    def import_descriptor_response(self, descriptor_info) -> None:
+        name = self.get_argument_value(ArgumentKey.WALLET_NAME)
+        timestamp = int(self.get_argument_value(ArgumentKey.SCAN_START))
+        requests = [{"desc": descriptor_info['descriptor'], "active": False, "timestamp": timestamp}]
+        query = {
+            "jsonrpc": "1.0",
+            "method": "importdescriptors",
+            "params": [requests],
+        }
+        url = f"{self.url}/wallet/{name}"
+        raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
+        return raw_response['result']
+
+    def import_address_response(self) -> None:
+        name = self.get_argument_value(ArgumentKey.WALLET_NAME)
+        query = {
+            "jsonrpc": "1.0",
+            "id": name,
+            "method": "importaddress",
+            "params": [self.get_argument_value(ArgumentKey.ADDRESS), name, True],
+        }
+        url = f"{self.url}/wallet/{name}"
+        raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
+        self.validate_json_response(data_file, raw_response)
+        # self.translate(raw_response, value_type, 'result')
 
     def translate(self, response_data, value_type: ValueType, key, data_date_format='%Y-%m-%d') -> None:
         """
@@ -116,12 +283,17 @@ class Bitcoin(Adapter):
             if converter.value_type != value_type:
                 continue
             indexes = [self.shared_index]
+            values = []
             if value_type == ValueType.BALANCE:
-                values = [response_data[key]]
+                values.append(response_data[key])
             elif value_type == ValueType.CONNECTION_COUNT:
-                values = [response_data[key]]
+                values.append(response_data[key])
             elif value_type == ValueType.CHAIN_NAME:
-                values = [response_data[key]["chain"]]
+                values.append(response_data[key]["chain"])
+            if len(values) != 1:
+                raise RuntimeError(
+                    "Expected exactly one value for '{}', but got: {} (length: {})".format(value_type, values,
+                                                                                           len(values)))
             # for entry_datetime, response_entry in response_data[key].items():
             #     value = None
             #     for response_key, response_value in response_entry.items():
@@ -137,7 +309,6 @@ class Bitcoin(Adapter):
             #     values.append(value)
             insert_column(self.data, converter.value_type, indexes, values)
 
-
     @staticmethod
     def validate_json_response(data_file, raw_response, expects_result=True):
         if "error" in raw_response and raw_response["error"]:
@@ -147,13 +318,14 @@ class Bitcoin(Adapter):
         if "warnings" in raw_response and raw_response["warnings"]:
             logging.warning(
                 "Warning message in response - {}\n  See: {}".format(raw_response["warnings"],
-                                                                   file_link_format(data_file)))
+                                                                     file_link_format(data_file)))
         if expects_result and "result" not in raw_response:
             raise RuntimeError("Failed to find the result in response: {}".format(file_link_format(data_file)))
-        if expects_result and isinstance(raw_response["result"], dict) and "warnings" in raw_response["result"] and raw_response["result"]["warnings"]:
+        if expects_result and isinstance(raw_response["result"], dict) and "warnings" in raw_response["result"] and \
+                raw_response["result"]["warnings"]:
             logging.warning(
                 "Warning messages in response - {}\n  See: {}".format(raw_response["result"]["warnings"],
-                                                                     file_link_format(data_file)))
+                                                                      file_link_format(data_file)))
 
     # def delay_requests(self, data_file: Vstr) -> None:
     #     pass

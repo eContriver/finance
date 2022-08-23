@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "Bitcoin Node.md",
+            "file": "Investing Notes.md",
             "mode": "source",
             "source": false
           }
@@ -40,7 +40,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "\"--build\"",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": true,
                 "collapseAll": true,
@@ -53,7 +53,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 279.0078125
+    "width": 204
   },
   "right": {
     "id": "a1f43ad4df409ac5",
@@ -91,7 +91,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       },
       {
         "id": "c102f911f3570053",
@@ -115,7 +115,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Bitcoin Node.md"
+                "file": "Investing Notes.md"
               }
             }
           }
@@ -133,7 +133,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Bitcoin Node.md",
+                "file": "Investing Notes.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -150,7 +150,7 @@
             "state": {
               "type": "localgraph",
               "state": {
-                "file": "Bitcoin Node.md",
+                "file": "Investing Notes.md",
                 "options": {
                   "collapse-filter": true,
                   "search": "",
@@ -174,7 +174,7 @@
                   "linkStrength": 1,
                   "linkDistance": 250,
                   "scale": 0.13947294345978004,
-                  "close": false
+                  "close": true
                 }
               }
             }
@@ -185,7 +185,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Bitcoin Node.md",
+                "file": "Investing Notes.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -196,14 +196,13 @@
       }
     ],
     "direction": "horizontal",
-    "width": 440.5,
-    "collapsed": true
+    "width": 440.5
   },
   "active": "2d75b91007797dc4",
   "lastOpenFiles": [
+    "Getting Started.md",
     "Bitcoin Node.md",
     "Investing Notes.md",
-    "Getting Started.md",
     "Nik/Machines/OfficeM Setup.md",
     "Nik/Crypto/Setup and Config/Project Setup.md",
     "PyxelChain/Tokens/Tokenomics Planning Meeting.md",

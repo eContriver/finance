@@ -41,9 +41,14 @@ Then change the content to:
 rpcpassword=my_veruy_super_secret_and_super_long_password_nody_can_guess
 testnet=1
 ```
+.. and to run on Bitcoin mainnet switch to `testnet=0`
+See: https://github.com/bitcoin/bitcoin/blob/d4475ea7ae70ad1a1f9374b88c68f01590a88d54/doc/bitcoin-conf.md
+
+*NOTE: The `mainnet` will take ~500GB.*
 
 Bitcoin has a test network that we can use while testing:
 * https://developer.bitcoin.org/devguide/p2p_network.html
+...but this won't show us live balances and the addresses are different on testnet vs mainnet
 
 # Running `bitcoind`
 

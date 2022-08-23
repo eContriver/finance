@@ -17,23 +17,15 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 import asyncio
-import json
-import logging
-from datetime import datetime
-from typing import Dict, Any
-from bitcoinrpc import BitcoinRPC
+from datetime import datetime, timedelta
 
-from main.adapters.alpaca import Alpaca
 from main.adapters.bitcoin import Bitcoin
-from main.application.adapter import AssetType, Adapter
+from main.application.adapter import AssetType
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
-from main.application.argument import Argument, ArgumentKey
+from main.application.argument import ArgumentKey, Argument
 from main.application.runner import print_copyright_notice, check_environment, configure_logging
-from main.application.strategy import MultipleMatchingAdaptersException
-from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.common.locations import get_and_clean_timestamp_dir, Locations
-from main.portfolio.portfolio import Portfolio
 
 
 async def main():
@@ -45,7 +37,7 @@ async def main():
     This is not like price data with OHLC, volume, etc.
 
     Currently, the system does not know how to use this data, but we can look at how to integrate it
-    For now we are just build these chain adapters so that we can talk to the chains directly
+    For now we are just building these chain adapters so that we can talk to the chains directly
 
     Since this is the first time this has been added we are adding the adapter code directly
     Once we have this operational we should convert this to a ChainAdapter class and examine the
@@ -71,10 +63,13 @@ async def main():
     # adapter.asset_type = asset_type
     adapter.request_value_types = [  # The data to request from the adapter
         ValueType.CONNECTION_COUNT,
-        # ValueType.BALANCE,
+        ValueType.BALANCE,
         ValueType.CHAIN_NAME,
     ]  # NOTE: prints in this order, but reversed
-    # adapter.add_argument(Argument(ArgumentKey.START_TIME, start_time))
+    adapter.add_argument(Argument(ArgumentKey.WALLET_NAME, 'External'))
+    adapter.add_argument(Argument(ArgumentKey.ADDRESS, 'bc1qudw9lsczpuknp2hfv3xyhpzvhc47a26zcr5wvf'))
+    adapter.add_argument(Argument(ArgumentKey.SCAN_START, (datetime.now() - timedelta(weeks=8.0)).strftime("%s")))
+
     # adapter.add_argument(Argument(ArgumentKey.END_TIME, end_time))
     # adapter.add_argument(Argument(ArgumentKey.INTERVAL, price_interval))
     # adapter.cache_key_date = end_time
@@ -84,6 +79,9 @@ async def main():
 
     set_all_cache_key_dates(collection.adapters, end_time)
     collection.retrieve_all_data()
+
+    # TODO: merge this into infra for ChainAdapter?
+    # adapter.create_wallet()
 
     # TODO: skipping portfolio because we don't have pricing info, but we will need that for taxes...
 
@@ -97,14 +95,6 @@ async def main():
 
     print(adapter)
     print(adapter.data)
-
-    # async with BitcoinRPC("http://127.0.0.1:18332", "sooth", "my_veruy_super_secret_and_super_long_password_nody_can_guess") as rpc:
-    #     print(await rpc.getconnectioncount())
-    #     networkinfo = await rpc.getnetworkinfo()
-    #     print(json.dumps(networkinfo, indent=2))
-    # rpc = BitcoinRPC("http://127.0.0.1:18334", "sooth", "my_veruy_super_secret_and_super_long_password_nody_can_guess")
-    # await rpc.getconnectioncount()
-    # await rpc.aclose()  # Clean-up resource
 
     # return True
 
