@@ -20,6 +20,7 @@ from typing import List
 from main.application.strategy import Strategy
 from main.strategies.bounded_rsi import BoundedRsi
 from main.strategies.buy_and_hold import BuyAndHold
+from main.strategies.testing.sma_up import SMAUp
 from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
 from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
@@ -32,6 +33,7 @@ from main.strategies.soldiers_and_crows import SoldiersAndCrows
 
 class StrategyType(Enum):
     BUY_AND_HOLD = auto()
+    SMA_UP = auto()
     LAST_BOUNCE = auto()
     BUY_DOWN_SELL_UP_TRAILING = auto()
     BUY_UP_SELL_DOWN_TRAILING = auto()
@@ -48,6 +50,16 @@ def add_buy_and_hold_strategies(report_types, symbols, template):
     if StrategyType.BUY_AND_HOLD in report_types:
         for symbol in symbols:
             strategies.append(BuyAndHold(symbol, copy.deepcopy(template)))
+    return strategies
+
+
+def add_sma_up_strategies(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.SMA_UP in report_types:
+
+        #  ALL OF THIS
+        for symbol in symbols:
+            strategies.append(SMAUp(symbol, copy.deepcopy(template)))
     return strategies
 
 

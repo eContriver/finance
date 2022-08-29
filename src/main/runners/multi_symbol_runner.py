@@ -36,7 +36,7 @@ from main.strategies.last_bounce import LastBounce
 from main.strategies.strategy_type import StrategyType, add_last_bounce_strategies, add_macd_crossing_strategies, \
     add_bounded_rsi_strategies, add_buy_up_sell_down_trailing_strategies, add_buy_and_hold_strategies, \
     add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_multi_delta_swap_strategies, \
-    add_multi_relative_sma_swap_up_strategies, add_multi_relative_sma_swap_dowm_strategies
+    add_multi_relative_sma_swap_up_strategies, add_multi_relative_sma_swap_dowm_strategies, add_sma_up_strategies
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.macd_crossing import MacdCrossing
 from main.strategies.multi_delta_swap import MultiDeltaSwap
@@ -165,6 +165,7 @@ class MultiSymbolRunner(SymbolRunner):
         # Strategies
         strategies: List[Strategy] = []
         strategies += add_buy_and_hold_strategies(self.report_types, self.symbols, template)
+        strategies += add_sma_up_strategies(self.report_types, self.symbols, template)
         strategies += add_macd_crossing_strategies(self.report_types, self.symbols, template)
         strategies += add_bounded_rsi_strategies(self.report_types, self.symbols, template)
         strategies += add_last_bounce_strategies(self.report_types, self.symbols, template)

@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "Investing Notes.md",
+            "file": "Thinkscript calculators.md",
             "mode": "source",
             "source": false
           }
@@ -115,7 +115,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Investing Notes.md"
+                "file": "Thinkscript calculators.md"
               }
             }
           }
@@ -133,7 +133,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Investing Notes.md",
+                "file": "Thinkscript calculators.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -150,7 +150,7 @@
             "state": {
               "type": "localgraph",
               "state": {
-                "file": "Investing Notes.md",
+                "file": "Thinkscript calculators.md",
                 "options": {
                   "collapse-filter": true,
                   "search": "",
@@ -185,7 +185,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Investing Notes.md",
+                "file": "Thinkscript calculators.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -198,17 +198,17 @@
     "direction": "horizontal",
     "width": 440.5
   },
-  "active": "2d75b91007797dc4",
+  "active": "7ce2d4d42f6cdd3f",
   "lastOpenFiles": [
+    "Features Planning.md",
+    "Investing Notes.md",
     "Getting Started.md",
     "Bitcoin Node.md",
-    "Investing Notes.md",
     "Nik/Machines/OfficeM Setup.md",
     "Nik/Crypto/Setup and Config/Project Setup.md",
     "PyxelChain/Tokens/Tokenomics Planning Meeting.md",
     "Nik/Dev/AWS/LetsEncrypt + Nginx via Docker.md",
     "Nik/Dev/Go/Go Snippets.md",
-    "Nik/Crypto/ETH/Function Selectors.md",
-    "Nik/Dev/Go/Intro to Go.md"
+    "Nik/Crypto/ETH/Function Selectors.md"
   ]
 }
