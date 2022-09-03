@@ -11,6 +11,96 @@ input averageType = AverageType.WILDERS;
 plot ATR = MovingAverage(averageType, TrueRange(high, close, low), length);
 ATR.SetDefaultColor(GetColor(8));
 
+-WHAT IS WILDERS AVERAGING TYPE
+	- wilders is an EMA (exponential moving average), that also gets multiplied by 1/length
+	- SUPERTREND USES HULL AVERAGE TYPE
+	- BUT IT ALSO ENDS UP CALLING THE TrueRange FUNCTION.  NEED TO FIND THAT
+-WHAT IS THE TRUERANGE FUNCTION
+Returns the true range (TR).
+
+TR is the greatest of the following:
+
+-   the difference between the current high and the current low
+-   the difference between the current high and the previous close
+-   the difference between the previous close and the current low
+- By default, the average true range is a 14-period Wilder's moving average of this value; both the period and the type of moving average can be customized using the study input parameters.
+SO WHATEVER LENGTH VALUE YOU GIVE IT, THEY DO A "TRUE RANGE" CALCULATION FOR EACH "DAY", THEN THEY DO A "WILDERS" SMOOTHING ACROSS ALL OF THEM (ASSUMING THOSE ARE THE DEFAULT VALUES)
+
+
+
+
+EMA, exponential moving average
+~~https://sciencing.com/calculate-moving-range-4963173.html
+- ~~the first calculation is an SMA
+- ~~everything after that is an EMA term
+	- ~~EMA=(closing price − previous day’s EMA)× smoothing constant as a decimal + previous day’s EMA
+- ~~to be perfectly accurate, EMA's should be started being calculated at "time=0".  for us, this means:
+	- ~~EMA should always be fed the current saved, old EMA calculations list
+	- ~~EMA will now calculate the newest EMA term and return it
+	- ~~the strategy SHOULD put the newest EMA term at [0], and pop off the last term if the list is too long~~
+i think that is officially correct, but it's not the version i want to replicate
+The formula for the calculation of the exponential moving average is recursively defined as follows:
+
+`EMA1 = price1;`
+`EMA2 = α*price2 + (1 - α)*EMA1;`
+`EMA3 = α*price3 + (1 - α)*EMA2;`
+`EMAN = α*priceN + (1 - α)*EMAN-1;`
+
+where α is a smoothing coefficient equal to `2/(length + 1)`.
+
+> The key difference between a simple moving average (SMA) and the exponential moving average (EMA) is that in the EMA calculation, the most recent data is weighted to have more of an impact. That makes EMAs quicker than SMAs to adjust and reflect trends. On the downside, an EMA requires a lot more data to be reasonably accurate.
+
+so price1 in the above example, is the most recent price that exists
+
+
+
+
+WMA, weighted moving average
+WMA = (P1 * 5) + (P2 * 4) + (P3 * 3) + (P4 * 2) + (P5 * 1) / (5 + 4+ 3 + 2 + 1)
+
+Where:  
+P1 = current price  
+P2 = price one bar ago, etc…
+
+
+
+
+
+
+Averaging type, HULL
+(needs WMA, weighted moving average)
+
+The formula for the Hull Moving Average uses two different weighted moving averages (WMAs) of price, plus a third WMA to smooth the raw moving average. There are three parts to the calculation. In the formulas listed below, “n” indicates the number of periods specified by the chartist.
+
+First, calculate two WMAs: one with the specified number of periods and one with half the specified number of periods.
+
+WMA1 = WMA(n/2) of price
+WMA2 = WMA(n) of price
+
+Second, calculate the raw (non-smoothed) Hull Moving Average.
+
+Raw HMA = (2 * WMA1) - WMA2
+
+Third, smooth the raw HMA with another WMA, this one with the square root of the specified number of periods.
+
+HMA = WMA(sqrt(n)) of Raw HMA
+
+
+
+
+
+
+LinDev, LinearDeviation
+> Linear deviation measures the average absolute difference between the mean and the current value.
+def linDev = LinDev(price, lengthCCI);
+- find the mean, given a length of time
+	- closing prices
+- find the absolute difference between the current closing price and that
+
+
+
+
+
 
 
 RSI
@@ -51,6 +141,11 @@ DownSignal.SetPaintingStrategy(PaintingStrategy.ARROW_DOWN);
 
 
 
+
+
+
+
+
 SchaffTrendCycle
 #
 
@@ -75,6 +170,8 @@ plot OverSold = over_sold;
 STC.SetDefaultColor(GetColor(8));
 OverBought.SetDefaultColor(GetColor(7));
 OverSold.SetDefaultColor(GetColor(7));
+
+
 
 
 
@@ -127,6 +224,11 @@ DownSignal.SetPaintingStrategy(PaintingStrategy.ARROW_DOWN);
 
 
 
+
+
+
+
+
 CMF
 #
 
@@ -153,6 +255,10 @@ CMF.SetDefaultColor(GetColor(1));
 
 plot ZeroLine = 0;
 ZeroLine.SetDefaultColor(GetColor(5));
+
+
+
+
 
 
 

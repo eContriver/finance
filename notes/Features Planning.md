@@ -4,7 +4,12 @@ Indicators
 - CMF, chalkin money flow
 - MACD
 	- needs smoothing?........simple moving average!
+	- needs EMA
 - Average true range
+	- needs hull averaging
+		- needs WMA
 - Supertrend
 	- needs ATR
+		- needs TrueRange
 	- needs.......CCI?  what is this one, i forget.....
+		- linDev? (linearDeviation)
