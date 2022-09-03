@@ -321,7 +321,22 @@ sudo apt -y install python-wxtools unzip wget libnss3
 pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/ wxPython
 
 pip install -r requirements.txt
-```
+
+WHAT HAPPENS IF I HAVE MULTIPLE PYTHON VERSIONS INSTALLED?```
+
+(.venv) dro@dro-ThinkPad-L15-Gen-2a:~/SyncDropbox/SyncDropbox/CodeSpace/PYTHON/finance$ poetry env use 3.8
+Recreating virtualenv finance in /home/dro/SyncDropbox/SyncDropbox/CodeSpace/PYTHON/finance/.venv
+Using virtualenv: /home/dro/SyncDropbox/SyncDropbox/CodeSpace/PYTHON/finance/.venv
+
+(.venv) dro@dro-ThinkPad-L15-Gen-2a:~/SyncDropbox/SyncDropbox/CodeSpace/PYTHON/finance$ which python
+/home/dro/SyncDropbox/SyncDropbox/CodeSpace/PYTHON/finance/.venv/bin/python
+
+(.venv) dro@dro-ThinkPad-L15-Gen-2a:~/SyncDropbox/SyncDropbox/CodeSpace/PYTHON/finance$ python
+Python 3.8.13 (default, Aug 22 2022, 23:28:40) 
+[GCC 11.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> exit()
+
 
 start IDE
 ```shell
