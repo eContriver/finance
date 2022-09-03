@@ -21,6 +21,9 @@ from main.application.strategy import Strategy
 from main.strategies.bounded_rsi import BoundedRsi
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.testing.sma_up import SMAUp
+from main.strategies.testing.testing_atr import TestingATR
+from main.strategies.testing.testing_macd import TestingMACD
+from main.strategies.testing.testing_supertrend import TestingSUPERTREND
 from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
 from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
@@ -34,6 +37,9 @@ from main.strategies.soldiers_and_crows import SoldiersAndCrows
 class StrategyType(Enum):
     BUY_AND_HOLD = auto()
     SMA_UP = auto()
+    TESTING_ATR = auto()
+    TESTING_MACD = auto()
+    TESTING_SUPERTREND = auto()
     LAST_BOUNCE = auto()
     BUY_DOWN_SELL_UP_TRAILING = auto()
     BUY_UP_SELL_DOWN_TRAILING = auto()
@@ -62,6 +68,33 @@ def add_sma_up_strategies(report_types, symbols, template):
             strategies.append(SMAUp(symbol, copy.deepcopy(template)))
     return strategies
 
+
+def add_testing_atr_strategies(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.TESTING_ATR in report_types:
+
+        #  ALL OF THIS
+        for symbol in symbols:
+            strategies.append(TestingATR(symbol, copy.deepcopy(template)))
+    return strategies
+
+def add_testing_macd_strategies(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.TESTING_MACD in report_types:
+
+        #  ALL OF THIS
+        for symbol in symbols:
+            strategies.append(TestingMACD(symbol, copy.deepcopy(template)))
+    return strategies
+
+def add_testing_supertrend_strategies(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.TESTING_SUPERTREND in report_types:
+
+        #  ALL OF THIS
+        for symbol in symbols:
+            strategies.append(TestingSUPERTREND(symbol, copy.deepcopy(template)))
+    return strategies
 
 def add_last_bounce_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []

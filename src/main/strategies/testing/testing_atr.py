@@ -26,11 +26,11 @@ from datetime import datetime
 from main.application.value_type import ValueType
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.calculators.sma import SMA
+from main.calculators.atr import ATR
 from main.application.single_symbol_strategy import SingleSymbolStrategy
 
 
-class SMAUp(SingleSymbolStrategy):
+class TestingATR(SingleSymbolStrategy):
 
     def __init__(self, symbol: str, portfolio: Portfolio):
         super().__init__("SMA Up", symbol, portfolio)

@@ -38,7 +38,8 @@ from main.strategies.macd_crossing import MacdCrossing
 from main.strategies.soldiers_and_crows import SoldiersAndCrows
 from main.strategies.strategy_type import StrategyType, add_last_bounce_strategies, add_macd_crossing_strategies, \
     add_bounded_rsi_strategies, add_buy_up_sell_down_trailing_strategies, add_buy_and_hold_strategies, \
-    add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_sma_up_strategies
+    add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_sma_up_strategies, \
+    add_testing_atr_strategies, add_testing_macd_strategies, add_testing_supertrend_strategies
 from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
@@ -144,6 +145,9 @@ class SingleSymbolRunner(SymbolRunner):
         strategies: List[Strategy] = []
         strategies += add_buy_and_hold_strategies(self.report_types, [self.symbol], template)
         strategies += add_sma_up_strategies(self.report_types, [self.symbol], template)
+        strategies += add_testing_atr_strategies(self.report_types, self.symbols, template)
+        strategies += add_testing_macd_strategies(self.report_types, self.symbols, template)
+        strategies += add_testing_supertrend_strategies(self.report_types, self.symbols, template)
         strategies += add_macd_crossing_strategies(self.report_types, [self.symbol], template)
         strategies += add_bounded_rsi_strategies(self.report_types, [self.symbol], template)
         strategies += add_last_bounce_strategies(self.report_types, [self.symbol], template)

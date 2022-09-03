@@ -1,0 +1,44 @@
+#adapter_class: Sec
+#adapter_class: IexCloud
+adapter_class: AlphaVantage
+base_symbol: USD
+price_interval: daily
+#price_interval: hourly
+graph: false
+parallel: false
+start_time: 2019-07-23
+end_time: 2022-07-23
+asset_type_overrides:
+  ETH: DIGITAL_CURRENCY
+  LTC: DIGITAL_CURRENCY
+  GEO: EQUITY
+  BLK: EQUITY
+report_types:
+  - BUY_AND_HOLD
+  - MACD_CROSSING
+#  - BOUNDED_RSI
+#  - LAST_BOUNCE
+#  - BUY_DOWN_SELL_UP_TRAILING
+#  - BUY_UP_SELL_DOWN_TRAILING
+#  - SOLDIERS_AND_CROWS
+#  - MULTI_DELTA_SWAP
+#  - MULTI_RELATIVE_SMA_SWAP_UP
+#  - MULTI_RELATIVE_SMA_SWAP_DOWN
+symbols:
+  # Crypto dance...
+#  - BTC
+#  - ETH
+  # https://discord.com/channels/584088953788039174/780316832531873844/864730112104595467
+#  - XLK  # Technology
+#  - XLE  # Energy
+#  - XLF
+#  - XLI
+#  - XLB
+#  - XLV
+#  - XLU
+#  - XLP
+#  - XLY
+#  - AAPL
+#  - AMD
+  - SPY
+  - TQQQ

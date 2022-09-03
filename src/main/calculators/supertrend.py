@@ -16,7 +16,7 @@
 
 from statistics import mean
 
-class SMA:
+class SUPERTREND:
 
     # when you start, declare the length of the SMA you want to be using
     def __init__(self, length):
