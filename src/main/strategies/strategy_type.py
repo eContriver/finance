@@ -24,6 +24,9 @@ from main.strategies.testing.sma_up import SMAUp
 from main.strategies.testing.testing_atr import TestingATR
 from main.strategies.testing.testing_macd import TestingMACD
 from main.strategies.testing.testing_supertrend import TestingSUPERTREND
+from main.strategies.testing.testing_wma import TestingWMA
+from main.strategies.testing.testing_ema import TestingEMA
+from main.strategies.testing.testing_lindev import TestingLINDEV
 from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
 from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
@@ -40,6 +43,9 @@ class StrategyType(Enum):
     TESTING_ATR = auto()
     TESTING_MACD = auto()
     TESTING_SUPERTREND = auto()
+    TESTING_WMA= auto()
+    TESTING_EMA = auto()
+    TESTING_LINDEV = auto()
     LAST_BOUNCE = auto()
     BUY_DOWN_SELL_UP_TRAILING = auto()
     BUY_UP_SELL_DOWN_TRAILING = auto()
@@ -94,6 +100,34 @@ def add_testing_supertrend_strategies(report_types, symbols, template):
         #  ALL OF THIS
         for symbol in symbols:
             strategies.append(TestingSUPERTREND(symbol, copy.deepcopy(template)))
+    return strategies
+
+def add_testing_wma_strategies(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.TESTING_WMA in report_types:
+
+        #  ALL OF THIS
+        for symbol in symbols:
+            strategies.append(TestingWMA(symbol, copy.deepcopy(template)))
+    return strategies
+
+def add_testing_ema_strategies(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.TESTING_EMA in report_types:
+
+        #  ALL OF THIS
+        for symbol in symbols:
+            strategies.append(TestingEMA(symbol, copy.deepcopy(template)))
+    return strategies
+
+
+def add_testing_lindev_strategies(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.TESTING_LINDEV in report_types:
+
+        #  ALL OF THIS
+        for symbol in symbols:
+            strategies.append(TestingLINDEV(symbol, copy.deepcopy(template)))
     return strategies
 
 def add_last_bounce_strategies(report_types, symbols, template):
