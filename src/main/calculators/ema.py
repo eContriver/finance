@@ -60,7 +60,7 @@ class EMA:
 
         while ema_position < self.averaging_length:
 
-            if ema_position > len(prices_list)
+            if ema_position > len(prices_list):
                 break
             price = prices_list[ema_position]
             ema_total = self.SMOOTHING_COEFFICIENT * price + (1 - self.SMOOTHING_COEFFICIENT) * ema_total

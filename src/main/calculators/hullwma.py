@@ -15,13 +15,19 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 from statistics import mean
+from wma import WMA
+import math
 
-class WMA:
-    #Weighted Moving Average
+class HULLWMA:
+    #Weighted Moving Average with Hull smoothing
 
     # when you start, declare the length of the EMA you want to be using
     def __init__(self, length):
         self.averaging_length = length
+        self.WMA1 = WMA(self.averaging_length/2)
+        self.WMA2 = WMA(self.averaging_length)
+        self.WMASQ = WMA(math.sqrt(self.averaging_length))
+
 
     # You should be using the closing price
     #   ValueType.CLOSE
@@ -53,27 +59,20 @@ class WMA:
 
             if len(small_price_list) >= self.averaging_length:
                 break
-
-        wma_total = 0
-        wma_weight = self.averaging_length
-        position = 0
-        total_weight = 0
-
-        while wma_weight > 0:
-            if position > len(small_price_list):
-                break
-            price = small_price_list[position]
-            wma_total += price * wma_weight
-            total_weight += wma_weight
-            wma_weight -= 1
-            position += 1
-
+=
         '''
-        WMA = (P1 * 5) + (P2 * 4) + (P3 * 3) + (P4 * 2) + (P5 * 1) / (5 + 4+ 3 + 2 + 1)
+        First, calculate two WMAs: one with the specified number of periods and one with half the specified number of periods.
 
-        Where:  
-        P1 = current price  
-        P2 = price one bar ago, etc…
+        WMA1 = WMA(n/2) of price
+        WMA2 = WMA(n) of price
+        
+        Second, calculate the raw (non-smoothed) Hull Moving Average.
+        
+        Raw HMA = (2 * WMA1) - WMA2
+        
+        Third, smooth the raw HMA with another WMA, this one with the square root of the specified number of periods.
+        
+        HMA = WMA(sqrt(n)) of Raw HMA
         '''
 
         # price 1 is the [0] in the small_price_list

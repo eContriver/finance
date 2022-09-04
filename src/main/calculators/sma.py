@@ -17,6 +17,7 @@
 from statistics import mean
 
 class SMA:
+    # Simple Moving Average
 
     # when you start, declare the length of the SMA you want to be using
     def __init__(self, length):
@@ -35,6 +36,8 @@ class SMA:
 
         if len(prices_list) < self.averaging_length:
             # print an error?
+
+            # should we still do the SMA with the little data that we have?
             return None
 
         # should make sure prices_list is only the last "self.averaging_length" elements
