@@ -15,12 +15,18 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 from statistics import mean
+from ema import EMA
 
 class MACD:
 
     # when you start, declare the length of the SMA you want to be using
-    def __init__(self, length):
-        self.averaging_length = length
+    def __init__(self, fast_length, slow_length, macd_length):
+        self.fast_length = fast_length
+        self.slow_length = slow_length
+        self.macd_length = macd_length
+
+        self.fast_EMA = EMA(self.fast_length)
+        self.slow_EMA = EMA(self.slow_length)
 
     # You should be using the closing price
     #   ValueType.CLOSE
@@ -50,5 +56,17 @@ class MACD:
 
             if len(small_price_list) >= self.averaging_length:
                 break
+
+
+        Value = MovingAverage(averageType, close, fastLength) - MovingAverage(averageType, close, slowLength);
+        Avg = MovingAverage(averageType, Value, MACDLength);
+
+
+        Diff = Value - Avg;
+        ZeroLine = 0;
+
+
+        UpSignal = if Diff crosses above ZeroLine then ZeroLine else Double.NaN;
+        DownSignal = if Diff crosses below ZeroLine then ZeroLine else Double.NaN;
 
         return mean(small_price_list)
