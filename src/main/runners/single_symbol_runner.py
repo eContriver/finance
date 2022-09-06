@@ -40,7 +40,7 @@ from main.strategies.strategy_type import StrategyType, add_last_bounce_strategi
     add_bounded_rsi_strategies, add_buy_up_sell_down_trailing_strategies, add_buy_and_hold_strategies, \
     add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_sma_up_strategies, \
     add_testing_atr_strategies, add_testing_macd_strategies, add_testing_supertrend_strategies, \
-    add_testing_wma_strategies, add testing_ema_strategies, add_testing_lindev_stragegies
+    add_testing_wma_strategies, add_testing_ema_strategies, add_testing_lindev_strategies
 from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 

@@ -38,7 +38,7 @@ from main.strategies.strategy_type import StrategyType, add_last_bounce_strategi
     add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_multi_delta_swap_strategies, \
     add_multi_relative_sma_swap_up_strategies, add_multi_relative_sma_swap_dowm_strategies, add_sma_up_strategies, \
     add_testing_atr_strategies, add_testing_macd_strategies, add_testing_supertrend_strategies, \
-    add_testing_wma_strategies, add testing_ema_strategies, add_testing_lindev_stragegies
+    add_testing_wma_strategies, add_testing_ema_strategies, add_testing_lindev_strategies
 from main.strategies.buy_and_hold import BuyAndHold
 from main.strategies.macd_crossing import MacdCrossing
 from main.strategies.multi_delta_swap import MultiDeltaSwap

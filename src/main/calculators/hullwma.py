@@ -26,11 +26,40 @@ class HULLWMA:
         self.averaging_length = length
         self.WMA1 = WMA(self.averaging_length/2)
         self.WMA2 = WMA(self.averaging_length)
-        self.WMASQ = WMA(math.sqrt(self.averaging_length))
+        # python's built in 'round' function rounds decimal numbers to integers
+        self.WMASQ = WMA(round(math.sqrt(self.averaging_length)))
 
 
     # You should be using the closing price
     #   ValueType.CLOSE
+
+
+    def make_wma_list(self, wma_obj, prices_list, length):
+
+        wma_list = []
+        position = 0
+
+        # we keep increasing the index into the position array
+        #   we keep appending the new Weighted Moving Average onto the results array
+        #   the WMA_obj knows he will always only calculate a WMA of the same length it was originally designed to
+        #   finally, we return the result
+        while ( position + length ) < len(prices_list):
+            wma_list.append(wma_obj(prices_list[position:]))
+            position += 1
+
+        return wma_list
+
+    def find_raw_wma_list(self, wma1_list, wma2_list):
+
+        raw_wma_list = []
+
+        # loops over them both, but quits when the smaller list is empty
+        for wma1_price, wma2_price in zip(wma1_list, wma2_list):
+
+            raw_wma_list.append((2 * wma1_price) - wma2_price)
+
+        return raw_wma_list
+
     def calc(self, prices_list):
 
         #plot        SMA = Average(price[-displace], length);
@@ -59,7 +88,7 @@ class HULLWMA:
 
             if len(small_price_list) >= self.averaging_length:
                 break
-=
+
         '''
         First, calculate two WMAs: one with the specified number of periods and one with half the specified number of periods.
 
@@ -75,5 +104,13 @@ class HULLWMA:
         HMA = WMA(sqrt(n)) of Raw HMA
         '''
 
+        WMA1_list = self.make_wma_list(self.WMA1, prices_list, self.averaging_length/2)
+        WMA2_list = self.make_wma_list(self.WMA2, prices_list, self.averaging_length)
+
+        raw_wma_list = self.find_raw_wma_list(WMA1_list, WMA2_list)
+
+        # we already defined this as having a period of round(sqrt(self.averaging length))
+        hull_moving_average = self.WMASQ.calc(raw_wma_list)
+
         # price 1 is the [0] in the small_price_list
-        return wma_total / total_weight
+        return hull_moving_average
