@@ -18,6 +18,8 @@ ATR.SetDefaultColor(GetColor(8));
 -WHAT IS THE TRUERANGE FUNCTION
 Returns the true range (TR).
 
+
+
 TR is the greatest of the following:
 
 -   the difference between the current high and the current low

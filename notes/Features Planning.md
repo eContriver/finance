@@ -8,6 +8,7 @@ Indicators
 - Average true range
 	- needs hull averaging
 		- needs WMA
+	- needs EMA with wilders smoothing?
 - Supertrend
 	- needs ATR
 		- needs TrueRange
