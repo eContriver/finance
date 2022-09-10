@@ -513,8 +513,12 @@ class IntrinsicValueRunner(Runner):
             multiple = 4 if self.fundamentals_interval is TimeInterval.QUARTER else 1
             df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / (df.loc[:, ValueType.EPS] * multiple)
             df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / (df.loc[:, ValueType.EPS] * multiple)
-            pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE] + df.loc[:, IntrinsicValueRunner.HIGH_PE]
-            pe_ratios.dropna(inplace=True)
+            pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE].tolist() + df.loc[:, IntrinsicValueRunner.HIGH_PE].tolist()
+            # pe_ratios = [i for i in pe_ratios_org if i >= 0]
+            # if len(pe_ratios_org) != len(pe_ratios):
+            #     report.log("Negative P/E ratios are being removed for future calculations!")
+            #     pe_ratios.append(0.00000001)  # we add 0 as a truncated version of the negatives
+            # pe_ratios.dropna(inplace=True)
 
             # ROEs
             df.loc[:, IntrinsicValueRunner.ROE] = df.loc[:, ValueType.NET_INCOME] / (df.loc[:, ValueType.EQUITY])

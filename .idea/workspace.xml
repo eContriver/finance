@@ -9,17 +9,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d43e3f14-5ee3-47d6-98d7-3d2773bb7bf9" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/application/wallet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notes/.obsidian/workspace" beforeDir="false" afterPath="$PROJECT_DIR$/notes/.obsidian/workspace" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notes/Bitcoin Node.md" beforeDir="false" afterPath="$PROJECT_DIR$/notes/Bitcoin Node.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/add_chain_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/add_chain_adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/alpha_vantage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/adapters/bitcoin.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/adapters/bitcoin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/application/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/argument.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/argument.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/application/value_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/application/value_type.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,12 +84,12 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/sooth/.eContriver/chain.yaml",
+    "last_opened_file_path": "/home/sooth/projects/finance/.cache/AlphaVantage/20220906/data.query_tsla_macd_hourly_34_13_9_close.json",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+    "settings.editor.selected.configurable": "preferences.editor"
   }
 }]]></component>
   <component name="PyConsoleOptionsProvider">
@@ -126,7 +119,7 @@
       <recent name="$PROJECT_DIR$/output/intrinsic_value_runner" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.add_chain_adapter">
+  <component name="RunManager" selected="Python.single_symbol">
     <configuration name="add_adapter" type="PythonConfigurationType" factoryName="Python">
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -373,9 +366,6 @@
       <module name="app" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="/usr/local/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -535,7 +525,8 @@
       <updated>1614571781079</updated>
       <workItem from="1659895581784" duration="7555000" />
       <workItem from="1659919140903" duration="41234000" />
-      <workItem from="1660168782228" duration="32289000" />
+      <workItem from="1660168782228" duration="52677000" />
+      <workItem from="1661891206030" duration="23913000" />
     </task>
     <servers />
   </component>
@@ -626,7 +617,7 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/runners/intrinsic_value_runner.py</url>
-          <line>536</line>
+          <line>540</line>
           <option name="timeStamp" value="86" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -765,11 +756,6 @@
           <option name="timeStamp" value="148" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main/runners/single_symbol_runner.py</url>
-          <line>106</line>
-          <option name="timeStamp" value="150" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/main/adapters/bitcoin.py</url>
           <line>122</line>
           <option name="timeStamp" value="160" />
@@ -784,15 +770,22 @@
           <line>451</line>
           <option name="timeStamp" value="169" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main/application/adapter.py</url>
+          <line>703</line>
+          <option name="timeStamp" value="170" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/finance$coverage_parallel.coverage" NAME="coverage-parallel Coverage Results" MODIFIED="1659925700173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/finance$multi_symbol.coverage" NAME="multi_symbol Coverage Results" MODIFIED="1661698131222" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/finance$coverage_parallel.coverage" NAME="coverage-parallel Coverage Results" MODIFIED="1661663579857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/finance$Unittests_for_test_adapter_TestAdapter_test_insert_data_column.coverage" NAME="Unittests for test_adapter.TestAdapter.test_insert_data_column Coverage Results" MODIFIED="1659929609366" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/test/application" />
     <SUITE FILE_PATH="coverage/finance$add_chain_adapter.coverage" NAME="add_chain_adapter Coverage Results" MODIFIED="1661255841138" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/finance$single_symbol.coverage" NAME="single_symbol Coverage Results" MODIFIED="1662490166694" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/finance$unittest_parallel.coverage" NAME="unittest-parallel Coverage Results" MODIFIED="1659929872395" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/finance$add_adapter.coverage" NAME="add_adapter Coverage Results" MODIFIED="1661254912451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
-    <SUITE FILE_PATH="coverage/finance$intrinsic_value.coverage" NAME="intrinsic_value Coverage Results" MODIFIED="1660825611290" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/finance$intrinsic_value.coverage" NAME="intrinsic_value Coverage Results" MODIFIED="1662133362525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
   </component>
 </project>

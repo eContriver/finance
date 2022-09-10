@@ -1,4 +1,4 @@
-Copyright 2021 eContriver LLC
+Copyright 2021-2022 eContriver LLC
 
 # Overview
 
@@ -470,33 +470,43 @@ wouldn't even try to build.
 
 ## Sequential
 
-The built in unittest runner can be invoked here
+The built-in unittest runner can be invoked here
 
-    PYTHONPATH=~/projects/finance/src python -m unittest discover ./src/test
+```shell
+PYTHONPATH=~/projects/finance/src python -m unittest discover ./src/test
+```
 
 _NOTE: That when using PyCharm the root source path is automatically added to `PYTHONPATH`._
 
-The built in unittest runner can also be invoked here with custom configuration:
+The built-in unittest runner can also be invoked here with custom configuration:
 
-    pushd ./src/ && ./test.py; popd
+```shell
+pushd ./src/ && ./test.py; popd
+```
+
+
 
 ## Parallel
 
 To test in parallel use:
 
-    pip install unittest-parallel
-    cd /app
-    unittest-parallel -t ./src/ -s ./src/test/ -v
+```shell
+pip install unittest-parallel
+cd /app
+unittest-parallel -t ./src/ -s ./src/test/ -v
+```
 
 In PyCharm this can be setup using a configuration with runs script:
 
 * Script path
 
+```shell
     /usr/local/bin/unittest-parallel
+```
 
 * Parameters
 
-    -t ./src/ -s ./src/test/ -v
+`-t ./src/ -s ./src/test/ -v`
 
 For PyCharm run test button next to each test to work it should be using unittests as the testing framework. PyCharm
 will try to auto-detect the frame work and in the past it has failed and selected Twisted Trial. To fix this change it

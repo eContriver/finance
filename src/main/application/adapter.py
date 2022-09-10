@@ -600,7 +600,8 @@ class Adapter(metaclass=ABCMeta):
     def get_converter(self, value_type):
         converters = [converter for converter in self.converters if value_type == converter.value_type]
         assert len(converters) == 1, "Found {} converters for value type '{}', one and only one converter is " \
-                                     "supported per value type: {}".format(len(converters), value_type, converters)
+                                     "supported per value type. Converters: {}".format(len(converters), value_type,
+                                                                                       converters)
         converter = converters[0]
         return converter
 
@@ -694,6 +695,12 @@ class Adapter(metaclass=ABCMeta):
         return data, cache_file
 
     def get_key_for_url_request(self, query, url):
+        """
+        NOTE: Some end-points (e.g. AlphaVantage) don't use a start and end time, and are fully controlled by interval.
+        :param query:
+        :param url:
+        :return:
+        """
         lower_values = []
         for key, value in query.items():
             if key not in self.cache_key_filter:
