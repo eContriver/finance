@@ -138,3 +138,8 @@ dmypy.json
 .pyre/
 analysis/
 doc/
+
+# Idea
+*.iws
+.idea/workspace.xml
+.idea/tasks.xml
