@@ -1,29 +1,29 @@
-#!/usr/local/bin/python
-
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 import logging
 from datetime import datetime
 from typing import List
 
-from main.application.adapter import AssetType, Adapter
-from main.application.time_interval import TimeInterval
-from main.application.adapter_collection import AdapterCollection
 from main.adapters.alpha_vantage import AlphaVantage
+from main.application.adapter import AssetType, Adapter
+from main.application.adapter_collection import AdapterCollection
+from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 
 
@@ -37,7 +37,7 @@ def new_adapter():
     base_symbol: str = 'USD'
     collection: AdapterCollection = AdapterCollection(base_symbol)
     symbols: List[str] = ['NVDA']
-    asset_type: AssetType = AssetType.EQUITY
+    asset_type: AssetType = AssetType.STOCK
     # 1:
     query_type_types = [
         # QueryType.CASH_FLOW
@@ -78,5 +78,3 @@ def new_adapter():
         # assert close == 34.0, "close data is wrong - received: {}".format(close)
 
     return True
-
-

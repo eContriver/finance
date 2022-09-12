@@ -1,41 +1,43 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
+
 import logging
 import os
 from datetime import datetime
 from math import ceil
-from typing import Dict, Set, Optional, List, Any
+from typing import Dict, Set, Optional, List
 
 import numpy
 import pandas
 from numpy import median
-from scipy.optimize import curve_fit
 from sklearn import linear_model
 
 from main.application.adapter import AssetType, Adapter, get_common_start_time, get_common_end_time, \
     insert_column
-from main.application.time_interval import TimeInterval
 from main.application.adapter_collection import AdapterCollection, filter_adapters
 from main.application.argument import Argument, ArgumentKey
-from main.application.value_type import ValueType
-from main.common.report import Report
-from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
-from main.executors.parallel_executor import ParallelExecutor
 from main.application.runner import Runner, NoSymbolsSpecifiedException, validate_type, get_adapter_class, \
-    get_asset_type_overrides, get_copyright_notice, TooManySymbolsSpecifiedException
+    get_asset_type_overrides, get_copyright_notice
+from main.application.time_interval import TimeInterval
+from main.application.value_type import ValueType
+from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
+from main.common.report import Report
+from main.executors.parallel_executor import ParallelExecutor
 from main.visual.visualizer import Visualizer
 
 
@@ -92,17 +94,17 @@ def calculate_common_dividend(earnings: pandas.Series, payout_ratio: float) -> p
 
 
 def report_irr(future_earnings: pandas.Series, common_dividends, at_price, avg_price, max_price, median_price,
-               min_price):
+               min_price, multiple):
     cash_flows = [at_price * -1]
     for date, earnings in future_earnings.iteritems():
         cash_flows += [common_dividends[date]]
-    max_irr = round(numpy.irr(cash_flows + [max_price]) * 100, 4)
+    max_irr = round(numpy.irr(cash_flows + [max_price]) * 100, 4) * multiple
     irr_report = "max={}%".format(max_irr)
-    avg_irr = round(numpy.irr(cash_flows + [avg_price]) * 100, 4)
+    avg_irr = round(numpy.irr(cash_flows + [avg_price]) * 100, 4) * multiple
     irr_report += " avg={}%".format(avg_irr)
-    median_irr = round(numpy.irr(cash_flows + [median_price]) * 100, 4)
+    median_irr = round(numpy.irr(cash_flows + [median_price]) * 100, 4) * multiple
     irr_report += " med={}%".format(median_irr)
-    min_irr = round(numpy.irr(cash_flows + [min_price]) * 100, 4)
+    min_irr = round(numpy.irr(cash_flows + [min_price]) * 100, 4) * multiple
     irr_report += " min={}%".format(min_irr)
     return irr_report
 
@@ -255,18 +257,19 @@ class IntrinsicValueRunner(Runner):
         for symbol, asset_type in self.asset_type_overrides.items():
             asset_type_overrides[symbol] = asset_type.name
         config = {
-            'adapter_class': self.adapter_class.__name__,
-            'base_symbol': self.base_symbol,
-            'symbol': self.symbol,
-            'graph': self.graph,
+            'adapter_class':         self.adapter_class.__name__,
+            'base_symbol':           self.base_symbol,
+            'symbol':                self.symbol,
+            'graph':                 self.graph,
             'fundamentals_interval': self.fundamentals_interval.value,
-            'price_interval': self.price_interval.value,
-            'asset_type_overrides': asset_type_overrides,
+            'price_interval':        self.price_interval.value,
+            'asset_type_overrides':  asset_type_overrides,
         }
         return config
 
     def set_from_config(self, config, config_path):
-        self.asset_type_overrides = get_asset_type_overrides(config['asset_type_overrides'] if 'asset_type_overrides' in config else {})
+        self.asset_type_overrides = get_asset_type_overrides(
+            config['asset_type_overrides'] if 'asset_type_overrides' in config else {})
         self.symbol = config['symbol']
         self.adapter_class = get_adapter_class(config['adapter_class'])
         self.base_symbol = config['base_symbol']
@@ -501,19 +504,25 @@ class IntrinsicValueRunner(Runner):
             df[IntrinsicValueRunner.LOW_PE] = ""
             df[IntrinsicValueRunner.HIGH_PE] = ""
             for date in df.index:
-                closest_idx = p_df.index.get_loc(date, method='nearest')
-                # TODO: This only gets the closest (monthly) series entry and uses it's high and low, we could
-                #       go through all of the months between the last and now to get a broader range of high/low
-                #       since these dates are normally either quarterly or yearly
-                df.loc[date, ValueType.LOW] = p_df.iloc[closest_idx, :][ValueType.LOW]
-                df.loc[date, ValueType.HIGH] = p_df.iloc[closest_idx, :][ValueType.HIGH]
-                df.loc[date, ValueType.CLOSE] = p_df.iloc[closest_idx, :][ValueType.CLOSE]
+                end_idx = p_df.index.get_loc(date, method='nearest')
+                start_date = date - self.fundamentals_interval.timedelta
+                start_idx = p_df.index.get_loc(start_date, method='nearest')
+                df.loc[date, ValueType.LOW] = p_df.iloc[start_idx:end_idx + 1, :][ValueType.LOW].min()
+                df.loc[date, ValueType.HIGH] = p_df.iloc[start_idx:end_idx + 1, :][ValueType.HIGH].max()
+                # df.loc[date, ValueType.CLOSE] = p_df.iloc[end_idx, :][ValueType.CLOSE]
 
             # P/Es
+            # NOTE: for quarterly, earnings are quarterly but prices are absolute: PE = Price /(Quarterly Earnings * 4)
             multiple = 4 if self.fundamentals_interval is TimeInterval.QUARTER else 1
             df.loc[:, IntrinsicValueRunner.LOW_PE] = df.loc[:, ValueType.LOW] / (df.loc[:, ValueType.EPS] * multiple)
             df.loc[:, IntrinsicValueRunner.HIGH_PE] = df.loc[:, ValueType.HIGH] / (df.loc[:, ValueType.EPS] * multiple)
-            pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE].tolist() + df.loc[:, IntrinsicValueRunner.HIGH_PE].tolist()
+            zero_negative_pe = True
+            if zero_negative_pe:
+                df.loc[df.loc[:, IntrinsicValueRunner.LOW_PE].lt(0), IntrinsicValueRunner.LOW_PE] = 0
+                df.loc[df.loc[:, IntrinsicValueRunner.HIGH_PE].lt(0), IntrinsicValueRunner.HIGH_PE] = 0
+
+            pe_ratios = df.loc[:, IntrinsicValueRunner.LOW_PE].tolist() + df.loc[:,
+                                                                          IntrinsicValueRunner.HIGH_PE].tolist()
             # pe_ratios = [i for i in pe_ratios_org if i >= 0]
             # if len(pe_ratios_org) != len(pe_ratios):
             #     report.log("Negative P/E ratios are being removed for future calculations!")
@@ -539,7 +548,8 @@ class IntrinsicValueRunner(Runner):
                     future_datetime = future_start_time + it * interval.timedelta
                     indexes.append(future_datetime)
                     values.append(predict_value_type_linear(collection, self.symbol, column, future_datetime))
-                if column in [ValueType.SHORT_DEBT, ValueType.LONG_DEBT, ValueType.LIABILITIES, ValueType.DIVIDENDS]:  # if debt trending to negative, then zero it
+                if column in [ValueType.SHORT_DEBT, ValueType.LONG_DEBT, ValueType.LIABILITIES,
+                              ValueType.DIVIDENDS]:  # if debt trending to negative, then zero it
                     values = [value if value >= 0 else 0 for value in values]
                 if column in [ValueType.SHARES]:  # if debt trending to negative, then zero it
                     values = [df.loc[last_time, ValueType.SHARES] for value in values]
@@ -553,6 +563,13 @@ class IntrinsicValueRunner(Runner):
                     indexes.append(future_datetime)
                     values.append(predict_value_linear(df.loc[:, column], future_datetime))
                 insert_column(predictions_df, column, indexes, values)
+
+            mean_msg = ""
+            use_mean_eps = False
+            if use_mean_eps:
+                mean_eps = df.loc[:, ValueType.EPS].mean()
+                predictions_df.loc[:, ValueType.EPS] = mean_eps
+                mean_msg = " | mean EPS=${:.2f}".format(mean_eps)
 
             predictions_print = self.report_format(predictions_df)
             report.log("Data table of intrinsic value predictions using {}...\n{}".format(
@@ -614,7 +631,7 @@ class IntrinsicValueRunner(Runner):
             min_pe = min(pe_ratios)
 
             # the predictions are from a linear regression and could be used, but instead we do as Buffet does:
-            calculated_eps = predictions_df.loc[future_end_time, ValueType.EPS]
+            calculated_eps = predictions_df.loc[future_end_time, ValueType.EPS] * multiple
             # calculated_eps = future_earnings[future_end_time]  # predictions[ValueType.REPORTED_EPS]
             max_price, avg_price, median_price, min_price = get_prices_from_earnings(
                 calculated_eps, max_pe, median_pe, avg_pe, min_pe)
@@ -625,35 +642,34 @@ class IntrinsicValueRunner(Runner):
             future_dividends: pandas.Series = calculate_common_dividend(predictions_df[ValueType.EPS], payout_ratio)
             report.log(report_common_dividends(future_dividends))
 
-            future_price = "max={} avg={} med={} min={} ({:.2f}%) | ROE=".format(to_dollars(max_price),
-                                                                                 to_dollars(avg_price),
-                                                                                 to_dollars(median_price),
-                                                                                 to_dollars(min_price),
-                                                                                 (current_price / min_price * 100),
-                                                                                 )
-            report.log("P/Es: max={:.2f} avg={:.2f} med={:.2f} min={:.2f} | ROE={:.2f}%".format(
-                max_pe, avg_pe, median_pe, min_pe, return_on_equity * 100.0))
+            future_price = "max={} avg={} med={} min={}".format(to_dollars(max_price),
+                                                                to_dollars(avg_price),
+                                                                to_dollars(median_price),
+                                                                to_dollars(min_price),
+                                                                )
+            report.log("P/Es: max={:.2f} avg={:.2f} med={:.2f} min={:.2f} | ROE={:.2f}%{}".format(
+                max_pe, avg_pe, median_pe, min_pe, return_on_equity * 100.0, mean_msg))
             report.log("future prices (P/Es * future EPS ${}): {} ({})".format(
                 round(calculated_eps, 2), future_price, future_end_time.strftime("%Y-%m-%d")))
             future_earnings = predictions_df[ValueType.EPS]
             irr_last = report_irr(future_earnings, future_dividends, last_price,
-                                  avg_price, max_price, median_price, min_price)
+                                  avg_price, max_price, median_price, min_price, multiple)
             report.log(
                 "last IRR from {} ({}): {} on {}".format(to_dollars(last_price), last_time.strftime("%Y-%m-%d"),
                                                          irr_last, future_end_time.strftime("%Y-%m-%d")))
             irr_current = report_irr(future_earnings, future_dividends, current_price,
-                                     avg_price, max_price, median_price, min_price)
+                                     avg_price, max_price, median_price, min_price, multiple)
             report.log(
                 "current IRR from {} ({}): {} on {}".format(to_dollars(current_price),
                                                             current_time.strftime("%Y-%m-%d"),
                                                             irr_current, future_end_time.strftime("%Y-%m-%d")))
             max_current, avg_current, median_current, min_current = get_prices_from_earnings(
-                earnings_per_share, max_pe, median_pe, avg_pe, min_pe)
-            fair_price = "max={} avg={} med={} min={} ({:.2f}%)".format(to_dollars(max_current),
-                                                                        to_dollars(avg_current),
-                                                                        to_dollars(median_current),
-                                                                        to_dollars(min_current),
-                                                                        (current_price / min_current * 100))
+                earnings_per_share * multiple, max_pe, median_pe, avg_pe, min_pe)
+            fair_price = "max={} avg={} med={} min={}".format(to_dollars(max_current),
+                                                              to_dollars(avg_current),
+                                                              to_dollars(median_current),
+                                                              to_dollars(min_current),
+                                                              )
             report.log("fair prices (P/Es * current EPS ${}): {} ({})".format(
                 round(earnings_per_share, 2), fair_price, current_time.strftime("%Y-%m-%d")))
 

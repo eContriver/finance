@@ -1,18 +1,20 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 import inspect
 import logging
@@ -23,12 +25,11 @@ from typing import Optional, List, Dict
 import pandas
 
 from main.application.adapter import AssetType, Adapter, sort_data
-from main.application.time_interval import TimeInterval
-from main.application.converter import Converter
-from main.application.value_type import ValueType
 from main.application.adapter_collection import AdapterCollection
-
 from main.application.argument import ArgumentKey, Argument
+from main.application.converter import Converter
+from main.application.time_interval import TimeInterval
+from main.application.value_type import ValueType
 from main.common.locations import get_and_clean_timestamp_dir
 
 
@@ -55,11 +56,11 @@ class DataGenerator:
         self.start_price: float = start_price
         self.interval: TimeInterval = interval
         self.static_values: Dict[ValueType, float] = {ValueType.VOLUME: 100000}
-        self.base_offsets: Dict[ValueType, float] = {ValueType.HIGH: 1.0,
+        self.base_offsets: Dict[ValueType, float] = {ValueType.HIGH:  1.0,
                                                      ValueType.CLOSE: 0.5,
-                                                     ValueType.OPEN: -0.5,
-                                                     ValueType.LOW: -1.0,
-                                                     ValueType.RSI: 0.0
+                                                     ValueType.OPEN:  -0.5,
+                                                     ValueType.LOW:   -1.0,
+                                                     ValueType.RSI:   0.0
                                                      }
 
     def get_base_price(self, period: int) -> float:
@@ -181,7 +182,7 @@ class MockDataAdapter(Adapter):
             # 000. The company's balance sheet indicates Netflix has not issued any preferred stock, so we don't need
             # to subtract out preferred dividends. Dividing $2,761,395,000 into 440,922,000 produces an EPS value of
             # $6.26. (this is what we get, and even then the number of outstanding shares differs slightly)
-            #
+
             # Let's calculate the diluted EPS for Netflix. The company has granted 13,286,000 stock options to
             # employees, which raises the total outstanding share count to 454,208,000. Dividing the same $2,761,395,
             # 000 of net income into 454,208,000 equals an EPS value of $6.08.
@@ -214,7 +215,7 @@ class MockDataAdapter(Adapter):
         # frequency (rad/sample) = 2 pi (rad/cycle) * 2 (cycles/plot) / ( 1 plot * 4 (sample/period) * 10 periods)
         frequency = (2.0 * math.pi) * cycles_per_plot / (samples_per_period * periods)
         generator = None
-        # up
+        # up : y = m * x ^ n + b
         if self.symbol == 'UP15':  # close is 15 to 25 = x + 15
             generator = LinearGenerator(periods, end_time, 14.5, interval)
         elif self.symbol == 'UP20':  # close is 20 to 40 = 2 * x + 20
@@ -241,7 +242,7 @@ class MockDataAdapter(Adapter):
         elif self.symbol == 'DOWN30':  # close is 30 to 130 = 1000 - x ^ 3
             generator = LinearGenerator(periods, end_time, 1029.5, interval)
             generator.n = 3.0
-        # sine - we want more samples with sine, so multiple by 4
+        # sine - we want more samples with sine, so multiply by 4
         elif self.symbol == 'SINE15':  # close is 30 to 130 = 1000 - x ^ 3
             generator = SineGenerator(periods * samples_per_period, end_time, 15, sine_interval)
             generator.frequency = frequency
@@ -261,7 +262,7 @@ class MockDataAdapter(Adapter):
     def get_is_digital_currency(self):
         return False  # not testing with True
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         return True  # all are now stock/etf equivalent for testing
 
     # def get_prices_response(self):
@@ -276,7 +277,7 @@ def setup_collection(symbols: List[str],
     base_symbol: str = 'USD'
     collection: AdapterCollection = AdapterCollection()
     for symbol in symbols:
-        collection.add(setup_symbol_adapter(symbol, TimeInterval.DAY, AssetType.EQUITY, base_symbol, value_types))
+        collection.add(setup_symbol_adapter(symbol, TimeInterval.DAY, AssetType.STOCK, base_symbol, value_types))
     collection.retrieve_all_data()
     return collection
 
@@ -298,30 +299,19 @@ def setup_symbol_adapter(symbol, interval: TimeInterval, asset_type: AssetType, 
 #     assert isinstance(portfolio, Portfolio)
 #     portfolio.quantities = quantities
 #     return portfolio
-class TestDigitalCurrencyAdapter(Adapter):
-
-    def delay_requests(self, data_file: str) -> None:
-        pass
-
-    def get_is_digital_currency(self) -> bool:
-        return True
-
-    def get_is_listed(self) -> bool:
-        return False
-
-    def get_is_physical_currency(self) -> bool:
-        return False
-
 
 def get_test_adapter_data(start: datetime = datetime(year=2100, month=2, day=1), increments: int = 3,
-                          value_type: ValueType = ValueType.CLOSE, data_offset: float = 1.0) -> pandas.DataFrame:
+                          value_types: List[ValueType] = None, data_offset: float = 1.0) -> pandas.DataFrame:
     """
     Produces data that is set in the collection as well as can be used to validate the output of the APIs
     :return:
     """
+    if value_types is None:
+        value_types = [ValueType.CLOSE]
     data = pandas.DataFrame()
-    for it in range(increments):
-        data.loc[start + get_test_time_delta(it), value_type] = (it + data_offset)
+    for value_type in value_types:
+        for it in range(increments):
+            data.loc[start + get_test_time_delta(it), value_type] = (it + data_offset)
     sort_data(data)
     return data
 
@@ -335,12 +325,12 @@ def get_test_time_delta(weeks: int = 1) -> timedelta:
     return timedelta(weeks=weeks)
 
 
-def create_test_adapter_with_data(symbol: str, data: pandas.DataFrame) -> Adapter:
+def create_test_adapter(symbol: str, data: pandas.DataFrame, asset_type: AssetType) -> Adapter:
     """
     Create an Adapter with the test data.
     :return: The Adapter with test data
     """
-    adapter: Adapter = TestDigitalCurrencyAdapter(symbol, AssetType.DIGITAL_CURRENCY)
+    adapter: Adapter = MockDataAdapter(symbol, asset_type)
     adapter.request_value_types = data.columns.values.tolist()
     adapter.data = data
     return adapter
@@ -369,9 +359,9 @@ def create_test_collection_with_data(symbol: str, data: pandas.DataFrame) -> Ada
     :param data: The data to insert into the adapter
     :return: The test AdapterCollection
     """
-    adapter: Adapter = create_test_adapter_with_data(symbol, data)
     collection: AdapterCollection = AdapterCollection()
-    collection.add(adapter)
+    crypto: Adapter = create_test_adapter(symbol, data, AssetType.DIGITAL_CURRENCY)
+    collection.add(crypto)
     return collection
 
 

@@ -1,18 +1,20 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 # Start here:
 #  https://developer.tdameritrade.com/content/authentication-faq
@@ -23,10 +25,10 @@ from typing import Dict, List, Optional
 
 from main.application.adapter import DataType, AssetType, Adapter, get_response_value_or_none, \
     IntervalNotSupportedException, insert_column, request_limit_with_timedelta_delay
+from main.application.argument import ArgumentKey
+from main.application.converter import Converter
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from main.application.converter import Converter
-from main.application.argument import ArgumentKey
 from main.common.locations import file_link_format
 
 
@@ -75,7 +77,8 @@ class TDA(Adapter):
             Converter(ValueType.OPEN, self.get_prices_response, ['1. open', '1a. open (USD)'], adjust_values=True),
             Converter(ValueType.HIGH, self.get_prices_response, ['2. high', '2a. high (USD)'], adjust_values=True),
             Converter(ValueType.LOW, self.get_prices_response, ['3. low', '3a. low (USD)'], adjust_values=True),
-            Converter(ValueType.CLOSE, self.get_prices_response, ['4. close', '4a. close (USD)'], adjust_values=True),
+            Converter(ValueType.CLOSE, self.get_prices_response, ['4. close', '4a. close (USD)'],
+                      adjust_values=True),
             Converter(ValueType.VOLUME, self.get_prices_response, ['5. volume']),
             Converter(ValueType.RSI, self.get_rsi_response, ['RSI']),
             Converter(ValueType.MACD, self.get_macd_response, ['MACD']),
@@ -125,7 +128,7 @@ class TDA(Adapter):
 
     def get_equities_list(self) -> List[str]:
         query = {
-            "apikey": self.api_key,
+            "apikey":   self.api_key,
             "function": "LISTING_STATUS",
         }
         data, data_file = self.get_url_response(self.url, query, cache=True, data_type=DataType.CSV)
@@ -236,14 +239,14 @@ class TDA(Adapter):
     def get_macd_response(self, value_type: ValueType) -> None:
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
-            "apikey": self.api_key,
-            "symbol": indicator_key,
-            "function": "MACD",
-            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
-            "slowperiod": int(self.get_argument_value(ArgumentKey.MACD_SLOW)),
-            "fastperiod": int(self.get_argument_value(ArgumentKey.MACD_FAST)),
+            "apikey":       self.api_key,
+            "symbol":       indicator_key,
+            "function":     "MACD",
+            "interval":     self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "slowperiod":   int(self.get_argument_value(ArgumentKey.MACD_SLOW)),
+            "fastperiod":   int(self.get_argument_value(ArgumentKey.MACD_FAST)),
             "signalperiod": int(self.get_argument_value(ArgumentKey.MACD_SIGNAL)),
-            "series_type": "close"
+            "series_type":  "close"
         }
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
@@ -252,10 +255,10 @@ class TDA(Adapter):
     def get_sma_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
-            "apikey": self.api_key,
-            "symbol": indicator_key,
-            "function": "SMA",
-            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "apikey":      self.api_key,
+            "symbol":      indicator_key,
+            "function":    "SMA",
+            "interval":    self.get_argument_value(ArgumentKey.INTERVAL).value,
             "time_period": int(self.get_argument_value(ArgumentKey.SMA_PERIOD)),
             "series_type": "close",
         }
@@ -266,10 +269,10 @@ class TDA(Adapter):
     def get_rsi_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
-            "apikey": self.api_key,
-            "symbol": indicator_key,
-            "function": "RSI",
-            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "apikey":      self.api_key,
+            "symbol":      indicator_key,
+            "function":    "RSI",
+            "interval":    self.get_argument_value(ArgumentKey.INTERVAL).value,
             "time_period": int(self.get_argument_value(ArgumentKey.RSI_PERIOD)),
             "series_type": "close"
         }
@@ -281,8 +284,8 @@ class TDA(Adapter):
     def get_earnings_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "EARNINGS",
             # "interval": interval.value,
         }
@@ -327,8 +330,8 @@ class TDA(Adapter):
     def get_income_response(self, value_type: ValueType) -> None:
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "INCOME_STATEMENT",
             # "interval": interval.value,
         }
@@ -365,8 +368,8 @@ class TDA(Adapter):
     def get_balance_sheet_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "BALANCE_SHEET",
             # "interval": interval.value,
         }
@@ -402,8 +405,8 @@ class TDA(Adapter):
     def get_cash_flow_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "CASH_FLOW",
             # "interval": interval.value,
         }
@@ -467,7 +470,7 @@ class TDA(Adapter):
         data = [item[0] for item in data]
         return self.symbol in data
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         data = self.get_equities_list()
         return self.symbol in data
 

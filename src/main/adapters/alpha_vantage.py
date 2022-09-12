@@ -1,37 +1,98 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+# ------------------------------------------------------------------------------
+import logging
+import os
 from datetime import datetime, timedelta
 from os import environ
 from typing import Dict, List, Optional
 
 from main.application.adapter import DataType, AssetType, Adapter, get_response_value_or_none, \
     IntervalNotSupportedException, insert_column, request_limit_with_timedelta_delay
+from main.application.argument import ArgumentKey
+from main.application.converter import Converter
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from main.application.converter import Converter
-from main.application.argument import ArgumentKey
 from main.common.locations import file_link_format
 
 
 def get_adjusted_ratio(time_data: Dict[str, str]) -> float:
     """
-    AlphaVantage provides the stock values as they were and an adjusted close value. This is to
-    account for stock splits. To fix these close/adjusted_close = ratio and then ratio * price to
-    get the correct price to account for current splits etc.
+    AlphaVantage provides the stock values as they were (raw) and an adjusted close value. This adjusted close
+    value accounts for both dividends and splits, read more here:
+    https://www.investopedia.com/terms/d/dividendadjustedreturn.asp
+
+    Split Exmaple: TSLA on 8/25/2022
+        "2022-08-25": {
+            "1. open": "302.36",
+            "2. high": "302.96",
+            "3. low": "291.6",
+            "4. close": "296.07",
+            "5. adjusted close": "296.07",
+            "6. volume": "52827378",
+            "7. dividend amount": "0.0000",
+            "8. split coefficient": "3.0"
+        },
+        "2022-08-24": {
+            "1. open": "892.69",
+            "2. high": "910.94",
+            "3. low": "889.5",
+            "4. close": "891.29",
+            "5. adjusted close": "297.096666667",
+            "6. volume": "19086572",
+            "7. dividend amount": "0.0000",
+            "8. split coefficient": "1.0"
+        },
+
+    Dividend Example: JNJ on 8/22/2022
+        "2022-08-22": {
+            "1. open": "168.9",
+            "2. high": "168.92",
+            "3. low": "167.17",
+            "4. close": "167.59",
+            "5. adjusted close": "167.59",
+            "6. volume": "5462550",
+            "7. dividend amount": "1.1300",
+            "8. split coefficient": "1.0"
+        },
+        "2022-08-19": {
+            "1. open": "167.1",
+            "2. high": "170.12",
+            "3. low": "167.0",
+            "4. close": "169.31",
+            "5. adjusted close": "168.176048483",
+            "6. volume": "8128543",
+            "7. dividend amount": "0.0000",
+            "8. split coefficient": "1.0"
+        },
+
+    This method is used to generate a ratio between the values so that we can get open, low, high, and close all
+    adjusted for splits and dividends.
+
+    Example: Let's buy JNJ on 8/19 @ closing price, we would use the:
+        168.17 / 169.31 = 0.9933 adjusted ratio
+    Now when we go to buy $20k worth at closing we would use:
+        0.9933 = get_adjusted_ratio()
+        169.31 * 0.9933 -> 168.175623
+    This means that we will be modeling the purchase as being at a little lower price so that the next day we will get
+    the 1.13 dividend, and we will act like we re-invest that.
+
+    NOTE: This program doesn't take into account the Ex-Dividend / Record Date.
+
     :param time_data:
     :return:
     """
@@ -101,7 +162,8 @@ class AlphaVantage(Adapter):
             Converter(ValueType.OPEN, self.get_prices_response, ['1. open', '1a. open (USD)'], adjust_values=True),
             Converter(ValueType.HIGH, self.get_prices_response, ['2. high', '2a. high (USD)'], adjust_values=True),
             Converter(ValueType.LOW, self.get_prices_response, ['3. low', '3a. low (USD)'], adjust_values=True),
-            Converter(ValueType.CLOSE, self.get_prices_response, ['4. close', '4a. close (USD)'], adjust_values=True),
+            Converter(ValueType.CLOSE, self.get_prices_response, ['4. close', '4a. close (USD)'],
+                      adjust_values=True),
             Converter(ValueType.VOLUME, self.get_prices_response, ['5. volume']),
             Converter(ValueType.RSI, self.get_rsi_response, ['RSI']),
             Converter(ValueType.MACD, self.get_macd_response, ['MACD']),
@@ -151,7 +213,7 @@ class AlphaVantage(Adapter):
 
     def get_equities_list(self) -> List[str]:
         query = {
-            "apikey": self.api_key,
+            "apikey":   self.api_key,
             "function": "LISTING_STATUS",
         }
         data, data_file = self.get_url_response(self.url, query, cache=True, data_type=DataType.CSV)
@@ -177,6 +239,7 @@ class AlphaVantage(Adapter):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         record_count = (end_time - start_time) / interval.timedelta
         output_size = "compact" if record_count < 100 else "full"
+        # NOTE: Adjusted values account for both splits & dividends, see: https://www.alphavantage.co/documentation/
         if interval == TimeInterval.HOUR:
             query["function"] = "TIME_SERIES_INTRADAY"
             query["interval"] = '60min'
@@ -262,14 +325,14 @@ class AlphaVantage(Adapter):
     def get_macd_response(self, value_type: ValueType) -> None:
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
-            "apikey": self.api_key,
-            "symbol": indicator_key,
-            "function": "MACD",
-            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
-            "slowperiod": int(self.get_argument_value(ArgumentKey.MACD_SLOW)),
-            "fastperiod": int(self.get_argument_value(ArgumentKey.MACD_FAST)),
+            "apikey":       self.api_key,
+            "symbol":       indicator_key,
+            "function":     "MACD",
+            "interval":     self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "slowperiod":   int(self.get_argument_value(ArgumentKey.MACD_SLOW)),
+            "fastperiod":   int(self.get_argument_value(ArgumentKey.MACD_FAST)),
             "signalperiod": int(self.get_argument_value(ArgumentKey.MACD_SIGNAL)),
-            "series_type": "close"
+            "series_type":  "close"
         }
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
@@ -278,10 +341,10 @@ class AlphaVantage(Adapter):
     def get_sma_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
-            "apikey": self.api_key,
-            "symbol": indicator_key,
-            "function": "SMA",
-            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "apikey":      self.api_key,
+            "symbol":      indicator_key,
+            "function":    "SMA",
+            "interval":    self.get_argument_value(ArgumentKey.INTERVAL).value,
             "time_period": int(self.get_argument_value(ArgumentKey.SMA_PERIOD)),
             "series_type": "close",
         }
@@ -292,10 +355,10 @@ class AlphaVantage(Adapter):
     def get_rsi_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
-            "apikey": self.api_key,
-            "symbol": indicator_key,
-            "function": "RSI",
-            "interval": self.get_argument_value(ArgumentKey.INTERVAL).value,
+            "apikey":      self.api_key,
+            "symbol":      indicator_key,
+            "function":    "RSI",
+            "interval":    self.get_argument_value(ArgumentKey.INTERVAL).value,
             "time_period": int(self.get_argument_value(ArgumentKey.RSI_PERIOD)),
             "series_type": "close"
         }
@@ -307,8 +370,8 @@ class AlphaVantage(Adapter):
     def get_earnings_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "EARNINGS",
             # "interval": interval.value,
         }
@@ -353,8 +416,8 @@ class AlphaVantage(Adapter):
     def get_income_response(self, value_type: ValueType) -> None:
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "INCOME_STATEMENT",
             # "interval": interval.value,
         }
@@ -383,16 +446,18 @@ class AlphaVantage(Adapter):
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
                 if value is not None:
-                    ratio = get_adjusted_ratio(entry)
-                    value = value * ratio
                     translated[dt][value_type] = value
+                    # NOTE: we should not price adjust income values
+                    # ratio = get_adjusted_ratio(entry)
+                    # value = value * ratio
+                    # translated[dt][value_type] = value
         return translated
 
     def get_balance_sheet_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "BALANCE_SHEET",
             # "interval": interval.value,
         }
@@ -420,16 +485,18 @@ class AlphaVantage(Adapter):
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
                 if value is not None:
-                    ratio = get_adjusted_ratio(entry)
-                    value = value * ratio
                     translated[dt][value_type] = value
+                    # NOTE: we should not price adjust balance sheet values
+                    # ratio = get_adjusted_ratio(entry)
+                    # value = value * ratio
+                    # translated[dt][value_type] = value
         return translated
 
     def get_cash_flow_response(self, value_type: ValueType):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         query = {
-            "apikey": self.api_key,
-            "symbol": self.symbol,
+            "apikey":   self.api_key,
+            "symbol":   self.symbol,
             "function": "CASH_FLOW",
             # "interval": interval.value,
         }
@@ -457,21 +524,33 @@ class AlphaVantage(Adapter):
             for value_type in ValueType:
                 value = get_response_value_or_none(entry, value_type)
                 if value is not None:
-                    ratio = get_adjusted_ratio(entry)
-                    value = value * ratio
                     translated[dt][value_type] = value
+                    # NOTE: we should not price adjust income values
+                    # ratio = get_adjusted_ratio(entry)
+                    # value = value * ratio
+                    # translated[dt][value_type] = value
         return translated
 
     @staticmethod
     def validate_json_response(data_file, raw_response, expects_meta_data=True):
+        clean_errors = True
         if "Error Message" in raw_response:
+            if clean_errors and os.path.exists(data_file):
+                logging.info(f"Removing f{data_file} as it contains and error.")
+                os.remove(data_file)
             raise RuntimeError(
                 "Error message in response - {}\n  See: {}".format(raw_response["Error Message"],
                                                                    file_link_format(data_file)))
         if "Note" in raw_response:
+            if clean_errors and os.path.exists(data_file):
+                logging.info(f"Removing f{data_file} as it contains and error.")
+                os.remove(data_file)
             raise RuntimeError("Note message in response - {}\n  See: {}".format(raw_response["Note"],
                                                                                  file_link_format(data_file)))
         if expects_meta_data and "Meta Data" not in raw_response:
+            if clean_errors and os.path.exists(data_file):
+                logging.info(f"Removing f{data_file} as it contains and error.")
+                os.remove(data_file)
             raise RuntimeError("Failed to find the meta data in response: {} (perhaps the currency doesn't support "
                                "this)".format(file_link_format(data_file)))
 
@@ -493,7 +572,7 @@ class AlphaVantage(Adapter):
         data = [item[0] for item in data]
         return self.symbol in data
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         data = self.get_equities_list()
         return self.symbol in data
 

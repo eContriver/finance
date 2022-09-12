@@ -1,22 +1,21 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
-#
-#
-#
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Set
@@ -90,11 +89,15 @@ class AdapterCollection:
 
     def retrieve_all_data(self):
         """
-        Retrieve the data for all of the columns (the requested value types set on the adapter) for each of the adapters
+        Retrieve the data for all the columns (the requested value types set on the adapter) for each of the adapters
         :return:
         """
         for adapter in self.adapters:
             adapter.add_all_columns()
+
+    def get_adapter(self, symbol: str, value_type: ValueType) -> bool:
+        adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
+        return adapter
 
     def has_value(self, symbol: str, instance: datetime, value_type: ValueType) -> bool:
         adapter: Adapter = filter_adapters(self.adapters, symbol, value_type)
