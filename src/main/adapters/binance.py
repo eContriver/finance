@@ -15,24 +15,24 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#import logging
-#import os.path
-#import time
-#from datetime import datetime, timedelta
-#from os import environ
-#from typing import Optional, Dict
+# import logging
+# import os.path
+# import time
+# from datetime import datetime, timedelta
+# from os import environ
+# from typing import Optional, Dict
 #
-#from binance.client import Client
+# from binance.client import Client
 #
-#from main.adapters.adapter import TimeInterval, AssetType, QueryType
-#from main.adapters.valueType import ValueType
-#from main.adapters.indicators.series import Series
-#from main.adapters.orders.order import Order
-#from main.portfolio.order import LimitOrder, OrderSide, StopOrder
+# from main.adapters.adapter import TimeInterval, AssetType, QueryType
+# from main.adapters.valueType import ValueType
+# from main.adapters.calculators.series import Series
+# from main.adapters.orders.order import Order
+# from main.portfolio.order import LimitOrder, OrderSide, StopOrder
 #
 #
 ## Override if needed to deal with timestamp issue
-#class CustomClient(Client):
+# class CustomClient(Client):
 #    TIME_DELTA = None
 #
 #    def _request(self, method, uri, signed, force_params=False, **kwargs):
@@ -88,7 +88,7 @@
 #        return adjusted_time
 #
 #
-#class Binance(Series, Order):
+# class Binance(Series, Order):
 #
 #    def __init__(self, symbol: str, base_symbol: str = 'USD',
 #                 cache_key_date: Optional[datetime] = None, span: Optional[timedelta] = None):

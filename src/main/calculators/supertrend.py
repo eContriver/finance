@@ -18,10 +18,10 @@
 
 from statistics import mean
 
-from main.application.indicator import Indicator
+from main.application.calculator import Calculator
 
 
-class SUPERTREND(Indicator):
+class SUPERTREND(Calculator):
 
     # when you start, declare the length of the SMA you want to be using
     def __init__(self, length):

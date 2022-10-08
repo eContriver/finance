@@ -20,7 +20,7 @@ import inspect
 from abc import ABCMeta, abstractmethod
 
 
-class Indicator(metaclass=ABCMeta):
+class Calculator(metaclass=ABCMeta):
     """
     Indicator is used to perform analysis on a data set such as RSI, MACD, SMA, EMA, etc.
     """

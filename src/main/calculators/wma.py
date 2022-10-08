@@ -16,15 +16,13 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------------
 
-from statistics import mean
-
-from main.application.indicator import Indicator
+from main.application.calculator import Calculator
 
 
-class SMA(Indicator):
-    # Simple Moving Average
+class WMA(Calculator):
+    # Weighted Moving Average
 
-    # when you start, declare the length of the SMA you want to be using
+    # when you start, declare the length of the EMA you want to be using
     def __init__(self, length):
         self.averaging_length = length
 
@@ -41,7 +39,7 @@ class SMA(Indicator):
         if len(prices_list) < self.averaging_length:
             # print an error?
 
-            # should we still do the SMA with the little data that we have?
+            # should we still do the SMA with the little data we have?
             return None
 
         # should make sure prices_list is only the last "self.averaging_length" elements
@@ -58,4 +56,27 @@ class SMA(Indicator):
             if len(small_price_list) >= self.averaging_length:
                 break
 
-        return mean(small_price_list)
+        wma_total = 0
+        wma_weight = self.averaging_length
+        position = 0
+        total_weight = 0
+
+        while wma_weight > 0:
+            if position > len(small_price_list):
+                break
+            price = small_price_list[position]
+            wma_total += price * wma_weight
+            total_weight += wma_weight
+            wma_weight -= 1
+            position += 1
+
+        '''
+        WMA = (P1 * 5) + (P2 * 4) + (P3 * 3) + (P4 * 2) + (P5 * 1) / (5 + 4+ 3 + 2 + 1)
+
+        Where:  
+        P1 = current price  
+        P2 = price one bar ago, etc…
+        '''
+
+        # price 1 is the [0] in the small_price_list
+        return wma_total / total_weight

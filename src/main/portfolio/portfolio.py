@@ -114,7 +114,25 @@ class Portfolio:
         as_str = "CAGR = {:8.2f} %".format(self.calculate_cagr() * 100.0)
         as_str += "  ROI = {:8.2f} %".format(self.calculate_roi() * 100.0)
         as_str += " " + self.get_positions()
-        last_time = self.get_last_completed_time()
+        # last_time = self.get_last_completed_time()
+        # cash = [val for key, val in self.quantities.items() if key == self.base_symbol]
+        # assert cash[0] == 0.0 or self.value_data[last_time] == round(cash[0], 2)
+        # if last_time in self.value_data:
+        #     as_str += "  Value = {:12.2f}".format(self.value_data[last_time])
+        return as_str
+
+    def get_original_value(self) -> float:
+        return self.data.iloc[0, 0]
+
+    def get_latest_value(self) -> float:
+        return self.data.iloc[-1, 0]
+
+    def summary(self):
+        as_str = "CAGR = {:8.2f} %".format(self.calculate_cagr() * 100.0)
+        as_str += "  ROI = {:8.2f} %".format(self.calculate_roi() * 100.0)
+        as_str += "  End = ${:12.2f}".format(self.get_latest_value())
+        as_str += "  Start = ${:10.2f}".format(self.get_original_value())
+        # last_time = self.get_last_completed_time()
         # cash = [val for key, val in self.quantities.items() if key == self.base_symbol]
         # assert cash[0] == 0.0 or self.value_data[last_time] == round(cash[0], 2)
         # if last_time in self.value_data:
@@ -246,6 +264,18 @@ class Portfolio:
     def get_first_completed_time(self) -> Optional[datetime]:
         last_completed = self.get_completed_time_from_index(0)
         return last_completed
+
+    def get_last_completed_date(self):
+        date_format: str = '%Y-%m-%d'
+        last_time = self.get_last_completed_time()
+        last_time = last_time if last_time is None else last_time.strftime(date_format)
+        return last_time
+
+    def get_first_completed_date(self):
+        date_format: str = '%Y-%m-%d'
+        first_time = self.get_first_completed_time()
+        first_time = first_time if first_time is None else first_time.strftime(date_format)
+        return first_time
 
     def get_completed_time_from_index(self, index: int) -> Optional[datetime]:
         time_from_index = None

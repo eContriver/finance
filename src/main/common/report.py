@@ -1,22 +1,26 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 import logging
 import os
 import re
+
+import numpy
 
 
 class Report:
@@ -48,3 +52,40 @@ class Report:
         name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
+
+def to_dollars(value: float) -> str:
+    abs_value = abs(value)
+    if numpy.isnan(abs_value):
+        value_as_str = "{}".format(value)
+    elif abs_value >= 10000000000:
+        value_as_str = "${:.1f}b".format(value / 1000000000)
+    elif abs_value >= 10000000:
+        value_as_str = "${:.1f}m".format(value / 1000000)
+    elif abs_value >= 10000:
+        value_as_str = "${:.1f}k".format(value / 1000)
+    else:
+        value_as_str = "${:.2f}".format(value)
+    return value_as_str
+
+
+def to_abbrev(value: float) -> str:
+    abs_value = abs(value)
+    if numpy.isnan(abs_value):
+        value_as_str = "{}".format(value)
+    elif abs_value > 10000000000:
+        value_as_str = "{:.1f}b".format(value / 1000000000)
+    elif abs_value > 10000000:
+        value_as_str = "{:.1f}m".format(value / 1000000)
+    elif abs_value > 10000:
+        value_as_str = "{:.1f}k".format(value / 1000)
+    else:
+        value_as_str = "{:.2f}".format(value)
+    return value_as_str
+
+
+def to_percent(value: float) -> str:
+    if numpy.isnan(value):
+        value_as_str = "{}".format(value)
+    else:
+        value_as_str = "{:.2f}%".format(value * 100)
+    return value_as_str

@@ -18,11 +18,11 @@
 
 import math
 
-from main.application.indicator import Indicator
-from main.indicators.wma import WMA
+from main.application.calculator import Calculator
+from main.calculators.wma import WMA
 
 
-class HULLWMA(Indicator):
+class HULLWMA(Calculator):
     """
     Weighted Moving Average with Hull smoothing
     """

@@ -1,50 +1,44 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
-import copy
+
 import logging
 import os
-import sys
 from datetime import datetime
-from enum import Enum, auto
 from typing import List, Optional, Dict
 
 from main.application.adapter import AssetType
+from main.application.runner import NoSymbolsSpecifiedException, get_adapter_class
+from main.application.strategy import Strategy
 from main.application.time_interval import TimeInterval
-from main.common.report import Report
 from main.common.locations import Locations, get_and_clean_timestamp_dir
+from main.common.report import Report, to_dollars
 from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
 from main.executors.sequential_executor import SequentialExecutor
 from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
-from main.application.runner import Runner, NoSymbolsSpecifiedException, get_adapter_class
 from main.runners.symbol_runner import SymbolRunner
-from main.strategies.last_bounce import LastBounce
 from main.strategies.strategy_type import StrategyType, add_last_bounce_strategies, add_macd_crossing_strategies, \
     add_bounded_rsi_strategies, add_buy_up_sell_down_trailing_strategies, add_buy_and_hold_strategies, \
     add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_multi_delta_swap_strategies, \
     add_multi_relative_sma_swap_up_strategies, add_multi_relative_sma_swap_dowm_strategies, add_sma_up_strategies, \
     add_testing_atr_strategies, add_testing_macd_strategies, add_testing_supertrend_strategies, \
     add_testing_wma_strategies, add_testing_ema_strategies, add_testing_lindev_strategies
-from main.strategies.buy_and_hold import BuyAndHold
-from main.strategies.macd_crossing import MacdCrossing
-from main.strategies.multi_delta_swap import MultiDeltaSwap
-from main.strategies.multi_relative_sma_swap_down import MultiRelativeSmaSwapDown
-from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
-from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
 
@@ -104,16 +98,16 @@ class MultiSymbolRunner(SymbolRunner):
     #
     def get_config(self) -> Dict:
         config = {
-            'symbols': self.symbols,
-            'adapter_class': self.adapter_class.__name__,
-            'base_symbol': self.base_symbol,
-            'graph': self.graph,
-            'parallel': self.parallel,
+            'symbols':        self.symbols,
+            'adapter_class':  self.adapter_class.__name__,
+            'base_symbol':    self.base_symbol,
+            'graph':          self.graph,
+            'parallel':       self.parallel,
             'price_interval': self.price_interval.value,
-            'start_time': self.start_time,
-            'end_time': self.end_time,
+            'start_time':     self.start_time,
+            'end_time':       self.end_time,
             # 'asset_type_overrides': asset_type_overrides, ??? TODO: needed?
-            'report_types': [report_type.name for report_type in self.report_types],
+            'report_types':   [report_type.name for report_type in self.report_types],
         }
         return config
 
@@ -146,14 +140,19 @@ class MultiSymbolRunner(SymbolRunner):
         pass
 
     def get_run_name(self):
-        return f"{'_'.join(sorted(self.symbols))}_{self.price_interval.value}_{self.adapter_class.__name__}"
+        symbols = sorted(self.symbols)
+        size = len(self.symbols)
+        symbol_title = '_'.join(symbols) if size <= 10 else f"{'_'.join(symbols[:8])}_and_more_{size}_total"
+        run_name: str = f"{symbol_title}_{self.price_interval.value}_{self.adapter_class.__name__}"
+        return run_name
 
     def start(self, locations: Locations):
         logging.info("#### Starting multi-symbol runner...")
+        initial_value = 10000.0
         quantities = {}
         for symbol in self.symbols:
             quantities[symbol] = 0.0
-        quantities[self.base_symbol] = 10000.0
+        quantities[self.base_symbol] = initial_value
         template: Portfolio = Portfolio('Cross Symbol Portfolio Value', quantities, self.start_time, self.end_time)
         template.interval = self.price_interval
         template.add_adapter_class(self.adapter_class)
@@ -201,7 +200,10 @@ class MultiSymbolRunner(SymbolRunner):
         report.log("```")
         report.add_closing("```")
 
-        title = f'Multi-Symbol Runner - Strategy Comparison {self.symbols}'
+        size: int = len(self.symbols)
+        symbols = sorted(self.symbols)
+        symbol_title: str = ", ".join(symbols) if size <= 10 else f"{', '.join(symbols[:8])}, and more ({size} total)"
+        title = f'Multi-Symbol Runner - Strategy Comparison {symbol_title} starting at {to_dollars(initial_value)} (trying {self.start_time} to {self.end_time}) '
         self.summarize(title, report_on, report)
 
         if self.graph:

@@ -536,20 +536,23 @@ class AlphaVantage(Adapter):
         clean_errors = True
         if "Error Message" in raw_response:
             if clean_errors and os.path.exists(data_file):
-                logging.info(f"Removing f{data_file} as it contains and error.")
+                logging.info(f"Removing {file_link_format(data_file)} as it contains an error.")
+                logging.info(f"Contents were: {raw_response}")
                 os.remove(data_file)
             raise RuntimeError(
                 "Error message in response - {}\n  See: {}".format(raw_response["Error Message"],
                                                                    file_link_format(data_file)))
         if "Note" in raw_response:
             if clean_errors and os.path.exists(data_file):
-                logging.info(f"Removing f{data_file} as it contains and error.")
+                logging.info(f"Removing {file_link_format(data_file)} as it contains an error.")
+                logging.info(f"Contents were: {raw_response}")
                 os.remove(data_file)
             raise RuntimeError("Note message in response - {}\n  See: {}".format(raw_response["Note"],
                                                                                  file_link_format(data_file)))
         if expects_meta_data and "Meta Data" not in raw_response:
             if clean_errors and os.path.exists(data_file):
-                logging.info(f"Removing f{data_file} as it contains and error.")
+                logging.info(f"Moving {file_link_format(data_file)} as it contains an error.")
+                logging.info(f"Contents were: {raw_response}")
                 os.remove(data_file)
             raise RuntimeError("Failed to find the meta data in response: {} (perhaps the currency doesn't support "
                                "this)".format(file_link_format(data_file)))

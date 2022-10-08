@@ -93,8 +93,12 @@ class Alpaca(Adapter):
             timeframe = TimeFrame.Hour
         elif interval == TimeInterval.MIN1:
             timeframe = TimeFrame.Minute
+        elif interval == TimeInterval.DAY:
+            timeframe = TimeFrame.Day
         elif interval == TimeInterval.WEEK:
             timeframe = TimeFrame.Week
+        elif interval == TimeInterval.MONTH:
+            timeframe = TimeFrame.Month
         query = {
             "symbol_or_symbols": [self.symbol],
             "timeframe":         timeframe,

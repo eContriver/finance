@@ -36,47 +36,9 @@ from main.application.runner import Runner, NoSymbolsSpecifiedException, validat
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
 from main.common.locations import Locations, get_and_clean_timestamp_dir, file_link_format
-from main.common.report import Report
+from main.common.report import Report, to_dollars, to_abbrev, to_percent
 from main.executors.parallel_executor import ParallelExecutor
 from main.visual.visualizer import Visualizer
-
-
-def to_dollars(value: float) -> str:
-    abs_value = abs(value)
-    if numpy.isnan(abs_value):
-        value_as_str = "{}".format(value)
-    elif abs_value > 10000000000:
-        value_as_str = "${:.1f}b".format(value / 1000000000)
-    elif abs_value > 10000000:
-        value_as_str = "${:.1f}m".format(value / 1000000)
-    elif abs_value > 10000:
-        value_as_str = "${:.1f}k".format(value / 1000)
-    else:
-        value_as_str = "${:.2f}".format(value)
-    return value_as_str
-
-
-def to_abbrev(value: float) -> str:
-    abs_value = abs(value)
-    if numpy.isnan(abs_value):
-        value_as_str = "{}".format(value)
-    elif abs_value > 10000000000:
-        value_as_str = "{:.1f}b".format(value / 1000000000)
-    elif abs_value > 10000000:
-        value_as_str = "{:.1f}m".format(value / 1000000)
-    elif abs_value > 10000:
-        value_as_str = "{:.1f}k".format(value / 1000)
-    else:
-        value_as_str = "{:.2f}".format(value)
-    return value_as_str
-
-
-def to_percent(value: float) -> str:
-    if numpy.isnan(value):
-        value_as_str = "{}".format(value)
-    else:
-        value_as_str = "{:.2f}%".format(value * 100)
-    return value_as_str
 
 
 def report_common_dividends(common_dividends: pandas.Series) -> str:

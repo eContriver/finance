@@ -1,5 +1,21 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
+#  -
+#  Finance from eContriver is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#  -
+#  Finance from eContriver is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  -
+#  You should have received a copy of the GNU General Public License
+#  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
+
 #
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,8 +31,8 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from datetime import datetime, timedelta
 import math
+from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Any
 
 import matplotlib.pyplot as plt
@@ -25,10 +41,10 @@ from matplotlib import dates
 from mplfinance.original_flavor import candlestick_ochl
 
 from main.application.adapter import Adapter, get_start_time
-from main.application.value_type import ValueType
 from main.application.adapter_collection import AdapterCollection
-from main.portfolio.portfolio import Portfolio
+from main.application.value_type import ValueType
 from main.portfolio.order import OrderSide, Order
+from main.portfolio.portfolio import Portfolio
 from main.visual.annotation import Annotation
 from main.visual.extra import Extra
 
@@ -139,7 +155,7 @@ class Visualizer:
             if row not in plots:
                 plots[row] = []
             if extra.as_candlesticks:
-                pass # Can we (or do we want to) move the series to be an extra as is added by the series already
+                pass  # Can we (or do we want to) move the series to be an extra as is added by the series already
                 # self.series_sub_plot(this_ax, self.series, self.annotations)
             else:
                 plots[row] += self.sub_plot(this_ax, extra.name, extra.label, extra.data, extra.color, self.annotations)
@@ -213,7 +229,8 @@ class Visualizer:
         row = 0
         ax[row].set_facecolor(bg_color)
         plots = {row: []}
-        plots[row] += self.sub_plot(ax[0], "Portfolio Value", "Value", portfolio.data, self.get_next_color(), []) # '#f00', [])
+        plots[row] += self.sub_plot(ax[0], "Portfolio Value", "Value", portfolio.data, self.get_next_color(),
+                                    [])  # '#f00', [])
         row += 1
         plotted_labels = {}
         for extra in self.extras:
@@ -227,7 +244,8 @@ class Visualizer:
             if adjust_annotations:
                 for annotation in annotations:
                     annotation.y = extra.data.loc[annotation.x, :][0]
-            plots[this_row] += self.sub_plot(ax[this_row], extra.name, extra.label, extra.data, extra.color, annotations)
+            plots[this_row] += self.sub_plot(ax[this_row], extra.name, extra.label, extra.data, extra.color,
+                                             annotations)
         for row in plots.keys():
             labels = [plot.get_label() for plot in plots[row]]
             legend = ax[row].legend(plots[row], labels, loc=0)
@@ -290,7 +308,8 @@ class Visualizer:
         #
         # candlestick(ax, data2, width=0.5, colorup='g', colordown='r')
 
-        plots[0] += self.sub_plot(ax[row], "Portfolio Value", "Value", portfolio.data, self.get_next_color(), []) # '#f00', [])
+        plots[0] += self.sub_plot(ax[row], "Portfolio Value", "Value", portfolio.data, self.get_next_color(),
+                                  [])  # '#f00', [])
 
         for symbol in self.collection.get_symbols():
             this_row = self.add_or_get_row("Price per {}".format(symbol), plotted_labels)
@@ -319,7 +338,8 @@ class Visualizer:
                 for annotation in annotations:
                     annotation.y = extra.data.loc[annotation.x, :][0]
                     annotation.name += '({})'.format(annotation.y)
-            plots[this_row] += self.sub_plot(ax[this_row], extra.name, extra.label, extra.data, extra.color, annotations)
+            plots[this_row] += self.sub_plot(ax[this_row], extra.name, extra.label, extra.data, extra.color,
+                                             annotations)
         for row in plots.keys():
             labels = [plot.get_label() for plot in plots[row]]
             legend = ax[row].legend(plots[row], labels, loc=0)
@@ -378,7 +398,8 @@ class Visualizer:
                 self.add_to_extras(adapter, portfolio, start, self.get_next_color(),  # '#00f',
                                    '{} MACD Histogram'.format(adapter.symbol), "MACD", ValueType.MACD_HIST)
 
-    def add_to_annotate(self, adapter: Adapter, portfolio: Portfolio, start: datetime, color: Any, enumeration, value_type):
+    def add_to_annotate(self, adapter: Adapter, portfolio: Portfolio, start: datetime, color: Any, enumeration,
+                        value_type):
         data = adapter.get_column_on_or_after(start, value_type)
         if portfolio is not None:
             data = portfolio.filter_dict_times(data)
@@ -501,7 +522,8 @@ class Visualizer:
         price_dates = list(prices.index)
         for date in price_dates:
             row = prices.loc[date]
-            data.append([dates.date2num(date), row[ValueType.OPEN], row[ValueType.CLOSE], row[ValueType.HIGH], row[ValueType.LOW]])
+            data.append([dates.date2num(date), row[ValueType.OPEN], row[ValueType.CLOSE], row[ValueType.HIGH],
+                         row[ValueType.LOW]])
         width = (price_dates[1] - price_dates[0]) / timedelta(days=1.0) * 0.8
         candlestick_ochl(ax, data, width=width,
                          colorup='g',  # self.series[ValueType.HIGH].color,
@@ -593,5 +615,3 @@ class Visualizer:
         for instance, value in data.items():
             annotation = Annotation('{}:{:0.2f}'.format(enumeration, value), instance, value, color)
             self.annotations.append(annotation)
-
-

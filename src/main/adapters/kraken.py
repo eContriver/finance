@@ -27,7 +27,7 @@
 # from main.adapters.orders.orderBook import OrderBook
 # from main.adapters.adapter import TimeInterval, AssetType
 # from main.adapters.valueType import ValueType
-# from main.adapters.indicators.series import Series
+# from main.adapters.calculators.series import Series
 # from main.adapters.orders.order import Order
 #
 # from pymongo import MongoClient

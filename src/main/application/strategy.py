@@ -42,20 +42,30 @@ class Strategy:
         self.collection: AdapterCollection = AdapterCollection()
         self.portfolio = portfolio
         self.title = title
-        self.portfolio.title = self.get_title_with_times()
+        self.portfolio.title = self.get_title()
+        # self.portfolio.title = self.get_title_with_times()
 
     def __str__(self):
         # df: pandas.DataFrame = pandas.DataFrame()
         # return self.collection.report().ToDataFrame()
-        return self.get_title_with_times()
+        return self.get_title()
+        # return self.get_title_with_times()
 
-    def get_title_with_times(self) -> str:
+    def get_title(self) -> str:
         string = self.title
-        date_format: str = '%Y-%m-%d'
-        string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
-        string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
+        # date_format: str = '%Y-%m-%d'
+        # string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
+        # string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
         string += "" if self.portfolio.interval is None else " {}".format(self.portfolio.interval)
         return string
+
+    # def get_title_with_times(self) -> str:
+    #     string = self.title
+    #     # date_format: str = '%Y-%m-%d'
+    #     string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
+    #     string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
+    #     string += "" if self.portfolio.interval is None else " {}".format(self.portfolio.interval)
+    #     return string
 
     def run(self) -> "Strategy":
         key_date = datetime.now(TimeZones.get_tz())

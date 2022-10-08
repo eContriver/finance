@@ -27,8 +27,8 @@ from datetime import datetime
 
 from main.application.single_symbol_strategy import SingleSymbolStrategy
 from main.application.value_type import ValueType
-from main.indicators.action_type import ActionType
-from main.indicators.ema import EMA
+from main.calculators.action_type import ActionType
+from main.calculators.ema import EMA
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
 

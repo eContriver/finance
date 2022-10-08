@@ -182,7 +182,7 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
                                        max_timeframe: timedelta, max_requests: int) -> None:
     """
     Handles rate limitings by accepting max requests immediately, but not more than max requests within
-    the max max timeframe.
+    the max timeframe.
     :param buffer: How much extra time to add in seconds
     :param historic_requests: Allows for pre-seed so that some requests can be ignored
     :param max_timeframe: The timeframe for which the max requests are allowed
@@ -196,13 +196,22 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
         #       X (i.e. 5 for this adapter) requests per allotted timeframe (i.e. minute for this)
         #       to fix this you could create yet another lock here, but for now we limit to 1 request at a time
         #       and that elegantly fixes this as well as prevents us from hammering servers ;)
-        wait_list = []
         now: datetime = datetime.now()
-        for key, request_time in historic_requests.items():
-            if (now - request_time) < max_timeframe:
-                wait_list.append(key)
+        wait_list = filter_to_requests_in_time_limit(historic_requests, max_timeframe, now)
         logging.info(
             '-- Waiting on...\n{}'.format("\n".join([f"{item}: {historic_requests[item]}" for item in wait_list])))
+        if len(wait_list) >= max_requests:
+            times = [historic_requests[item] for item in wait_list]
+            oldest_time = min(times)
+            time_waited = now - oldest_time
+            sleep = max_timeframe - time_waited
+            sleep = 0 if sleep < timedelta(0) else sleep
+            buffer = 0
+            sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
+            logging.info(
+                '-- Waiting for: {}s = wait:{} - (now:{} - next to expire:{})'.format(sleep_in_s, max_timeframe, now,
+                                                                                      oldest_time))
+            time.sleep(sleep_in_s)
         # wait_list = []
         # now: datetime = datetime.now()
         # closest = now + max_timeframe
@@ -212,15 +221,23 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
         #         wait_list.append(key)
         #         if reset_time < closest:
         #             closest = reset_time
-        if len(wait_list) >= max_requests:
-            times = [historic_requests[item] for item in wait_list]
-            oldest_time = min(times)
-            sleep = now - oldest_time
-            sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
-            logging.info('-- Waiting for: {}s = closest:{} - now:{}'.format(sleep_in_s, oldest_time, now))
-            time.sleep(sleep_in_s)
+        # if len(wait_list) >= max_requests:
+        #     times = [historic_requests[item] for item in wait_list]
+        #     oldest_time = min(times)
+        #     sleep = now - oldest_time
+        #     sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
+        #     logging.info('-- Waiting for: {}s = closest:{} - now:{}'.format(sleep_in_s, oldest_time, now))
+        #     time.sleep(sleep_in_s)
         else:
             wait = False
+
+
+def filter_to_requests_in_time_limit(historic_requests, max_timeframe, now):
+    wait_list = []
+    for key, request_time in historic_requests.items():
+        if (now - request_time) < max_timeframe:
+            wait_list.append(key)
+    return wait_list
 
 
 def get_default_cache_key_date() -> datetime:
@@ -495,13 +512,13 @@ def get_response_value_or_none(time_data: Dict[str, str], key: str) -> Optional[
 
 
 def insert_column(data: pandas.DataFrame, column: Any,
-                  indexes: List[datetime], values: List[float]) -> None:
+                  indexes: List[Any], values: List[Any]) -> None:
     """
     Inserts a new column of data into the underlying DataFrame
     :param data: The DataFrame that will have the column inserted into it
     :param column: The column will be inserted under this ValueType label (i.e. column name)
-    :param indexes: The indices of the data, these do not have to match with the existing indexes
-    :param values: The value of the new column, these are expected to be index-aligned with the indexes
+    :param indexes: The indices of the data, these do not have to match with the existing indexes (e.g. datetimes)
+    :param values: The value of the new column, these are expected to be index-aligned with the indexes (e.g. floats)
     :return:
     """
     column_values = pandas.Series(values, index=indexes)
@@ -637,6 +654,7 @@ class Adapter(metaclass=ABCMeta):
             raise
         finally:
             if acquired_lock and os.path.exists(lock_dir):
+                logging.debug("Released lock: {}".format(lock_dir))
                 os.rmdir(lock_dir)
         data = self.read_cache_file(cache_file, data_type, cache)
         self.validate_data(data)

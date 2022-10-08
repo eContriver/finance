@@ -16,11 +16,11 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------------
 
-from main.application.indicator import Indicator
-from main.indicators.ema import EMA
+from main.application.calculator import Calculator
+from main.calculators.ema import EMA
 
 
-class MACD(Indicator):
+class MACD(Calculator):
 
     # when you start, declare the length of the SMA you want to be using
     def __init__(self, fast_length, slow_length, macd_length):

@@ -28,7 +28,7 @@
 # from main.adapters.fundamentals.cashFlow import CashFlow
 # from main.adapters.fundamentals.earnings import Earnings
 # from main.adapters.fundamentals.income import Income
-# from main.adapters.indicators.series import Series
+# from main.adapters.calculators.series import Series
 #
 #
 # class Sec(Series,

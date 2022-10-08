@@ -183,8 +183,7 @@ class SingleSymbolRunner(SymbolRunner):
         report.log("```")
         report.add_closing("```")
 
-        title = 'Symbol Runner - Strategy Comparison {}'.format(
-            self.symbol)  # - {} - {} to {}'.format(self.symbol, start_time, end_time)
+        title = 'Symbol Runner - Strategy Comparison {} - {} to {}'.format(self.symbol, self.start_time, end_time)
         self.summarize(title, report_on, report)
         # summarize(title, report_on)
 
@@ -225,19 +224,5 @@ def summarize(title, strategies: List[Strategy]):
     for strategy in strategies:
         logging.info("{:>90}:  {}  ({} to {})".format(strategy.title,
                                                       strategy.portfolio,
-                                                      get_first_time(strategy),
-                                                      get_last_time(strategy)))
-
-
-def get_first_time(strategy):
-    date_format: str = '%Y-%m-%d'
-    first_time = strategy.portfolio.get_first_completed_time()
-    first_time = first_time if first_time is None else first_time.strftime(date_format)
-    return first_time
-
-
-def get_last_time(strategy):
-    date_format: str = '%Y-%m-%d'
-    last_time = strategy.portfolio.get_last_completed_time()
-    last_time = last_time if last_time is None else last_time.strftime(date_format)
-    return last_time
+                                                      strategy.portfolio.get_first_completed_date(),
+                                                      strategy.portfolio.get_last_completed_date()))

@@ -16,17 +16,18 @@
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------------
 
-
-from statistics import mean
-
-from main.application.indicator import Indicator
+from main.application.calculator import Calculator
 
 
-class ATR(Indicator):
+class EMA(Calculator):
+    """
+    Exponential Moving Average
+    """
 
-    # when you start, declare the length of the SMA you want to be using
+    # when you start, declare the length of the EMA you want to be using
     def __init__(self, length):
         self.averaging_length = length
+        self.SMOOTHING_COEFFICIENT = 2 / (self.averaging_length + 1)
 
     # You should be using the closing price
     #   ValueType.CLOSE
@@ -40,6 +41,8 @@ class ATR(Indicator):
 
         if len(prices_list) < self.averaging_length:
             # print an error?
+
+            # should we still do the SMA with the little data we have?
             return None
 
         # should make sure prices_list is only the last "self.averaging_length" elements
@@ -56,4 +59,25 @@ class ATR(Indicator):
             if len(small_price_list) >= self.averaging_length:
                 break
 
-        return mean(small_price_list)
+        ema_position = 1
+        ema_total = prices_list[0]
+
+        while ema_position < self.averaging_length:
+
+            if ema_position > len(prices_list):
+                break
+            price = prices_list[ema_position]
+            ema_total = self.SMOOTHING_COEFFICIENT * price + (1 - self.SMOOTHING_COEFFICIENT) * ema_total
+
+            ema_position += 1
+        '''
+        `EMA1 = price1;`
+        `EMA2 = α*price2 + (1 - α)*EMA1;`
+        `EMA3 = α*price3 + (1 - α)*EMA2;`
+        `EMAN = α*priceN + (1 - α)*EMAN-1;`
+
+        where α is a smoothing coefficient equal to `2/(length + 1)`.
+        '''
+
+        # price 1 is the [0] in the small_price_list
+        return ema_total
