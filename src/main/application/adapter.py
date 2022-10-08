@@ -1,18 +1,20 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 import csv
 import inspect
@@ -22,7 +24,7 @@ import os.path
 import re
 import shutil
 import time
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Optional, Dict, List, Any
@@ -97,7 +99,7 @@ class AssetType(Enum):
     looking up the symbol in lists provided to the adapters. In ambiguous cases there is generate an asset_type_override
     available where specific asset types can be set for different symbols.
     """
-    EQUITY = 'equity'
+    STOCK = 'stock'
     DIGITAL_CURRENCY = 'digital currency'
     PHYSICAL_CURRENCY = 'physical currency'
 
@@ -180,7 +182,7 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
                                        max_timeframe: timedelta, max_requests: int) -> None:
     """
     Handles rate limitings by accepting max requests immediately, but not more than max requests within
-    the max max timeframe.
+    the max timeframe.
     :param buffer: How much extra time to add in seconds
     :param historic_requests: Allows for pre-seed so that some requests can be ignored
     :param max_timeframe: The timeframe for which the max requests are allowed
@@ -194,13 +196,22 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
         #       X (i.e. 5 for this adapter) requests per allotted timeframe (i.e. minute for this)
         #       to fix this you could create yet another lock here, but for now we limit to 1 request at a time
         #       and that elegantly fixes this as well as prevents us from hammering servers ;)
-        wait_list = []
         now: datetime = datetime.now()
-        for key, request_time in historic_requests.items():
-            if (now - request_time) < max_timeframe:
-                wait_list.append(key)
+        wait_list = filter_to_requests_in_time_limit(historic_requests, max_timeframe, now)
         logging.info(
             '-- Waiting on...\n{}'.format("\n".join([f"{item}: {historic_requests[item]}" for item in wait_list])))
+        if len(wait_list) >= max_requests:
+            times = [historic_requests[item] for item in wait_list]
+            oldest_time = min(times)
+            time_waited = now - oldest_time
+            sleep = max_timeframe - time_waited
+            sleep = 0 if sleep < timedelta(0) else sleep
+            buffer = 0
+            sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
+            logging.info(
+                '-- Waiting for: {}s = wait:{} - (now:{} - next to expire:{})'.format(sleep_in_s, max_timeframe, now,
+                                                                                      oldest_time))
+            time.sleep(sleep_in_s)
         # wait_list = []
         # now: datetime = datetime.now()
         # closest = now + max_timeframe
@@ -210,15 +221,23 @@ def request_limit_with_timedelta_delay(buffer: float, historic_requests: Dict[st
         #         wait_list.append(key)
         #         if reset_time < closest:
         #             closest = reset_time
-        if len(wait_list) >= max_requests:
-            times = [historic_requests[item] for item in wait_list]
-            oldest_time = min(times)
-            sleep = now - oldest_time
-            sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
-            logging.info('-- Waiting for: {}s = closest:{} - now:{}'.format(sleep_in_s, oldest_time, now))
-            time.sleep(sleep_in_s)
+        # if len(wait_list) >= max_requests:
+        #     times = [historic_requests[item] for item in wait_list]
+        #     oldest_time = min(times)
+        #     sleep = now - oldest_time
+        #     sleep_in_s = buffer + sleep.seconds + sleep.microseconds / 1000000.0
+        #     logging.info('-- Waiting for: {}s = closest:{} - now:{}'.format(sleep_in_s, oldest_time, now))
+        #     time.sleep(sleep_in_s)
         else:
             wait = False
+
+
+def filter_to_requests_in_time_limit(historic_requests, max_timeframe, now):
+    wait_list = []
+    for key, request_time in historic_requests.items():
+        if (now - request_time) < max_timeframe:
+            wait_list.append(key)
+    return wait_list
 
 
 def get_default_cache_key_date() -> datetime:
@@ -439,7 +458,7 @@ def write_rpc_response_to_file(data_file: str, query: Dict[Any, Any], url, user,
     logging.debug('Requesting data from: {}'.format(url))
     logging.debug('Payload: {}'.format(query))
     headers = {
-        'Content-type': 'application/json',
+        'Content-type':  'application/json',
         'Authorization': 'text/plain',
     }
     auth = HTTPBasicAuth(user, password)
@@ -493,13 +512,13 @@ def get_response_value_or_none(time_data: Dict[str, str], key: str) -> Optional[
 
 
 def insert_column(data: pandas.DataFrame, column: Any,
-                  indexes: List[datetime], values: List[float]) -> None:
+                  indexes: List[Any], values: List[Any]) -> None:
     """
     Inserts a new column of data into the underlying DataFrame
     :param data: The DataFrame that will have the column inserted into it
     :param column: The column will be inserted under this ValueType label (i.e. column name)
-    :param indexes: The indices of the data, these do not have to match with the existing indexes
-    :param values: The value of the new column, these are expected to be index-aligned with the indexes
+    :param indexes: The indices of the data, these do not have to match with the existing indexes (e.g. datetimes)
+    :param values: The value of the new column, these are expected to be index-aligned with the indexes (e.g. floats)
     :return:
     """
     column_values = pandas.Series(values, index=indexes)
@@ -608,10 +627,10 @@ class Adapter(metaclass=ABCMeta):
     def get_api_response(self, api, args, cache: bool = True, data_type: DataType = DataType.JSON) -> (Any, str):
         """
         The data file will be generated by the current query. If the lock directory doesn't exist, then a check is
-        performed to see if the data file exists. If the data file does exist, then we have a cache hit and we don't
+        performed to see if the data file exists. If the data file does exist, then we have a cache hit, and we don't
         need to wait nor do we need to acquire the lock. However, if the data file does not exist, then we need to
         wait and try to acquire the lock. By trying to acquire the lock the current process will either be: 1. The
-        process that gets the lock and will create the cache the file 2. A process that waits on the lock directory
+        process that gets the lock and will create the cache the file 2. A process that waits on the lock directory,
         and after it is acquired finds out the cache file was already created
         :param api: The function (API) to be called
         :param args: The arguments to be passed into the function
@@ -635,6 +654,7 @@ class Adapter(metaclass=ABCMeta):
             raise
         finally:
             if acquired_lock and os.path.exists(lock_dir):
+                logging.debug("Released lock: {}".format(lock_dir))
                 os.rmdir(lock_dir)
         data = self.read_cache_file(cache_file, data_type, cache)
         self.validate_data(data)
@@ -696,11 +716,12 @@ class Adapter(metaclass=ABCMeta):
 
     def get_key_for_url_request(self, query, url):
         """
-        NOTE: Some end-points (e.g. AlphaVantage) don't use a start and end time, and are fully controlled by interval.
+        NOTE: Some adapters (e.g. AlphaVantage) don't use a start and end time, and are fully controlled by interval.
         :param query:
         :param url:
         :return:
         """
+
         lower_values = []
         for key, value in query.items():
             if key not in self.cache_key_filter:
@@ -815,29 +836,50 @@ class Adapter(metaclass=ABCMeta):
             logging.debug("Leaving asset type {} for {}".format(self.asset_type.value, self.symbol))
         elif self.asset_type is None:
             is_digital = self.get_is_digital_currency()
-            is_equity = self.get_is_listed()
+            is_equity = self.get_is_stock()
             assert is_digital or is_equity, "Symbol is not a digital currency nor listed: {}".format(self.symbol)
             assert is_digital != is_equity, "Ambiguous symbol is digital currency and is listed: {}".format(self.symbol)
             if is_digital:
                 self.asset_type = AssetType.DIGITAL_CURRENCY
             elif is_equity:
-                self.asset_type = AssetType.EQUITY
+                self.asset_type = AssetType.STOCK
         elif self.asset_type == AssetType.DIGITAL_CURRENCY:
             assert self.get_is_digital_currency(), "Asset type set as {}, but validation failed for: {}".format(
                 self.asset_type, self.symbol)
-        elif self.asset_type == AssetType.EQUITY:
-            assert self.get_is_listed(), "Asset type set as {}, but validation failed for: {}".format(
+        elif self.asset_type == AssetType.STOCK:
+            assert self.get_is_stock(), "Asset type set as {}, but validation failed for: {}".format(
                 self.asset_type, self.symbol)
         logging.debug("Using asset type {} for {}".format(self.asset_type.value, self.symbol))
 
     def get_is_digital_currency(self) -> bool:
-        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+        """
+        First we check to make sure the asset type is known, if not, then it should be overridden and implemented
+        :return: True if it is, else False, unless the type is not known then an exception is thrown
+        """
+        if self.asset_type in [AssetType.DIGITAL_CURRENCY, AssetType.STOCK, AssetType.PHYSICAL_CURRENCY]:
+            return self.asset_type == AssetType.DIGITAL_CURRENCY
+        else:
+            raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
 
-    def get_is_listed(self) -> bool:
-        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+    def get_is_stock(self) -> bool:
+        """
+        First we check to make sure the asset type is known, if not, then it should be overridden and implemented
+        :return: True if it is, else False, unless the type is not known then an exception is thrown
+        """
+        if self.asset_type in [AssetType.DIGITAL_CURRENCY, AssetType.STOCK, AssetType.PHYSICAL_CURRENCY]:
+            return self.asset_type == AssetType.STOCK
+        else:
+            raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
 
     def get_is_physical_currency(self) -> bool:
-        raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
+        """
+        First we check to make sure the asset type is known, if not, then it should be overridden and implemented
+        :return: True if it is, else False, unless the type is not known then an exception is thrown
+        """
+        if self.asset_type in [AssetType.DIGITAL_CURRENCY, AssetType.STOCK, AssetType.PHYSICAL_CURRENCY]:
+            return self.asset_type == AssetType.PHYSICAL_CURRENCY
+        else:
+            raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))
 
     # def get_sma_response(self, asset_type, symbol, time_period, value_type):
     #     raise NotImplementedError("Implement: {}".format(inspect.currentframe().f_code.co_name))

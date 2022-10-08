@@ -1,38 +1,42 @@
+# ------------------------------------------------------------------------------
 #  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
-from statistics import mean
-from wma import WMA
 import math
 
-class HULLWMA:
-    #Weighted Moving Average with Hull smoothing
+from main.application.calculator import Calculator
+from main.calculators.wma import WMA
+
+
+class HULLWMA(Calculator):
+    """
+    Weighted Moving Average with Hull smoothing
+    """
 
     # when you start, declare the length of the EMA you want to be using
     def __init__(self, length):
         self.averaging_length = length
-        self.WMA1 = WMA(self.averaging_length/2)
+        self.WMA1 = WMA(self.averaging_length / 2)
         self.WMA2 = WMA(self.averaging_length)
         # python's built in 'round' function rounds decimal numbers to integers
         self.WMASQ = WMA(round(math.sqrt(self.averaging_length)))
 
-
     # You should be using the closing price
     #   ValueType.CLOSE
-
 
     def make_wma_list(self, wma_obj, prices_list, length):
 
@@ -43,7 +47,7 @@ class HULLWMA:
         #   we keep appending the new Weighted Moving Average onto the results array
         #   the WMA_obj knows he will always only calculate a WMA of the same length it was originally designed to
         #   finally, we return the result
-        while ( position + length ) < len(prices_list):
+        while (position + length) < len(prices_list):
             wma_list.append(wma_obj(prices_list[position:]))
             position += 1
 
@@ -55,15 +59,13 @@ class HULLWMA:
 
         # loops over them both, but quits when the smaller list is empty
         for wma1_price, wma2_price in zip(wma1_list, wma2_list):
-
             raw_wma_list.append((2 * wma1_price) - wma2_price)
 
         return raw_wma_list
 
     def calc(self, prices_list):
 
-        #plot        SMA = Average(price[-displace], length);
-
+        # plot        SMA = Average(price[-displace], length);
 
         if not prices_list:
             # print an error?
@@ -104,7 +106,7 @@ class HULLWMA:
         HMA = WMA(sqrt(n)) of Raw HMA
         '''
 
-        WMA1_list = self.make_wma_list(self.WMA1, prices_list, self.averaging_length/2)
+        WMA1_list = self.make_wma_list(self.WMA1, prices_list, self.averaging_length / 2)
         WMA2_list = self.make_wma_list(self.WMA2, prices_list, self.averaging_length)
 
         raw_wma_list = self.find_raw_wma_list(WMA1_list, WMA2_list)

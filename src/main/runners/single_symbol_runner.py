@@ -1,26 +1,29 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
-import copy
 import logging
 import os
 from datetime import datetime
 from typing import List, Dict, Optional
 
 from main.application.adapter import AssetType
+from main.application.runner import get_asset_type_overrides, get_adapter_class, NoSymbolsSpecifiedException
+from main.application.strategy import Strategy
 from main.application.time_interval import TimeInterval
 from main.common.locations import get_and_clean_timestamp_dir, Locations
 from main.common.report import Report
@@ -28,20 +31,12 @@ from main.executors.parallel_executor import ParallelExecutor
 from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
 from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
 from main.portfolio.portfolio import Portfolio
-from main.application.runner import Runner, get_asset_type_overrides, get_adapter_class, NoSymbolsSpecifiedException
 from main.runners.symbol_runner import SymbolRunner
-from main.strategies.bounded_rsi import BoundedRsi
-from main.strategies.buy_and_hold import BuyAndHold
-from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
-from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
-from main.strategies.macd_crossing import MacdCrossing
-from main.strategies.soldiers_and_crows import SoldiersAndCrows
 from main.strategies.strategy_type import StrategyType, add_last_bounce_strategies, add_macd_crossing_strategies, \
     add_bounded_rsi_strategies, add_buy_up_sell_down_trailing_strategies, add_buy_and_hold_strategies, \
     add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies, add_sma_up_strategies, \
     add_testing_atr_strategies, add_testing_macd_strategies, add_testing_supertrend_strategies, \
     add_testing_wma_strategies, add_testing_ema_strategies, add_testing_lindev_strategies
-from main.application.strategy import Strategy
 from main.visual.visualizer import Visualizer
 
 
@@ -79,16 +74,16 @@ class SingleSymbolRunner(SymbolRunner):
         for symbol, asset_type in self.asset_type_overrides.items():
             asset_type_overrides[self.symbol] = asset_type.name
         config = {
-            'symbol': self.symbol,
-            'adapter_class': self.adapter_class.__name__,
-            'base_symbol': self.base_symbol,
-            'graph': self.graph,
-            'parallel': self.parallel,
-            'price_interval': self.price_interval.value,
-            'start_time': self.start_time,
-            'end_time': self.end_time,
+            'symbol':               self.symbol,
+            'adapter_class':        self.adapter_class.__name__,
+            'base_symbol':          self.base_symbol,
+            'graph':                self.graph,
+            'parallel':             self.parallel,
+            'price_interval':       self.price_interval.value,
+            'start_time':           self.start_time,
+            'end_time':             self.end_time,
             'asset_type_overrides': asset_type_overrides,
-            'report_types': [report_type.name for report_type in self.report_types],
+            'report_types':         [report_type.name for report_type in self.report_types],
         }
         return config
 
@@ -146,12 +141,12 @@ class SingleSymbolRunner(SymbolRunner):
         strategies: List[Strategy] = []
         strategies += add_buy_and_hold_strategies(self.report_types, [self.symbol], template)
         strategies += add_sma_up_strategies(self.report_types, [self.symbol], template)
-        strategies += add_testing_atr_strategies(self.report_types, self.symbols, template)
-        strategies += add_testing_macd_strategies(self.report_types, self.symbols, template)
-        strategies += add_testing_supertrend_strategies(self.report_types, self.symbols, template)
-        strategies += add_testing_wma_strategies(self.report_types, self.symbols, template)
-        strategies += add_testing_ema_strategies(self.report_types, self.symbols, template)
-        strategies += add_testing_lindev_strategies(self.report_types, self.symbols, template)
+        strategies += add_testing_atr_strategies(self.report_types, [self.symbol], template)
+        strategies += add_testing_macd_strategies(self.report_types, [self.symbol], template)
+        strategies += add_testing_supertrend_strategies(self.report_types, [self.symbol], template)
+        strategies += add_testing_wma_strategies(self.report_types, [self.symbol], template)
+        strategies += add_testing_ema_strategies(self.report_types, [self.symbol], template)
+        strategies += add_testing_lindev_strategies(self.report_types, [self.symbol], template)
         strategies += add_macd_crossing_strategies(self.report_types, [self.symbol], template)
         strategies += add_bounded_rsi_strategies(self.report_types, [self.symbol], template)
         strategies += add_last_bounce_strategies(self.report_types, [self.symbol], template)
@@ -165,7 +160,8 @@ class SingleSymbolRunner(SymbolRunner):
         #     strategy.run()
         # report_on = strategies
 
-        strategy_runner = ParallelStrategyExecutor(strategy_date_dir) if self.parallel else SequentialStrategyExecutor(strategy_date_dir)
+        strategy_runner = ParallelStrategyExecutor(strategy_date_dir) if self.parallel else SequentialStrategyExecutor(
+            strategy_date_dir)
 
         for strategy in strategies:
             # whitelist = [MacdCrossing]
@@ -176,7 +172,8 @@ class SingleSymbolRunner(SymbolRunner):
             strategy_runner.add_strategy(strategy.run, (), self.symbol, key)
         success = strategy_runner.start()
         if self.symbol not in strategy_runner.processed_strategies:
-            raise
+            raise StrategyResultsAreEmptyException("Symbol '{}' is not in processed strategies: {}",
+                                                   self.symbol not in strategy_runner.processed_strategies)
         report_on = strategy_runner.processed_strategies[self.symbol]
 
         output_dir = locations.get_output_dir(Report.camel_to_snake(self.__class__.__name__))
@@ -186,8 +183,7 @@ class SingleSymbolRunner(SymbolRunner):
         report.log("```")
         report.add_closing("```")
 
-        title = 'Symbol Runner - Strategy Comparison {}'.format(
-            self.symbol)  # - {} - {} to {}'.format(self.symbol, start_time, end_time)
+        title = 'Symbol Runner - Strategy Comparison {} - {} to {}'.format(self.symbol, self.start_time, end_time)
         self.summarize(title, report_on, report)
         # summarize(title, report_on)
 
@@ -228,19 +224,5 @@ def summarize(title, strategies: List[Strategy]):
     for strategy in strategies:
         logging.info("{:>90}:  {}  ({} to {})".format(strategy.title,
                                                       strategy.portfolio,
-                                                      get_first_time(strategy),
-                                                      get_last_time(strategy)))
-
-
-def get_first_time(strategy):
-    date_format: str = '%Y-%m-%d'
-    first_time = strategy.portfolio.get_first_completed_time()
-    first_time = first_time if first_time is None else first_time.strftime(date_format)
-    return first_time
-
-
-def get_last_time(strategy):
-    date_format: str = '%Y-%m-%d'
-    last_time = strategy.portfolio.get_last_completed_time()
-    last_time = last_time if last_time is None else last_time.strftime(date_format)
-    return last_time
+                                                      strategy.portfolio.get_first_completed_date(),
+                                                      strategy.portfolio.get_last_completed_date()))

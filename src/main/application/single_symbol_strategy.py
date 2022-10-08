@@ -1,5 +1,21 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
+#  -
+#  Finance from eContriver is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#  -
+#  Finance from eContriver is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  -
+#  You should have received a copy of the GNU General Public License
+#  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
+
 #
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,8 +36,8 @@
 from datetime import datetime
 from typing import Optional
 
-from main.portfolio.portfolio import Portfolio
 from main.application.strategy import Strategy
+from main.portfolio.portfolio import Portfolio
 
 
 class SingleSymbolStrategy(Strategy):
@@ -33,8 +49,8 @@ class SingleSymbolStrategy(Strategy):
 
     def __str__(self):
         string = self.symbol + " " + self.title
-        string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
-        string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
+        # string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
+        # string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
         return string
 
     def build_price_collection(self, cache_key_date: Optional[datetime] = None):

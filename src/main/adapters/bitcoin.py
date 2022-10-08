@@ -1,25 +1,28 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
+
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from os import environ
 from typing import List, Optional, Any
 
-from main.application.argument import ArgumentKey
 from main.application.adapter import AssetType, Adapter, insert_column
+from main.application.argument import ArgumentKey
 from main.application.converter import Converter
 from main.application.value_type import ValueType
 from main.common.locations import file_link_format
@@ -93,8 +96,8 @@ class Bitcoin(Adapter):
         query = {
             "jsonrpc": "1.0",
             # "id": "curltest",
-            "method": "getconnectioncount",
-            "params": [],
+            "method":  "getconnectioncount",
+            "params":  [],
         }
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
@@ -104,8 +107,8 @@ class Bitcoin(Adapter):
         query = {
             "jsonrpc": "1.0",
             # "id": "curltest",
-            "method": "dumpwallet",
-            "params": [],
+            "method":  "dumpwallet",
+            "params":  [],
         }
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
@@ -115,8 +118,8 @@ class Bitcoin(Adapter):
         query = {
             "jsonrpc": "1.0",
             # "id": "curltest",
-            "method": "getblockchaininfo",
-            "params": [],
+            "method":  "getblockchaininfo",
+            "params":  [],
         }
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
@@ -154,9 +157,9 @@ class Bitcoin(Adapter):
         name = self.get_argument_value(ArgumentKey.WALLET_NAME)
         query = {
             "jsonrpc": "1.0",
-            "id": name,
-            "method": "getbalance",
-            "params": ["*", 1, True],
+            "id":      name,
+            "method":  "getbalance",
+            "params":  ["*", 1, True],
         }
         url = f"{self.url}/wallet/{name}"
         raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
@@ -166,8 +169,8 @@ class Bitcoin(Adapter):
     def list_wallet_dir_response(self) -> Any:
         query = {
             "jsonrpc": "1.0",
-            "method": "listwalletdir",
-            "params": [],
+            "method":  "listwalletdir",
+            "params":  [],
         }
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
@@ -177,8 +180,8 @@ class Bitcoin(Adapter):
     def list_wallets_response(self) -> List[str]:
         query = {
             "jsonrpc": "1.0",
-            "method": "listwallets",
-            "params": [],
+            "method":  "listwallets",
+            "params":  [],
         }
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
@@ -190,8 +193,8 @@ class Bitcoin(Adapter):
         query = {
             "jsonrpc": "1.0",
             # "id": "curltest",
-            "method": "loadwallet",
-            "params": [wallet_name],
+            "method":  "loadwallet",
+            "params":  [wallet_name],
         }
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
@@ -201,9 +204,9 @@ class Bitcoin(Adapter):
         wallet_name = self.get_argument_value(ArgumentKey.WALLET_NAME)
         query = {
             "jsonrpc": "1.0",
+            "method":  "createwallet",
+            "params":  [wallet_name, True],
             # "id": "curltest",
-            "method": "createwallet",
-            "params": [wallet_name, True],
         }
         raw_response, data_file = self.get_rpc_response(self.url, query, self.api_user, self.api_key, cache=False)
         self.validate_json_response(data_file, raw_response)
@@ -213,8 +216,8 @@ class Bitcoin(Adapter):
         name = self.get_argument_value(ArgumentKey.WALLET_NAME)
         query = {
             "jsonrpc": "1.0",
-            "method": "getwalletinfo",
-            "params": [],
+            "method":  "getwalletinfo",
+            "params":  [],
         }
         url = f"{self.url}/wallet/{name}"
         raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
@@ -226,8 +229,8 @@ class Bitcoin(Adapter):
         name = self.get_argument_value(ArgumentKey.WALLET_NAME)
         query = {
             "jsonrpc": "1.0",
-            "method": "getdescriptorinfo",
-            "params": [f"addr({self.get_argument_value(ArgumentKey.ADDRESS)})"],
+            "method":  "getdescriptorinfo",
+            "params":  [f"addr({self.get_argument_value(ArgumentKey.ADDRESS)})"],
         }
         url = f"{self.url}/wallet/{name}"
         raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
@@ -241,8 +244,8 @@ class Bitcoin(Adapter):
         requests = [{"desc": descriptor_info['descriptor'], "active": False, "timestamp": timestamp}]
         query = {
             "jsonrpc": "1.0",
-            "method": "importdescriptors",
-            "params": [requests],
+            "method":  "importdescriptors",
+            "params":  [requests],
         }
         url = f"{self.url}/wallet/{name}"
         raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
@@ -254,9 +257,9 @@ class Bitcoin(Adapter):
         name = self.get_argument_value(ArgumentKey.WALLET_NAME)
         query = {
             "jsonrpc": "1.0",
-            "id": name,
-            "method": "importaddress",
-            "params": [self.get_argument_value(ArgumentKey.ADDRESS), name, True],
+            "id":      name,
+            "method":  "importaddress",
+            "params":  [self.get_argument_value(ArgumentKey.ADDRESS), name, True],
         }
         url = f"{self.url}/wallet/{name}"
         raw_response, data_file = self.get_rpc_response(url, query, self.api_user, self.api_key, cache=False)
@@ -322,7 +325,7 @@ class Bitcoin(Adapter):
         if expects_result and "result" not in raw_response:
             raise RuntimeError("Failed to find the result in response: {}".format(file_link_format(data_file)))
         if expects_result and isinstance(raw_response["result"], dict) and "warnings" in raw_response["result"] and \
-                raw_response["result"]["warnings"]:
+            raw_response["result"]["warnings"]:
             logging.warning(
                 "Warning messages in response - {}\n  See: {}".format(raw_response["result"]["warnings"],
                                                                       file_link_format(data_file)))
@@ -333,8 +336,8 @@ class Bitcoin(Adapter):
     def get_is_digital_currency(self):
         return True
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         return not self.get_is_digital_currency()
 
     def get_is_physical_currency(self):
-        return not self.get_is_digital_currency() and not self.get_is_listed()
+        return not self.get_is_digital_currency() and not self.get_is_stock()

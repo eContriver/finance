@@ -378,7 +378,7 @@ Copy this output and add it to your GitHub SSH keys:
 Title: `root@finance_<hostname>`
 Key: `<paste the content of the id_rsa.pub>`
 
-_NOTE: The contents of `root_home` can be viewed on Windows usign WSL2 at `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\root_home\_data` and on Linux at `/var/lib/docker/volumes/root_home`. This area can be used for multiple projects so that you don't have to have a separate ssh key for each project._
+_NOTE: The contents of `root_home` can be viewed on Windows using WSL2 at `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\root_home\_data` and on Linux at `/var/lib/docker/volumes/root_home`. This area can be used for multiple projects so that you don't have to have a separate ssh key for each project._
 
 ### Cloning the repo
 
@@ -492,6 +492,12 @@ PYTHONPATH=~/projects/finance/src python -m unittest discover ./src/test
 ```
 
 _NOTE: That when using PyCharm the root source path is automatically added to `PYTHONPATH`._
+
+Individual tests can be run using:
+
+```shell
+PYTHONPATH=~/projects/finance/src python -m unittest discover ./src/test -k test_sma_up.TestSmaUpStrategy.test_sma_up_is_accurate
+```
 
 The built-in unittest runner can also be invoked here with custom configuration:
 

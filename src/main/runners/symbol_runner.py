@@ -1,44 +1,30 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
-import copy
-import logging
-from datetime import datetime
-from typing import List, Dict, Optional
+from enum import Enum, auto
+from typing import List
 
-from main.application.adapter import AssetType
-from main.application.time_interval import TimeInterval
-from main.common.locations import get_and_clean_timestamp_dir, Locations
-from main.common.report import Report
-from main.executors.parallel_executor import ParallelExecutor
-from main.executors.parallel_strategy_executor import ParallelStrategyExecutor
-from main.executors.sequential_strategy_executor import SequentialStrategyExecutor
-from main.portfolio.portfolio import Portfolio
-from main.application.runner import Runner, get_asset_type_overrides, get_adapter_class, NoSymbolsSpecifiedException
-from main.strategies.bounded_rsi import BoundedRsi
-from main.strategies.buy_and_hold import BuyAndHold
-from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
-from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
-from main.strategies.macd_crossing import MacdCrossing
-from main.strategies.soldiers_and_crows import SoldiersAndCrows
-from main.strategies.strategy_type import StrategyType, add_last_bounce_strategies, add_macd_crossing_strategies, \
-    add_bounded_rsi_strategies, add_buy_up_sell_down_trailing_strategies, add_buy_and_hold_strategies, \
-    add_buy_down_sell_up_trailing_strategies, add_soldiers_and_crows_strategies
+import pandas
+
+from main.application.adapter import insert_column
+from main.application.runner import Runner
 from main.application.strategy import Strategy
-from main.visual.visualizer import Visualizer
+from main.common.report import Report, to_percent, to_dollars
 
 
 class StrategyResultsAreEmptyException(RuntimeError):
@@ -57,35 +43,73 @@ class SymbolRunner(Runner):
         """
         report.log('== {}'.format(title))
         # logging.info('== {}'.format(title))
+        names = []
+        cagrs = []
+        rois = []
+        end_values = []
+        start_dates = []
+        end_dates = []
         for strategy in strategies:
             if strategy is None:
                 # logging.info("{:>100}".format("Failed to retrieve strategy data, perhaps an error occurred."))
                 report.log("{:>100}".format("Failed to retrieve strategy data, perhaps an error occurred."))
             else:
-                date_format: str = '%Y-%m-%d'
-                start_time: Optional[datetime] = strategy.portfolio.start_time
-                start_string = 'unset' if start_time is None else datetime.strftime(start_time, date_format)
-                end_time: Optional[datetime] = strategy.portfolio.end_time
-                end_string = 'unset' if end_time is None else datetime.strftime(end_time, date_format)
-                report.log("{:>120}:  {}  ({} to {})".format(
-                    # logging.info("{:>120}:  {}  ({} to {})".format(
-                    # strategy.title,
-                    # strategy.portfolio.title,
-                    str(strategy),
-                    strategy.portfolio,
-                    start_string,
-                    end_string))
+                names.append(str(strategy))
+                cagrs.append(strategy.portfolio.calculate_cagr())
+                rois.append(strategy.portfolio.calculate_roi())
+                end_values.append(strategy.portfolio.get_latest_value())
+                start_dates.append(strategy.portfolio.get_first_completed_date())
+                end_dates.append(strategy.portfolio.get_last_completed_date())
+
+        df: pandas.DataFrame = pandas.DataFrame()
+        insert_column(df, ColumnType.CAGR, names, cagrs)
+        insert_column(df, ColumnType.ROI, names, rois)
+        insert_column(df, ColumnType.END_VALUE, names, end_values)
+        insert_column(df, ColumnType.START_DATE, names, start_dates)
+        insert_column(df, ColumnType.END_DATE, names, end_dates)
+        report_df = report_format(df)
+        report.log("{}".format(report_df.to_string()))
 
 
-#
-# def summarize(title, strategies: List[Strategy]):
-#     logging.info('== {}'.format(title))
-#     for strategy in strategies:
-#         logging.info("{:>90}:  {}  ({} to {})".format(strategy.title,
-#                                                       strategy.portfolio,
-#                                                       get_first_time(strategy),
-#                                                       get_last_time(strategy)))
-#
+class ColumnType(Enum):
+    STRATEGY_NAME = auto()
+    CAGR = auto()
+    ROI = auto()
+    END_VALUE = auto()
+    START_DATE = auto()
+    END_DATE = auto()
+
+    def __str__(self):
+        return self.as_title()
+
+    def as_title(self):
+        return self.name.replace('_', ' ')
+
+
+def report_format(df_orig):
+    df = df_orig.copy()
+    convert_formats(df)
+    df = report_order(df)
+    return df
+
+
+def report_order(df):
+    # columns = [ColumnType.STRATEGY_NAME]
+    columns = [ColumnType.CAGR]
+    columns += [ColumnType.ROI]
+    columns += [ColumnType.END_VALUE]
+    columns += [ColumnType.START_DATE]
+    columns += [ColumnType.END_DATE]
+    df_ordered = df[columns]  # reorders using order of columns
+    return df_ordered
+
+
+def convert_formats(df: pandas.DataFrame):
+    # df[ColumnType.STRATEGY_NAME] = df[ColumnType.STRATEGY_NAME]
+    df[ColumnType.CAGR] = df[ColumnType.CAGR].apply(to_percent)
+    df[ColumnType.ROI] = df[ColumnType.ROI].apply(to_percent)
+    df[ColumnType.END_VALUE] = df[ColumnType.END_VALUE].apply(to_dollars)
+
 
 def get_first_time(strategy):
     date_format: str = '%Y-%m-%d'

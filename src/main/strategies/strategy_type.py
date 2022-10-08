@@ -1,18 +1,21 @@
+# ------------------------------------------------------------------------------
 #  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
+
 import copy
 from enum import Enum, auto
 from typing import List
@@ -20,13 +23,6 @@ from typing import List
 from main.application.strategy import Strategy
 from main.strategies.bounded_rsi import BoundedRsi
 from main.strategies.buy_and_hold import BuyAndHold
-from main.strategies.testing.sma_up import SMAUp
-from main.strategies.testing.testing_atr import TestingATR
-from main.strategies.testing.testing_macd import TestingMACD
-from main.strategies.testing.testing_supertrend import TestingSUPERTREND
-from main.strategies.testing.testing_wma import TestingWMA
-from main.strategies.testing.testing_ema import TestingEMA
-from main.strategies.testing.testing_lindev import TestingLINDEV
 from main.strategies.buy_down_sell_up_trailing import BuyDownSellUpTrailing
 from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
@@ -34,7 +30,14 @@ from main.strategies.macd_crossing import MacdCrossing
 from main.strategies.multi_delta_swap import MultiDeltaSwap
 from main.strategies.multi_relative_sma_swap_down import MultiRelativeSmaSwapDown
 from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
+from main.strategies.sma_up import SmaUp
 from main.strategies.soldiers_and_crows import SoldiersAndCrows
+from main.strategies.testing.testing_atr import TestingATR
+from main.strategies.testing.testing_ema import TestingEMA
+from main.strategies.testing.testing_lindev import TestingLINDEV
+from main.strategies.testing.testing_macd import TestingMACD
+from main.strategies.testing.testing_supertrend import TestingSUPERTREND
+from main.strategies.testing.testing_wma import TestingWMA
 
 
 class StrategyType(Enum):
@@ -43,7 +46,7 @@ class StrategyType(Enum):
     TESTING_ATR = auto()
     TESTING_MACD = auto()
     TESTING_SUPERTREND = auto()
-    TESTING_WMA= auto()
+    TESTING_WMA = auto()
     TESTING_EMA = auto()
     TESTING_LINDEV = auto()
     LAST_BOUNCE = auto()
@@ -68,10 +71,26 @@ def add_buy_and_hold_strategies(report_types, symbols, template):
 def add_sma_up_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []
     if StrategyType.SMA_UP in report_types:
-
-        #  ALL OF THIS
-        for symbol in symbols:
-            strategies.append(SMAUp(symbol, copy.deepcopy(template)))
+        shorts = [
+            # 6,
+            5
+            # 4
+        ]
+        longs = [
+            # 9,
+            10
+            # 11
+        ]
+        limits = [
+            # 40,
+            50
+            # 60
+        ]
+        for short in shorts:
+            for long in longs:
+                for limit in limits:
+                    for symbol in symbols:
+                        strategies.append(SmaUp(symbol, copy.deepcopy(template), short, long, limit))
     return strategies
 
 
@@ -84,6 +103,7 @@ def add_testing_atr_strategies(report_types, symbols, template):
             strategies.append(TestingATR(symbol, copy.deepcopy(template)))
     return strategies
 
+
 def add_testing_macd_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []
     if StrategyType.TESTING_MACD in report_types:
@@ -92,6 +112,7 @@ def add_testing_macd_strategies(report_types, symbols, template):
         for symbol in symbols:
             strategies.append(TestingMACD(symbol, copy.deepcopy(template)))
     return strategies
+
 
 def add_testing_supertrend_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []
@@ -102,6 +123,7 @@ def add_testing_supertrend_strategies(report_types, symbols, template):
             strategies.append(TestingSUPERTREND(symbol, copy.deepcopy(template)))
     return strategies
 
+
 def add_testing_wma_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []
     if StrategyType.TESTING_WMA in report_types:
@@ -110,6 +132,7 @@ def add_testing_wma_strategies(report_types, symbols, template):
         for symbol in symbols:
             strategies.append(TestingWMA(symbol, copy.deepcopy(template)))
     return strategies
+
 
 def add_testing_ema_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []
@@ -129,6 +152,7 @@ def add_testing_lindev_strategies(report_types, symbols, template):
         for symbol in symbols:
             strategies.append(TestingLINDEV(symbol, copy.deepcopy(template)))
     return strategies
+
 
 def add_last_bounce_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []

@@ -24,7 +24,7 @@
 #
 # from main.adapters.adapter import TimeInterval, AssetType, QueryType, DataType
 # from main.adapters.valueType import ValueType
-# from main.adapters.indicators.series import Series
+# from main.adapters.calculators.series import Series
 # from main.portfolio.order import LimitOrder, OrderSide, StopOrder
 #
 #

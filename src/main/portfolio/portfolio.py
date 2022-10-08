@@ -1,30 +1,31 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 import logging
+from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 
 import pandas
 
 from main.application.adapter import AssetType
+from main.application.adapter_collection import AdapterCollection
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from datetime import datetime, timedelta
-
-from main.application.adapter_collection import AdapterCollection
 from main.portfolio.order import OrderSide, Order
 
 
@@ -113,7 +114,25 @@ class Portfolio:
         as_str = "CAGR = {:8.2f} %".format(self.calculate_cagr() * 100.0)
         as_str += "  ROI = {:8.2f} %".format(self.calculate_roi() * 100.0)
         as_str += " " + self.get_positions()
-        last_time = self.get_last_completed_time()
+        # last_time = self.get_last_completed_time()
+        # cash = [val for key, val in self.quantities.items() if key == self.base_symbol]
+        # assert cash[0] == 0.0 or self.value_data[last_time] == round(cash[0], 2)
+        # if last_time in self.value_data:
+        #     as_str += "  Value = {:12.2f}".format(self.value_data[last_time])
+        return as_str
+
+    def get_original_value(self) -> float:
+        return self.data.iloc[0, 0]
+
+    def get_latest_value(self) -> float:
+        return self.data.iloc[-1, 0]
+
+    def summary(self):
+        as_str = "CAGR = {:8.2f} %".format(self.calculate_cagr() * 100.0)
+        as_str += "  ROI = {:8.2f} %".format(self.calculate_roi() * 100.0)
+        as_str += "  End = ${:12.2f}".format(self.get_latest_value())
+        as_str += "  Start = ${:10.2f}".format(self.get_original_value())
+        # last_time = self.get_last_completed_time()
         # cash = [val for key, val in self.quantities.items() if key == self.base_symbol]
         # assert cash[0] == 0.0 or self.value_data[last_time] == round(cash[0], 2)
         # if last_time in self.value_data:
@@ -149,6 +168,8 @@ class Portfolio:
             ' = '.join(("{:>5}".format(key), "{:10.2f}".format(val))) for (key, val) in self.quantities.items())
 
     def add_adapter_class(self, data_adapter_class, value_type: Optional[ValueType] = None):
+        # raise RuntimeError(
+        #         "We're no longer adding adapters to Portfolios as that doesn't make sense - it was moved to collections")
         if value_type is None:  # then set it for every type
             for set_type in ValueType:
                 self.adapter_classes[set_type] = data_adapter_class
@@ -156,6 +177,8 @@ class Portfolio:
             self.adapter_classes[value_type] = data_adapter_class
 
     def get_adapter_class(self, value_type: ValueType):
+        # raise RuntimeError(
+        #         "We're no longer getting adapters to Portfolios as that doesn't make sense - it was moved to collections")
         return self.adapter_classes[value_type]
 
     def open_order(self, order: Order) -> None:
@@ -200,10 +223,12 @@ class Portfolio:
             raise RuntimeError("Unknown order side: {}".format(order.order_side))
         if order.price > high:
             raise RuntimeError(
-                "Attempt to close order '{}' symbol '{}' with price above high '{}'.".format(order, order.symbol, high))
+                "Attempt to close order '{}' symbol '{}' with price above high '{}'.".format(order, order.symbol,
+                                                                                             high))
         elif order.price < low:
             raise RuntimeError(
-                "Attempt to close order '{}' symbol '{}' with price below low '{}'.".format(order, order.symbol, low))
+                "Attempt to close order '{}' symbol '{}' with price below low '{}'.".format(order, order.symbol,
+                                                                                            low))
         if self.quantities[base_symbol] < 0.0:
             raise RuntimeError("After closing order '{}' symbol '{}' was left with a negative balance ({}), add some "
                                "way to protect against this in the strategy.".format(order, base_symbol,
@@ -239,6 +264,18 @@ class Portfolio:
     def get_first_completed_time(self) -> Optional[datetime]:
         last_completed = self.get_completed_time_from_index(0)
         return last_completed
+
+    def get_last_completed_date(self):
+        date_format: str = '%Y-%m-%d'
+        last_time = self.get_last_completed_time()
+        last_time = last_time if last_time is None else last_time.strftime(date_format)
+        return last_time
+
+    def get_first_completed_date(self):
+        date_format: str = '%Y-%m-%d'
+        first_time = self.get_first_completed_time()
+        first_time = first_time if first_time is None else first_time.strftime(date_format)
+        return first_time
 
     def get_completed_time_from_index(self, index: int) -> Optional[datetime]:
         time_from_index = None

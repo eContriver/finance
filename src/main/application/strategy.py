@@ -1,31 +1,29 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+# ------------------------------------------------------------------------------
 
 import inspect
 import logging
 from datetime import datetime
 from typing import Optional, Dict, Any
 
-import pandas
-
 from main.application.adapter import Adapter, AssetType
 from main.application.adapter_collection import AdapterCollection, set_all_cache_key_dates
 from main.application.argument import Argument, ArgumentKey
-from main.application.order import Order
 from main.application.value_type import ValueType
 from main.common.time_zones import TimeZones
 from main.portfolio.portfolio import Portfolio
@@ -44,22 +42,32 @@ class Strategy:
         self.collection: AdapterCollection = AdapterCollection()
         self.portfolio = portfolio
         self.title = title
-        self.portfolio.title = self.get_title_with_times()
+        self.portfolio.title = self.get_title()
+        # self.portfolio.title = self.get_title_with_times()
 
     def __str__(self):
         # df: pandas.DataFrame = pandas.DataFrame()
         # return self.collection.report().ToDataFrame()
-        return self.get_title_with_times()
+        return self.get_title()
+        # return self.get_title_with_times()
 
-    def get_title_with_times(self) -> str:
+    def get_title(self) -> str:
         string = self.title
-        date_format: str = '%Y-%m-%d'
-        string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
-        string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
+        # date_format: str = '%Y-%m-%d'
+        # string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
+        # string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
         string += "" if self.portfolio.interval is None else " {}".format(self.portfolio.interval)
         return string
 
-    def run(self):
+    # def get_title_with_times(self) -> str:
+    #     string = self.title
+    #     # date_format: str = '%Y-%m-%d'
+    #     string += "" if self.portfolio.start_time is None else " starting {}".format(self.portfolio.start_time)
+    #     string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
+    #     string += "" if self.portfolio.interval is None else " {}".format(self.portfolio.interval)
+    #     return string
+
+    def run(self) -> "Strategy":
         key_date = datetime.now(TimeZones.get_tz())
         # key_date = self.portfolio.end_time if self.portfolio.end_time is not None else datetime.now(TimeZones.get_tz())
         set_all_cache_key_dates(self.collection.adapters, key_date)
@@ -86,27 +94,27 @@ class Strategy:
     def get_last_start_time(self) -> Optional[datetime]:
         return self.collection.get_common_start_time()
 
-    def get_end_time(self) -> Optional[datetime]:
-        return self.collection.get_end_time(symbol)
-
-    def place_open_orders(self):
-        for order in self.portfolio.open_orders:
-            answer = input("\nDo you want to place the following order?\n> {}\n(y/[n]):".format(order))
-            if (answer.lower() == "y") or (answer.lower() == "yes"):
-                logging.info("Will now place order...")
-                data_adapter = self.collection.get_symbol_handle(order.symbol).adapters[QueryType.ORDERING]
-                order.place(data_adapter)
-            else:
-                logging.info("Order will not be placed.")
-
-    def sync_portfolio_with_account(self):
-        self.portfolio.quantities = {}
-        self.collection.retrieve_all_data()
-        for symbol_adapter in self.collection.symbol_handles.values():
-            order_adapter: Order = symbol_adapter.adapters[QueryType.ORDERING]
-            holdings = order_adapter.get_holdings()
-            self.portfolio.quantities = merge(self.portfolio.quantities)
-            self.portfolio.data = order_adapter.get_historic_value(symbol_adapter.adapters[QueryType.SERIES])
+    # def get_end_time(self) -> Optional[datetime]:
+    #     return self.collection.get_end_time(symbol)
+    #
+    # def place_open_orders(self):
+    #     for order in self.portfolio.open_orders:
+    #         answer = input("\nDo you want to place the following order?\n> {}\n(y/[n]):".format(order))
+    #         if (answer.lower() == "y") or (answer.lower() == "yes"):
+    #             logging.info("Will now place order...")
+    #             data_adapter = self.collection.get_symbol_handle(order.symbol).adapters[QueryType.ORDERING]
+    #             order.place(data_adapter)
+    #         else:
+    #             logging.info("Order will not be placed.")
+    #
+    # def sync_portfolio_with_account(self):
+    #     self.portfolio.quantities = {}
+    #     self.collection.retrieve_all_data()
+    #     for symbol_adapter in self.collection.symbol_handles.values():
+    #         order_adapter: Order = symbol_adapter.adapters[QueryType.ORDERING]
+    #         holdings = order_adapter.get_holdings()
+    #         self.portfolio.quantities = merge(self.portfolio.quantities)
+    #         self.portfolio.data = order_adapter.get_historic_value(symbol_adapter.adapters[QueryType.SERIES])
 
     def get_adapter(self, symbol: str, adapter_class: type, value_type: ValueType, asset_type: AssetType,
                     cache_key_date: Optional[datetime] = None) -> Adapter:
@@ -137,6 +145,7 @@ class Strategy:
         value_types = [ValueType.OPEN, ValueType.HIGH, ValueType.LOW, ValueType.CLOSE]
         adapters: Dict[ValueType, Any] = {}
         for value_type in value_types:
+            # adapters[value_type] = self.collection.get_adapter(symbol, value_type)
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
@@ -147,10 +156,11 @@ class Strategy:
 
     def add_sma_collection(self, symbol: str, period: str, cache_key_date: Optional[datetime] = None) -> None:
         asset_type = self.collection.asset_type_overrides[symbol] if symbol in \
-                                                                          self.collection.asset_type_overrides else None
+                                                                     self.collection.asset_type_overrides else None
         value_types = [ValueType.SMA]
         adapters: Dict[ValueType, Any] = {}
         for value_type in value_types:
+            # adapters[value_type] = self.collection.get_adapter(symbol, value_type)
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
@@ -162,10 +172,11 @@ class Strategy:
 
     def add_macd_collection(self, symbol, slow, fast, signal, cache_key_date: Optional[datetime] = None):
         asset_type = self.collection.asset_type_overrides[symbol] if symbol in \
-                                                                          self.collection.asset_type_overrides else None
+                                                                     self.collection.asset_type_overrides else None
         value_types = [ValueType.MACD, ValueType.MACD_HIST, ValueType.MACD_SIGNAL]
         adapters: Dict[ValueType, Any] = {}
         for value_type in value_types:
+            # adapters[value_type] = self.collection.get_adapter(symbol, value_type)
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
@@ -180,10 +191,11 @@ class Strategy:
 
     def add_rsi_collection(self, symbol, period, cache_key_date: Optional[datetime] = None):
         asset_type = self.collection.asset_type_overrides[symbol] if symbol in \
-                                                                          self.collection.asset_type_overrides else None
+                                                                     self.collection.asset_type_overrides else None
         value_types = [ValueType.RSI]
         adapters: Dict[ValueType, Any] = {}
         for value_type in value_types:
+            # adapters[value_type] = self.collection.get_adapter(symbol, value_type)
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = self.get_adapter(symbol, adapter_class, value_type, asset_type, cache_key_date)
@@ -199,10 +211,11 @@ class Strategy:
 
     def add_book_collection(self, symbol, period, cache_key_date: Optional[datetime] = None):
         asset_type = self.collection.asset_type_overrides[symbol] if symbol in \
-                                                                          self.collection.asset_type_overrides else None
+                                                                     self.collection.asset_type_overrides else None
         value_types = [ValueType.BOOK]
         adapters: Dict[ValueType, Any] = {}
         for value_type in value_types:
+            # adapters[value_type] = self.collection.get_adapter(symbol, value_type)
             adapters[value_type] = self.portfolio.get_adapter_class(value_type)
         for value_type, adapter_class in adapters.items():
             adapter: Adapter = adapter_class(symbol, asset_type)

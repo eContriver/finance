@@ -1,35 +1,36 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 import os.path
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
 
-import robin_stocks as rs
-
 import pandas
 import pandas_datareader
+import robin_stocks as rs
 from pandas_datareader import DataReader
 
-from main.application.adapter import get_response_value_or_none, IntervalNotSupportedException
-from main.application.adapter import AssetType, DataType, Adapter
+from main.application.adapter import AssetType, DataType, Adapter, get_response_value_or_none, \
+    IntervalNotSupportedException
+from main.application.argument import ArgumentKey
 from main.application.converter import Converter
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from main.application.argument import ArgumentKey
 from main.common.time_zones import TimeZones
 
 
@@ -50,7 +51,8 @@ class Yahoo(Adapter):
             Converter(ValueType.OPEN, self.get_prices_response, ['1. open', '1a. open (USD)'], adjust_values=True),
             Converter(ValueType.HIGH, self.get_prices_response, ['2. high', '2a. high (USD)'], adjust_values=True),
             Converter(ValueType.LOW, self.get_prices_response, ['3. low', '3a. low (USD)'], adjust_values=True),
-            Converter(ValueType.CLOSE, self.get_prices_response, ['4. close', '4a. close (USD)'], adjust_values=True),
+            Converter(ValueType.CLOSE, self.get_prices_response, ['4. close', '4a. close (USD)'],
+                      adjust_values=True),
             Converter(ValueType.VOLUME, self.get_prices_response, ['5. volume']),
             # Converter(ValueType.RSI, self.get_rsi_response, ['RSI']),
             # Converter(ValueType.MACD, self.get_macd_response, ['MACD']),
@@ -111,10 +113,10 @@ class Yahoo(Adapter):
         start_time: Optional[datetime] = self.get_argument_value(ArgumentKey.START_TIME)
         start_time = end_time - timedelta(days=1) if start_time is None else start_time
         query = {
-            'name': self.symbol,
+            'name':        self.symbol,
             'data_source': Yahoo.name,
-            'start': start_time,
-            'end': end_time
+            'start':       start_time,
+            'end':         end_time
         }
         record_count = (end_time - start_time) / interval.timedelta
         output_size = "compact" if record_count < 100 else "full"
@@ -153,14 +155,14 @@ class Yahoo(Adapter):
     def delay_requests(self, data_file: str) -> None:
         pass
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         today: datetime = datetime.now(TimeZones.get_tz())
         # yesterday = today - timedelta(days=1)
         args = {
-            'name': self.symbol,
+            'name':        self.symbol,
             'data_source': Yahoo.name,
-            'start': today.strftime('%Y-%m-%d'),
-            'end': today.strftime('%Y-%m-%d')
+            'start':       today.strftime('%Y-%m-%d'),
+            'end':         today.strftime('%Y-%m-%d')
         }
         found_listed = False
         try:
@@ -181,10 +183,10 @@ class Yahoo(Adapter):
         today = today.replace(hour=0, minute=0, second=0, microsecond=0)
         # yesterday = today - timedelta(days=1)
         args = {
-            'name': self.symbol,
+            'name':        self.symbol,
             'data_source': Yahoo.name,
-            'start': today - self.span,
-            'end': today
+            'start':       today - self.span,
+            'end':         today
         }
         raw_response, data_file = self.get_api_response(DataReader, args, cache=True, data_type=DataType.DATA_FRAME)
         data = self.translate_series(raw_response)
@@ -197,7 +199,8 @@ class Yahoo(Adapter):
             raise RuntimeError('Unknown interval: {}'.format(self.series_interval))
         return interval
 
-    def translate_series(self, response_data, data_date_format='%Y-%m-%dT%H:%M:%SZ') -> Dict[datetime, Dict[ValueType, float]]:
+    def translate_series(self, response_data, data_date_format='%Y-%m-%dT%H:%M:%SZ') -> Dict[
+        datetime, Dict[ValueType, float]]:
         translated = {}
         assert not response_data.empty, "The response data was empty"
         to_translate = response_data.copy()
@@ -216,8 +219,8 @@ class Yahoo(Adapter):
 
     def get_digital_series_response(self):
         args = {
-            "symbol": self.symbol,
-            "span": self.span,  # self.end_at...
+            "symbol":   self.symbol,
+            "span":     self.span,  # self.end_at...
             "interval": self.translate_interval(),
         }
         raw_response, data_file = self.get_api_response(rs.yahoo.get_crypto_historicals, args)
@@ -240,7 +243,7 @@ class Yahoo(Adapter):
 
     def get_historic_value(self) -> Dict[datetime, float]:
         args = {
-            'span': 'month',
+            'span':     'month',
             'interval': 'day',
             # 'bounds': 'extended',
         }
@@ -267,7 +270,8 @@ class Yahoo(Adapter):
         raw_response, data_file = self.get_api_response(rs.yahoo.load_phoenix_account, args, cache=False)
         assert raw_response, "The response data was empty"
         data = {
-            raw_response['account_buying_power']['currency_code']: float(raw_response['account_buying_power']['amount'])
+            raw_response['account_buying_power']['currency_code']: float(
+                raw_response['account_buying_power']['amount'])
         }
         return data
 

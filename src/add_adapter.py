@@ -1,20 +1,20 @@
-#!python
-
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 import logging
 from datetime import datetime
@@ -40,17 +40,6 @@ def next_step(portfolio: Portfolio, collection: AdapterCollection, symbol: str, 
         portfolio.open_order(order)
 
 
-# def new_adapter(collection: AdapterCollection, adapter_class, base_symbol, symbol, asset_type) -> Adapter:
-#     adapter = adapter_class(symbol, asset_type)
-#     # adapter.base_symbol = base_symbol
-#     # end_date = datetime.now()
-#     # adapter.add_argument(Argument(ArgumentKey.START_TIME, end_date - 10 * TimeInterval.YEAR.timedelta))
-#     # adapter.add_argument(Argument(ArgumentKey.END_TIME, end_date))
-#     # adapter.cache_key_date = end_date
-#     # adapter.asset_type = collection.asset_type_overrides[symbol] if symbol in collection.asset_type_overrides else None
-#     return adapter
-#
-
 def main():
     """
     This program can be used to add a data adapter
@@ -68,7 +57,7 @@ def main():
     adapter_class = Alpaca
     # adapter_class = AlphaVantage
     price_interval = TimeInterval.DAY
-    asset_type = AssetType.EQUITY
+    asset_type = AssetType.STOCK
 
     end_time: datetime = datetime.now()
     end_time = datetime(end_time.year, end_time.month, end_time.day)
@@ -110,7 +99,6 @@ def main():
         ValueType.HIGH,
         ValueType.LOW,
         ValueType.CLOSE,
-
         ValueType.VOLUME
     ]  # NOTE: this order does _not_ effect display
     adapters: Dict[ValueType, Any] = {}
@@ -154,48 +142,6 @@ def main():
     portfolio.summarize()
     logging.info("-- Portfolio dump")
     print(portfolio.data)
-
-    # asset_type: AssetType = AssetType.EQUITY
-    # # 1:
-    # # query_type_types = [
-    # #     # QueryType.CASH_FLOW
-    # #     QueryType.BALANCE_SHEET
-    # # ]
-    # # 2:
-    # value_types = [ValueType.ASSETS]
-    # # 3:
-    # interval = TimeInterval.QUARTER
-    # # 4:
-    # data_adapters = [
-    #     # YahooAdapter,
-    #     AlphaVantage
-    # ]
-    # for symbol in symbols:
-    #     for data_adapter_ctor in data_adapters:
-    #         data_adapter: Adapter = data_adapter_ctor(symbol, base_symbol)
-    #         data_adapter.asset_type = asset_type
-    #         symbol_handle: AdapterCollection = AdapterCollection(symbol)
-    #         for symbol_adapter in symbol_handle.adapters:
-    #
-    #         for query_type in query_type_types:  # QueryType:
-    #             # 5: Add parameters
-    #             data_adapter.balance_sheet_interval = interval
-    #             symbol_handle.adapters[query_type] = data_adapter
-    #         collection.add_symbol_handle(symbol_handle)
-    #
-    # collection.retrieve_all_data()
-    #
-    # for symbol in symbols:
-    #     symbol_handle: AdapterCollection = collection.get_symbol_handle(symbol)
-    #     end_time: datetime = symbol_handle.get_end_time(symbol)
-    #     assert end_time is not None, "The end time is {} (None) we will stop testing now.".format(end_time)
-    #     # if end_time is None:
-    #     #     logging.warning("The end time is {} (None) we will skip reporting values.".format(end_time))
-    #     #     break
-    #     for value_type in value_types:
-    #         value: float = symbol_handle.get_value(symbol, end_time, ValueType.CLOSE)
-    #         logging.info("Value for {} is: {}".format(value_type, value))
-    #     # assert close == 34.0, "close data is wrong - received: {}".format(close)
 
     return True
 

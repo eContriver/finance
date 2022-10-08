@@ -1,18 +1,21 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
+
 
 '''
 
@@ -23,20 +26,21 @@ this is just a testing strategy to prove the sma indicator is working
 
 from datetime import datetime
 
+from main.application.single_symbol_strategy import SingleSymbolStrategy
 from main.application.value_type import ValueType
+from main.calculators.action_type import ActionType
+from main.calculators.lindev import LINDEV
 from main.portfolio.order import MarketOrder, OrderSide
 from main.portfolio.portfolio import Portfolio
-from main.calculators.lindev import LINDEV
-from main.application.single_symbol_strategy import SingleSymbolStrategy
 
 
 class TestingLINDEV(SingleSymbolStrategy):
 
     def __init__(self, symbol: str, portfolio: Portfolio):
-        super().__init__("SMA Up", symbol, portfolio)
+        super().__init__("Testing LINDEV", symbol, portfolio)
         self.build_price_collection()
-        self.smaSHORT = SMA(5)
-        self.smaLONG = SMA(10)
+        self.lindev_short = LINDEV(5)
+        self.lindev_long = LINDEV(10)
         self.PRICE_LIST_LIMIT = 50
         self.price_list_closes = []
 
@@ -69,16 +73,16 @@ class TestingLINDEV(SingleSymbolStrategy):
     def decide(self):
 
         # get short SMA
-        short_calc = self.smaSHORT.calc(self.price_list_closes)
+        short_calc = self.lindev_short.calc(self.price_list_closes)
 
         # get long SMA
-        long_calc = self.smaLONG.calc(self.price_list_closes)
+        long_calc = self.lindev_long.calc(self.price_list_closes)
 
         if short_calc is None or long_calc is None:
-            return "NotEnoughData"
+            return ActionType.NOT_ENOUGH_DATA
 
         if short_calc > long_calc:
-            return "buy"
+            return ActionType.BUY
 
         if short_calc <= long_calc:
-            return "sell"
+            return ActionType.SELL

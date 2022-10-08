@@ -28,10 +28,10 @@
 # from main.adapters.fundamentals.cashFlow import CashFlow
 # from main.adapters.fundamentals.earnings import Earnings
 # from main.adapters.fundamentals.income import Income
-# from main.adapters.indicators.macd import Macd
-# from main.adapters.indicators.rsi import Rsi
-# from main.adapters.indicators.series import Series
-# from main.adapters.indicators.sma import Sma
+# from main.adapters.calculators.macd import Macd
+# from main.adapters.calculators.rsi import Rsi
+# from main.adapters.calculators.series import Series
+# from main.adapters.calculators.sma import Sma
 #
 #
 # class FinancialModelingPrep(

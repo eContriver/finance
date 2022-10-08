@@ -1,18 +1,20 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
 from datetime import datetime, timedelta
 from os import environ
@@ -66,7 +68,7 @@ class Alpaca(Adapter):
 
     def get_equities_list(self) -> List[str]:
         query = {
-            "apikey": self.api_key,
+            "apikey":   self.api_key,
             "function": "LISTING_STATUS",
         }
         data, data_file = self.get_url_response(self.url, query, cache=True, data_type=DataType.CSV)
@@ -91,13 +93,17 @@ class Alpaca(Adapter):
             timeframe = TimeFrame.Hour
         elif interval == TimeInterval.MIN1:
             timeframe = TimeFrame.Minute
+        elif interval == TimeInterval.DAY:
+            timeframe = TimeFrame.Day
         elif interval == TimeInterval.WEEK:
             timeframe = TimeFrame.Week
+        elif interval == TimeInterval.MONTH:
+            timeframe = TimeFrame.Month
         query = {
             "symbol_or_symbols": [self.symbol],
-            "timeframe": timeframe,
-            "start": start_time,
-            "end": end_time
+            "timeframe":         timeframe,
+            "start":             start_time,
+            "end":               end_time
         }
 
         def capture(this):
@@ -105,11 +111,12 @@ class Alpaca(Adapter):
                 request_params = StockBarsRequest(**callback_args)
                 response: Union[BarSet, RawData] = this.client.get_stock_bars(request_params)
                 return response.df
+
             return get_stock_bars
+
         raw_response, data_file = self.get_api_response(capture(self), query, cache=True, data_type=DataType.DATA_FRAME)
         self.validate_response(data_file, raw_response)
         self.translate_series(raw_response, value_type, self.symbol)
-
 
     def translate_series(self, response_data, value_type: ValueType, key: str, data_date_format='%Y-%m-%d') -> None:
         """
@@ -120,9 +127,8 @@ class Alpaca(Adapter):
         :param data_date_format: The incoming data time format, used to convert to datetime objects
         :return: None
         """
-
         to_translate = response_data.copy()
-        to_translate = to_translate.reset_index(level=0, drop=True) # SYMBOL/DATE multiindex to DATE index
+        to_translate = to_translate.reset_index(level=0, drop=True)  # SYMBOL/DATE multiindex to DATE index
         if to_translate.empty:
             raise RuntimeError(
                 "There is no data (length is 0) for key: '{}' (maybe try a different time interval)".format(key))
@@ -141,12 +147,11 @@ class Alpaca(Adapter):
                     if value is None:  # we didn't find a match so move on to the next thing to convert
                         continue
                     # if converter.adjust_values:
-                        # ratio = get_adjusted_ratio(response_entry)
-                        # value = value * ratio
+                    # ratio = get_adjusted_ratio(response_entry)
+                    # value = value * ratio
                     indexes.append(entry_datetime.to_datetime64())
                     values.append(value)
             insert_column(self.data, converter.value_type, indexes, values)
-
 
     @staticmethod
     def validate_response(data_file, raw_response, expects_meta_data=True):
@@ -174,7 +179,7 @@ class Alpaca(Adapter):
         # data = [item[0] for item in data]
         # return self.symbol in data
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         # TODO: if we want to support crypto, then either find a way to dta drive the stocks available
         # or just manually override with asset_type_override: ETH: DIGITAL_CURRENCY
         return True

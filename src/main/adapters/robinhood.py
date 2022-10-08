@@ -1,22 +1,21 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
+# ------------------------------------------------------------------------------
 
-#
-#
-#
 import os.path
 from datetime import datetime, timedelta
 from os import environ
@@ -25,9 +24,9 @@ from typing import Optional, Dict
 import robin_stocks as rs
 
 from main.application.adapter import AssetType
+from main.application.order import Order
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from main.application.order import Order
 from main.portfolio.order import LimitOrder, OrderSide, StopOrder
 
 
@@ -62,7 +61,7 @@ class Robinhood(Order):
     def delay_requests(self, data_file: str) -> None:
         pass
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         data, data_file = self.get_api_response(rs.robinhood.get_stock_quote_by_symbol, {'symbol': self.symbol})
         return 'trading_halted' in data and not data['trading_halted']
 
@@ -86,13 +85,13 @@ class Robinhood(Order):
 
     def place_buy_limit_order(self, quantity: float, price: float):
         args = {
-            "symbol": self.symbol,
-            "quantity": quantity,
+            "symbol":     self.symbol,
+            "quantity":   quantity,
             "limitPrice": price,
         }
         if self.asset_type == AssetType.DIGITAL_CURRENCY:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_buy_crypto_limit, args)
-        elif self.asset_type == AssetType.EQUITY:
+        elif self.asset_type == AssetType.STOCK:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_buy_limit, args)
         else:
             raise RuntimeError("Adapter is set with unsupported asset type:{}".format(self.asset_type))
@@ -101,13 +100,13 @@ class Robinhood(Order):
 
     def place_sell_limit_order(self, quantity: float, price: float):
         args = {
-            "symbol": self.symbol,
-            "quantity": quantity,
+            "symbol":     self.symbol,
+            "quantity":   quantity,
             "limitPrice": price,
         }
         if self.asset_type == AssetType.DIGITAL_CURRENCY:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_sell_crypto_limit, args)
-        elif self.asset_type == AssetType.EQUITY:
+        elif self.asset_type == AssetType.STOCK:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_sell_limit, args)
         else:
             raise RuntimeError("Adapter is set with unsupported asset type:{}".format(self.asset_type))
@@ -116,12 +115,12 @@ class Robinhood(Order):
 
     def place_buy_market_order(self, quantity: float):
         args = {
-            "symbol": self.symbol,
+            "symbol":   self.symbol,
             "quantity": quantity,
         }
         if self.asset_type == AssetType.DIGITAL_CURRENCY:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_buy_crypto_by_quantity, args)
-        elif self.asset_type == AssetType.EQUITY:
+        elif self.asset_type == AssetType.STOCK:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_buy_market, args)
         else:
             raise RuntimeError("Adapter is set with unsupported asset type:{}".format(self.asset_type))
@@ -130,12 +129,12 @@ class Robinhood(Order):
 
     def place_sell_market_order(self, quantity: float):
         args = {
-            "symbol": self.symbol,
+            "symbol":   self.symbol,
             "quantity": quantity,
         }
         if self.asset_type == AssetType.DIGITAL_CURRENCY:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_sell_crypto_by_quantity, args)
-        elif self.asset_type == AssetType.EQUITY:
+        elif self.asset_type == AssetType.STOCK:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_sell_market, args)
         else:
             raise RuntimeError("Adapter is set with unsupported asset type:{}".format(self.asset_type))
@@ -144,11 +143,11 @@ class Robinhood(Order):
 
     def place_buy_stop_order(self, quantity: float, price: float):
         args = {
-            "symbol": self.symbol,
-            "quantity": quantity,
+            "symbol":    self.symbol,
+            "quantity":  quantity,
             "stopPrice": price,
         }
-        if self.asset_type == AssetType.EQUITY:
+        if self.asset_type == AssetType.STOCK:
             raw_response, data_file = self.get_api_response(rs.robinhood.order_buy_stop_loss, args)
         else:
             raise RuntimeError("Adapter is set with unsupported asset type:{}".format(self.asset_type))
@@ -157,8 +156,8 @@ class Robinhood(Order):
 
     def place_sell_stop_order(self, quantity: float, price: float):
         args = {
-            "symbol": self.symbol,
-            "quantity": quantity,
+            "symbol":    self.symbol,
+            "quantity":  quantity,
             "stopPrice": price,
         }
         raw_response, data_file = self.get_api_response(rs.robinhood.order_sell_crypto_by_price, args)
@@ -183,8 +182,8 @@ class Robinhood(Order):
     def get_stock_series_response(self):
         args = {
             "inputSymbols": self.symbol,
-            "span": self.span,  # self.end_at...
-            "interval": self.translate_interval(),
+            "span":         self.span,  # self.end_at...
+            "interval":     self.translate_interval(),
         }
         raw_response, data_file = self.get_api_response(rs.robinhood.get_stock_historicals, args)
         data = self.translate(raw_response)
@@ -222,8 +221,8 @@ class Robinhood(Order):
 
     def get_digital_series_response(self):
         args = {
-            "symbol": self.symbol,
-            "span": self.span,  # self.end_at...
+            "symbol":   self.symbol,
+            "span":     self.span,  # self.end_at...
             "interval": self.translate_interval(),
         }
         raw_response, data_file = self.get_api_response(rs.robinhood.get_crypto_historicals, args)
@@ -246,7 +245,7 @@ class Robinhood(Order):
 
     def get_historic_value(self) -> Dict[datetime, float]:
         args = {
-            'span': 'month',
+            'span':     'month',
             'interval': 'day',
             # 'bounds': 'extended',
         }
@@ -273,7 +272,8 @@ class Robinhood(Order):
         raw_response, data_file = self.get_api_response(rs.robinhood.load_phoenix_account, args, cache=False)
         assert raw_response, "The response data was empty"
         data = {
-            raw_response['account_buying_power']['currency_code']: float(raw_response['account_buying_power']['amount'])
+            raw_response['account_buying_power']['currency_code']: float(
+                raw_response['account_buying_power']['amount'])
         }
         return data
 
@@ -318,9 +318,13 @@ class Robinhood(Order):
             instrument_response, instrument_file = self.get_api_response(rs.robinhood.get_instrument_by_url, args)
 
             if item['type'] == 'limit':
-                orders.append(LimitOrder(instrument_response['symbol'], side, float(item['price']), float(item['quantity']), dt))
+                orders.append(
+                    LimitOrder(instrument_response['symbol'], side, float(item['price']), float(item['quantity']),
+                               dt))
             elif item['type'] == 'stop':
-                orders.append(StopOrder(instrument_response['symbol'], side, float(item['price']), float(item['quantity']), dt))
+                orders.append(
+                    StopOrder(instrument_response['symbol'], side, float(item['price']), float(item['quantity']),
+                              dt))
             else:
                 raise RuntimeError("Unsupported order type: {}".format(item['type']))
         return orders

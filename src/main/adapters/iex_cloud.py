@@ -1,19 +1,20 @@
-#  Copyright 2021 eContriver LLC
+# ------------------------------------------------------------------------------
+#  Copyright 2021-2022 eContriver LLC
 #  This file is part of Finance from eContriver.
-#
+#  -
 #  Finance from eContriver is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  any later version.
-#
+#  -
 #  Finance from eContriver is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  -
 #  You should have received a copy of the GNU General Public License
 #  along with Finance from eContriver.  If not, see <https://www.gnu.org/licenses/>.
-
+# ------------------------------------------------------------------------------
 
 import logging
 import os.path
@@ -26,10 +27,10 @@ from typing import Optional, List
 import pandas
 
 from main.application.adapter import AssetType, Adapter, insert_column
+from main.application.argument import ArgumentKey
+from main.application.converter import Converter
 from main.application.time_interval import TimeInterval
 from main.application.value_type import ValueType
-from main.application.converter import Converter
-from main.application.argument import ArgumentKey
 
 
 class NoDataReturnedException(RuntimeError):
@@ -89,7 +90,8 @@ class IexCloud(Adapter):
             # This value was very wrong for BRK-A, it says something like 3687360528 shares outstanding, while there
             # are actually only something like 640000
             Converter(ValueType.SHARES, self.get_reported_financials_response,
-                      ['WeightedAverageNumberOfSharesOutstandingBasic', 'CommonStockSharesOutstanding', 'commonStock']),
+                      ['WeightedAverageNumberOfSharesOutstandingBasic', 'CommonStockSharesOutstanding',
+                       'commonStock']),
             # This is not quite right...
             # https://www.fool.com/investing/stock-market/basics/earnings-per-share/
 
@@ -217,10 +219,10 @@ class IexCloud(Adapter):
             raise RuntimeError(
                 'Interval is not supported: {} (for: {})'.format(self.series_interval, self.__class__.__name__))
         query = {
-            "token": self.api_key,
+            "token":    self.api_key,
             "function": function,
-            "symbol": self.symbol,
-            "market": self.base_symbol,
+            "symbol":   self.symbol,
+            "market":   self.base_symbol,
         }
         raw_response, data_file = self.get_url_response(self.url, query)
         self.validate_json_response(data_file, raw_response)
@@ -233,10 +235,10 @@ class IexCloud(Adapter):
         fast: float = self.get_argument_value(ArgumentKey.MACD_FAST)
         signal: float = self.get_argument_value(ArgumentKey.MACD_SIGNAL)
         query = {
-            "token": self.api_key,
-            "range": series_range,
-            "fast": int(fast),
-            "slow": int(slow),
+            "token":  self.api_key,
+            "range":  series_range,
+            "fast":   int(fast),
+            "slow":   int(slow),
             "signal": int(signal),
         }
         raw_response, data_file = self.get_url_response('{}/stock/{}/indicator/{}'.format(
@@ -265,10 +267,10 @@ class IexCloud(Adapter):
     def get_sma_response(self, value_type: ValueType):
         indicator_key = self.get_indicator_key()  # e.g. BTCUSD
         query = {
-            "token": self.api_key,
-            "function": "SMA",
-            "symbol": indicator_key,
-            "interval": self.sma_interval.value,
+            "token":       self.api_key,
+            "function":    "SMA",
+            "symbol":      indicator_key,
+            "interval":    self.sma_interval.value,
             "time_period": self.sma_period,
             "series_type": self.sma_series_type,
         }
@@ -282,8 +284,8 @@ class IexCloud(Adapter):
         series_range = self.get_span_as_str()
         period: float = self.get_argument_value(ArgumentKey.RSI_PERIOD)
         query = {
-            "token": self.api_key,
-            "range": series_range,
+            "token":  self.api_key,
+            "range":  series_range,
             "period": period,
         }
         raw_response, data_file = self.get_url_response('{}/stock/{}/indicator/{}'.format(
@@ -315,7 +317,8 @@ class IexCloud(Adapter):
             raise RuntimeError("Failed to find key in data: {}".format(chart_key))
         if not response_data[chart_key]:
             raise RuntimeError(
-                "There is no data (length is 0) for key: {} (maybe try a different time interval)".format(chart_key))
+                "There is no data (length is 0) for key: {} (maybe try a different time interval)".format(
+                    chart_key))
         for converter in self.converters:
             if converter.value_type in self.data:
                 continue  # if we've already added this value type, then don't do it again
@@ -338,7 +341,6 @@ class IexCloud(Adapter):
                                         "no data was present after getting and parsing the response. Does the " \
                                         "converter have the correct keys/locations for the raw data?".format(value_type)
 
-
     def get_earnings_response(self):
         interval: TimeInterval = self.get_argument_value(ArgumentKey.INTERVAL)
         if interval.timedelta <= TimeInterval.QUARTER.timedelta:
@@ -350,9 +352,9 @@ class IexCloud(Adapter):
                 'Interval is not supported: {} (for: {})'.format(interval, self.__class__.__name__))
         last = self.get_span() / interval.timedelta
         query = {
-            'token': self.api_key,
+            'token':  self.api_key,
             'period': period,
-            'last': last,
+            'last':   last,
         }
         query = {'token': self.api_key, 'period': period, 'last': last}
         raw_response, data_file = self.get_url_response('{}/stock/{}/earnings'.format(
@@ -694,7 +696,7 @@ class IexCloud(Adapter):
         data = [item['symbol'] for item in data]
         return '{}{}'.format(self.symbol, self.base_symbol) in data
 
-    def get_is_listed(self) -> bool:
+    def get_is_stock(self) -> bool:
         data = self.get_equities_list()
         return self.symbol in data
 
