@@ -73,19 +73,14 @@ class MultiMomentumMeanReversion(MultiSymbolStrategy):
 
     def equal_weight(self, symbols: List[str], last_time: datetime, current_time: datetime):
         value_type = ValueType.CLOSE
-        # value = get_current_value(current_time, self.collection, self.portfolio.quantities, ValueType.CLOSE)
-        total = 0.
         for symbol in self.symbols:
-            # quantity: float = self.portfolio.get_tradable_quantity(symbol)
             quantity: float = self.portfolio.quantities[symbol]
             if quantity > 0.0:
-                price = self.collection.get_value(symbol, last_time, value_type)
                 self.open_sell(symbol, current_time, quantity, value_type)
-                total += price * quantity
-        # cash: float = self.portfolio.get_tradable_quantity(self.portfolio.base_symbol)
-        weighted = total / len(symbols)
-        for symbol in symbols:
-            self.open_buy(symbol, current_time, weighted, value_type)
+        weighted = self.portfolio.quantities[self.portfolio.base_symbol] / len(symbols)
+        if weighted > 0.0:
+            for symbol in symbols:
+                self.open_buy(symbol, current_time, weighted, value_type)
 
     def open_sell(self, symbol: str, current_time: datetime, quantity: float, value_type: ValueType):
         order = MarketOrder(symbol, OrderSide.SELL, quantity, current_time, value_type)
