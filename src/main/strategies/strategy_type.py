@@ -28,6 +28,7 @@ from main.strategies.buy_up_sell_down_trailing import BuyUpSellDownTrailing
 from main.strategies.last_bounce import LastBounce
 from main.strategies.macd_crossing import MacdCrossing
 from main.strategies.multi_delta_swap import MultiDeltaSwap
+from main.strategies.multi_momentum_mean_reversion import MultiMomentumMeanReversion
 from main.strategies.multi_relative_sma_swap_down import MultiRelativeSmaSwapDown
 from main.strategies.multi_relative_sma_swap_up import MultiRelativeSmaSwapUp
 from main.strategies.sma_up import SmaUp
@@ -58,6 +59,7 @@ class StrategyType(Enum):
     MULTI_DELTA_SWAP = auto()
     MULTI_RELATIVE_SMA_SWAP_UP = auto()
     MULTI_RELATIVE_SMA_SWAP_DOWN = auto()
+    MULTI_MOMENTUM_MEAN_REVERSION = auto()
 
 
 def add_buy_and_hold_strategies(report_types, symbols, template):
@@ -294,6 +296,18 @@ def add_multi_delta_swap_strategies(report_types, symbols, template):
             strategies.append(MultiDeltaSwap(symbols, copy.deepcopy(template), delta=delta))
     return strategies
 
+def add_multi_momentum_mean_reversion(report_types, symbols, template):
+    strategies: List[Strategy] = []
+    if StrategyType.MULTI_MOMENTUM_MEAN_REVERSION in report_types:
+        # deltas = [
+        #     1.1,
+        #     # 1.05,
+        #     # 1.025,
+        # ]
+        # for delta in deltas:
+        strategies.append(MultiMomentumMeanReversion(symbols, copy.deepcopy(template)))
+    return strategies
+
 
 def add_multi_relative_sma_swap_up_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []
@@ -319,7 +333,7 @@ def add_multi_relative_sma_swap_up_strategies(report_types, symbols, template):
     return strategies
 
 
-def add_multi_relative_sma_swap_dowm_strategies(report_types, symbols, template):
+def add_multi_relative_sma_swap_down_strategies(report_types, symbols, template):
     strategies: List[Strategy] = []
     if StrategyType.MULTI_RELATIVE_SMA_SWAP_DOWN in report_types:
         deltas = [

@@ -36,21 +36,30 @@ class MultiSymbolStrategy(Strategy):
         # string += "" if self.portfolio.end_time is None else " ending {}".format(self.portfolio.end_time)
         return string
 
-    def build_price_collection(self, cache_key_date: Optional[datetime] = None):
-        for symbol in self.symbols:
+    def build_price_collection_direct(self, symbols, cache_key_date: Optional[datetime] = None):
+        for symbol in symbols:
             self.add_price_collection(symbol, cache_key_date)
 
-    def build_sma_collection(self, period, cache_key_date: Optional[datetime] = None):
-        for symbol in self.symbols:
+    def build_price_collection(self, cache_key_date: Optional[datetime] = None):
+        self.build_price_collection_direct(self.symbols, cache_key_date)
+
+    def build_sma_collection_direct(self, symbols, period, cache_key_date: Optional[datetime] = None):
+        for symbol in symbols:
             self.add_sma_collection(symbol, period, cache_key_date)
+
+    def build_sma_collection(self, period, cache_key_date: Optional[datetime] = None):
+        self.build_sma_collection_direct(self.symbols, period, cache_key_date)
 
     def build_macd_collection(self, slow, fast, signal, cache_key_date: Optional[datetime] = None):
         for symbol in self.symbols:
             self.add_macd_collection(symbol, slow, fast, signal, cache_key_date)
 
-    def build_rsi_collection(self, period, cache_key_date: Optional[datetime] = None):
-        for symbol in self.symbols:
+    def build_rsi_collection_direct(self, symbols, period, cache_key_date: Optional[datetime] = None):
+        for symbol in symbols:
             self.add_rsi_collection(symbol, period, cache_key_date)
+
+    def build_rsi_collection(self, period, cache_key_date: Optional[datetime] = None):
+        self.build_rsi_collection_direct(self.symbols, period, cache_key_date)
 
     def build_book_collection(self, period, cache_key_date: Optional[datetime] = None):
         for symbol in self.symbols:

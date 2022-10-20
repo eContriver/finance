@@ -494,6 +494,8 @@ class IntrinsicValueRunner(Runner):
             # ROEs
             df.loc[:, IntrinsicValueRunner.ROE] = df.loc[:, ValueType.NET_INCOME] / (df.loc[:, ValueType.EQUITY])
 
+            df.loc[:, ValueType.EPS] = df.loc[:, ValueType.EPS] + 0.01
+
             #################################################################################
             # Report now...
             report_df = self.report_format(df)
